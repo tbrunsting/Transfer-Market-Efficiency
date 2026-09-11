@@ -183,7 +183,13 @@ scores on SCA.
 
 - Window 2017/18–2023/24: **final** (2026-09-11).
 - SCA from Kaggle for all seven seasons: **decided** (2026-09-11).
-- Snapshot freeze (scripted download + manifest): planned next.
+- Snapshot freeze: **done** (2026-09-11). `scripts/10_freeze_fbref_snapshot.py`
+  (which calls `scripts/11_rds_to_csv.R`) holds 34 source files (187.4 MB) in
+  `data/raw/fbref/`, recorded with SHA-256 checksums in
+  `reference/fbref_snapshot_manifest.csv` (73 rows, reviewed by Tyler). All 32
+  CSV conversions are identical to their `.rds` sources, and re-runs are
+  idempotent. The player mapping CSV has mixed encoding (UTF-8 except 3 lines
+  in Windows-1252), so decode it per line when loading.
 - Consistency checks as code (rules 2–5): not started.
 - Browser gap pages (the earlier Tier 1/Tier 2 plan): **abandoned**. Pure CDP
   mode fetches FBref pages fine, but since 20 Jan 2026 there's no advanced data
