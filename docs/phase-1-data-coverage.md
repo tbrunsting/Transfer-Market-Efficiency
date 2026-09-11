@@ -4,60 +4,114 @@ What the FBref data actually covers, season by season, and the rules for using
 it. Scoring (Phase 3) is checked against this document, so a gap should never
 be discovered halfway through.
 
-Verified 2026-09-11 by reading the release files directly with base R.
+Verified 2026-09-11 by reading the source files directly (base R) and, for the
+live site, the raw HTML of pages fetched with `scripts/04_fetch_fbref_cdp.py`.
 
-## Source
+## Scored window: 2017/18–2023/24, seven seasons (final)
 
-- **worldfootballR's pre-scraped data**, the files behind
-  `load_fb_big5_advanced_season_stats()`: GitHub repo
-  `JaseZiv/worldfootballR_data`, release `fb_big5_advanced_season_stats`.
-  These are plain downloads from GitHub. Live FBref requests without a browser
-  get `403` (see [`phase-1-scraper-diagnostics.md`](phase-1-scraper-diagnostics.md)).
-- **The source is frozen.** The data repo and the worldfootballR package were
-  both archived on 2025-09-18 and will never update. That makes the snapshot
-  fully reproducible, but also means the gaps below are permanent unless we
-  fill them another way.
-- Player GCA comes from a second release, `old_fb_big5_advanced_season_stats`,
-  frozen on 2023-02-16. The current release has no player GCA file.
+Decided 2026-09-11. This is the final window, not a fallback.
 
-## Coverage by stat type
+- **Start, 2017/18:** the first season with advanced data for the Big 5
+  (scoping doc 4.1).
+- **End, 2023/24:** the last season for which every stat type the scoring needs
+  exists in complete form. On **20 January 2026**, Opta (Stats Perform)
+  terminated FBref's data licence and FBref removed all Opta-sourced advanced
+  stats from the live site, past seasons included. The only complete copy is
+  the worldfootballR snapshot, frozen on 2025-09-18, in which defense,
+  possession, misc and keeper data end with 2023/24 (2024/25 has only 9
+  matchweeks). Details and sources are in the scoping doc (4.1) and
+  [`phase-1-scraper-diagnostics.md`](phase-1-scraper-diagnostics.md).
+- **Outside the window:** 2024/25, 2025/26 and 2026/27 transfer activity can
+  still be shown on the club page as unscored recent activity (scoping doc
+  4.8). Their on-field output isn't scored.
+
+## Sources
+
+| Source | What it supplies | Status |
+|---|---|---|
+| **worldfootballR snapshot**: GitHub `JaseZiv/worldfootballR_data`, release `fb_big5_advanced_season_stats` | Every player and team stat type except player GCA | Archived 2025-09-18, frozen. **Effectively the last public copy of FBref's Opta-era data.** |
+| Same repo, release `old_fb_big5_advanced_season_stats` | Player GCA, 2017/18–2021/22 complete, 2022/23 to matchweek 23 | Frozen 2023-02-16. An older version (see SCA section) |
+| **Kaggle**: "FBref 2017-2024 for Europe's Top 5 leagues" (`akshankrithick/fbref-2017-2024-for-europes-top-5-leagues`, version 2, updated 2026-05-07, MIT licence) | SCA and GCA **per 90** for all seven seasons, plus 60-odd other columns | Validated against the snapshot (SCA section). No FBref IDs. The MIT licence covers the uploader's work; the underlying data belongs to Sports Reference/Opta |
+| `fbref_to_tm_mapping.csv` (same repo) | FBref player ↔ Transfermarkt player | Frozen, last updated 2025-06-21 |
+| Live FBref | Basic stats only | **Not a source for advanced data** since 20 Jan 2026 |
+
+Not used: the match-level release (`fb_advanced_match_stats`) stops at
+2025-02-03 and can't complete any season, and live FBref's remaining basic
+columns are a different data version (Int/TklW match the snapshot for only
+about 61% of players).
+
+## Coverage within the window
 
 "Complete" means every club played a full season (38 matches, or 34 in the
 Bundesliga and in Ligue 1 from 2023/24). Row counts alone hide partial seasons,
 so this was checked with the maximum matches or 90s played.
 
-| Stat type | Used for (scoping doc 4.4 / 4.5) | Complete | Partial | Missing |
-|---|---|---|---|---|
-| standard | minutes, xG, npxG, xAG, progressive passes/carries | 2017/18–2024/25 | 2025/26 (5 matchweeks) | — |
-| shooting | forwards | 2017/18–2024/25 | 2025/26 (5 matchweeks) | — |
-| passing | *see rule 2* | 2017/18–2024/25 | 2025/26 (5 matchweeks) | — |
-| playing_time | availability | 2017/18–2024/25 | 2025/26 (5 matchweeks) | — |
-| defense | centre-backs, full-backs | 2017/18–2023/24 | 2024/25 (9 matchweeks) | 2025/26 |
-| possession | carries, take-ons | 2017/18–2023/24 | 2024/25 (9 matchweeks) | 2025/26 |
-| misc | aerial duels | 2017/18–2023/24 | 2024/25 (9 matchweeks) | 2025/26 |
-| keepers, keepers_adv | goalkeepers | 2017/18–2023/24 | 2024/25 (9 matchweeks) | 2025/26 |
-| **gca** (player) | shot-creating actions | 2017/18–2021/22 | 2022/23 (23 of 38 matchweeks) | **2023/24**, 2024/25, 2025/26 |
-| team files (all types) | club-level figures | 2017/18–2023/24 | 2024/25 (9 matchweeks) | 2025/26 |
+| Stat type | Used for (scoping doc 4.4 / 4.5) | 2017/18–2023/24 | Source |
+|---|---|---|---|
+| standard | minutes, xG, npxG, xAG, progressive passes/carries | Complete | Snapshot |
+| shooting | forwards | Complete | Snapshot |
+| passing | *see rule 2* | Complete | Snapshot |
+| playing_time | availability | Complete | Snapshot |
+| defense | centre-backs, full-backs | Complete | Snapshot |
+| possession | carries, take-ons | Complete | Snapshot |
+| misc | aerial duels | Complete | Snapshot |
+| keepers, keepers_adv | goalkeepers | Complete | Snapshot |
+| team files (all types) | club-level figures | Complete | Snapshot |
+| **SCA / GCA** (player) | shot-creating actions | Complete **only via Kaggle** (per 90) | See SCA section |
 
 Other facts checked:
 
 - **2017/18 is fully populated.** Every file has 99.5–100% non-null values on
   its key columns (xG, xAG, progressive passes and carries, tackles plus
   interceptions, clearances, aerials won, touches, take-ons, saves, PSxG).
-- **98 squads per season, then 96 from 2023/24**, when Ligue 1 dropped to 18
+- **98 squads per season, then 96 in 2023/24**, when Ligue 1 dropped to 18
   clubs. That's a league change, not missing data.
-- **154 distinct clubs** across the window (30–32 per league). The scoping doc's
-  "~98" is the count per season. The club mapping table, metadata and trophies
-  all cover 154.
-- **Every file has a `Url` column** (the FBref player or team link), which is
-  the key `player_dictionary_mapping()` joins on.
-- **Player mapping coverage** (`fbref_to_tm_mapping.csv`, also frozen, last
-  updated 2025-06-21): 98–100% of players and about 100% of minutes for
-  2017/18–2024/25; 89% of players and 92% of minutes for the partial 2025/26.
-  The gaps are summer-2025 signings.
-- **Match-level files** (release `fb_advanced_match_stats`) stop at 2025-02-03
-  for every stat type, and the summary files, the only ones with SCA, start at
-  2024/25. They can't complete any season, so they aren't used.
+- **145 distinct clubs** in the window (the scoping doc's "~98" is the count
+  per season). The club mapping table, metadata and trophies cover 145.
+- **Every snapshot file has a `Url` column**: the FBref player link in player
+  files, the FBref team link in team files. These carry the IDs used for
+  joining (next section).
+- **Player mapping coverage** (`fbref_to_tm_mapping.csv`): 98–100% of players
+  and about 100% of minutes in every season of the window.
+
+## Club and player identity: join on FBref IDs, never names
+
+Names are display labels only. Every join, within a source or across sources,
+uses FBref's stable 8-character IDs: the team ID in team URLs
+(`/en/squads/8d6fd021/...`) and the player ID in player URLs
+(`/en/players/355c883a/...`).
+
+Why this is a rule, not a preference:
+
+- **Names change inside the same source.** In the snapshot itself, Borussia
+  Mönchengladbach (team ID `32f3ee20`) is "M'Gladbach" for 2017/18–2022/23 and
+  "Gladbach" for 2023/24. A name join would split one club into two.
+- **FBref renamed clubs on the live site.** Comparing live 2023/24 pages with
+  the snapshot: "Nott'ham Forest" is now "Nottingham", "Eint Frankfurt" is
+  "Frankfurt", "Paris S-G" is "Paris SG", "Sheffield Utd" is
+  "Sheffield United", "Betis" is "Real Betis", "Newcastle Utd" is "Newcastle".
+  198 of the 201 unmatched live rows were the same player IDs under new club
+  names.
+- **Other sources spell players differently too.** Kaggle writes "Gladbach"
+  and uses fuller or romanised player names where the snapshot has
+  "Martinelli", "Carlos" or "이강인". An exact name join missed 1.2–2.5% of
+  minutes per season.
+
+How it's applied:
+
+- **Snapshot:** team files carry team IDs. Player files carry only a club name,
+  but within one season of the snapshot (season, club name) is unique and maps
+  to exactly one team ID: **100% of player rows (19,563) resolve**. So player
+  rows get a team ID in the first transformation step, and names are never
+  used after that.
+- **Club mapping table (Phase 1 item 6):** FBref team ID ↔ Transfermarkt club
+  ID, one row per club (145), reviewed by hand. Names sit alongside only for
+  readability.
+- **Kaggle** has no IDs, so its rows are linked to FBref player IDs through a
+  crosswalk built from a statistical fingerprint (birth year, matches, goals,
+  assists, xG, progressive passes, interceptions). That matched 99.5–99.9% of
+  minutes in every season. The crosswalk is stored, so it's built once and can
+  be reviewed.
 
 ## Rules
 
@@ -78,83 +132,60 @@ Other facts checked:
    2022/23, with only 3 of 98 teams matching. Any other passing-file column must
    pass the same player-versus-team test before it's used.
 3. **Team figures are built by summing player figures.** Player sums match the
-   team files exactly (progressive passes above), so team data needs no
-   separate source for gap seasons.
-4. **Nothing from a second source is combined with the snapshot until an
-   overlap page matches it.** Scraped pages go through soccerdata, whose column
-   names differ from worldfootballR's (for example `Expected_xG` versus
-   `xG_Expected`). The overlap page proves the column mapping and the data
-   version before any gap season is added.
-5. **Old GCA (2017/18–2021/22) is usable as is.** Summed to team level it
-   matches the current team GCA file to within 0.06% (e.g. 816.7 vs 817.2 SCA
-   per team in 2017/18), so re-scraping those seasons isn't needed.
+   team files exactly (progressive passes above).
+4. **Nothing from a second source is combined with the snapshot until it has
+   matched the snapshot where they overlap**, as Kaggle was tested in the SCA
+   section below.
+5. **Joins use FBref IDs, never names** (previous section).
 
-## Closing the gaps
+## Shot-creating actions (SCA): keep them, sourced from Kaggle (recommended)
 
-Every gap maps to a Big 5 combined FBref page. Each page covers all five
-leagues for one stat type in one season. soccerdata's own fetching can't be used
-at all: its chromedriver reconnect runs on every FBref page and fails (see the
-diagnostics doc). Gap pages are fetched with seleniumbase's Pure CDP mode
-instead, **launched by Tyler**:
+*Awaiting Tyler's decision. If it's declined, rule 1 drops SCA and creators are
+scored on xAG plus progressive passes and carries.*
 
-`.venv\Scripts\python scripts\04_fetch_fbref_cdp.py <stat_type>:<season> ...`
+No FBref-derived source has complete player SCA for the whole window: the
+snapshot's old GCA file stops at matchweek 23 of 2022/23 and has nothing for
+2023/24, and live FBref's GCA columns are blank. Kaggle has SCA and GCA per 90
+for all seven seasons, 100% filled. Tests against the snapshot:
 
-**First, a single test page: `gca:2324`.** It fills a season no other source
-covers and shows whether FBref still publishes the advanced stats. Tier 1 only
-goes ahead if it passes (key columns over 90% populated, complete season). The
-outcome is recorded in the diagnostics doc.
+- **The rest of Kaggle is the same Opta-era data version.** xG, progressive
+  passes and interceptions match the snapshot for 99–100% of players in every
+  season, including 2023/24. Progressive passes match the standard file's
+  *current* version, not the passing file's old one.
+- **Kaggle's SCA reproduces the team totals.** Player SCA per 90 × 90s played,
+  summed by club, compared with the snapshot's team GCA file (complete through
+  2023/24):
 
-The `03` soccerdata probe failed on this same page on 2026-09-11.
+  | Season | Minutes matched | Mean gap to team SCA | Clubs within 1% |
+  |---|---|---|---|
+  | 2017/18 | 99.86% | −0.06% | 99% |
+  | 2018/19 | 99.87% | −0.13% | 100% |
+  | 2019/20 | 99.83% | −0.17% | 98% |
+  | 2020/21 | 99.76% | −0.16% | 93% |
+  | 2021/22 | 99.73% | −0.16% | 95% |
+  | 2022/23 | 99.49% | −0.59% | 92% |
+  | 2023/24 | 99.70% | −0.30% | 92% |
 
-If CDP mode also fails, Tyler saves each page from his normal Chrome under the
-cache filename `--dry-run` prints, and `--dry-run` then verifies the files. That
-works whatever the automation does, so the gap pages don't depend on fixing a
-bug.
+  The small remaining gap fits SCA per 90 being rounded to two decimals, plus
+  the 0.1–0.5% of minutes the crosswalk didn't match.
+- **Against the old GCA file, 91–93% of player SCA per 90 values are
+  identical** in 2017/18–2021/22. The old file predates FBref's February 2023
+  data revision; Kaggle matches the current team totals, so the differences
+  look like those revisions.
 
-**Tier 1, making 2024/25 scoreable (9 pages):**
-
-| stat_type | season | Why |
-|---|---|---|
-| gca | 2324 | Test page. 2023/24 has no GCA source at all |
-| gca | 2223 | Old file stops at matchweek 23 |
-| gca | 2425 | — |
-| defense | 2425 | Snapshot has 9 matchweeks |
-| possession | 2425 | Snapshot has 9 matchweeks |
-| misc | 2425 | Snapshot has 9 matchweeks |
-| keeper | 2425 | Snapshot has 9 matchweeks |
-| keeper_adv | 2425 | Snapshot has 9 matchweeks |
-| defense | 2324 | **Overlap page.** The snapshot already has it; this proves rule 4 |
-
-**Tier 2, making 2025/26 scoreable (10 pages):** standard, shooting, passing,
-playing_time, defense, possession, misc, keeper, keeper_adv, gca for `2526`.
-
-If Tier 1 can't be fetched, the only other lead for player GCA in
-2022/23–2023/24 is the Kaggle dataset "FBref 2017-2024 for Europe's Top 5
-leagues", and only if it passes the overlap test.
-
-## What the scored window can be
-
-| Outcome | Scored seasons | Shot-creating actions |
-|---|---|---|
-| No gap pages come through | 2017/18–2023/24 (7) | Dropped under rule 1 (missing for 1.6 of those seasons). Creators are scored on xAG plus progressive passes and carries. |
-| Tier 1 succeeds | 2017/18–2024/25 (8) | Used |
-| Tiers 1 and 2 succeed | 2017/18–2025/26 (9) | Used |
-
-Any season outside the scored window is shown on the club page as unscored
-recent activity, alongside 2026/27 (scoping doc 4.8).
+Recommendation: **Kaggle SCA per 90 for all seven seasons**, one source and one
+data version, rather than splicing the old file (to 2021/22) onto Kaggle
+(2022/23 on). Scoring uses per-90 rates (the quality axis in 4.5), so the lack
+of totals doesn't matter. Kaggle's GCA per 90 wasn't validated; section 4.4
+scores on SCA.
 
 ## Status
 
-- Snapshot freeze (scripted download + manifest): not started.
-- Consistency checks as code (rules 2–4): not started.
-- Test page `gca:2324` via soccerdata (`03`): **failed** 2026-09-11 (reconnect bug).
-- Test page `gca:2324` via Pure CDP mode (`04`): **fetched cleanly, but FBref's
-  page has SCA/GCA blank for all 2,852 players** (complete season, minutes
-  filled). 2023/24 player GCA therefore has no source on FBref either.
-- `defense:2324` and `standard:2324` via `04`: **live FBref no longer serves
-  advanced data.** On the defense page every advanced column is blank; on the
-  standard page xG and progression columns are removed. The few basic columns
-  left (Int, TklW) differ from the snapshot for about 39% of players. Tiers 1
-  and 2 can't be filled from FBref. Details are in the diagnostics doc.
-- FBref has renamed clubs (e.g. "Nott'ham Forest" to "Nottingham"). Player IDs
-  are stable, so the club mapping table must key on FBref team IDs, not names.
+- Window 2017/18–2023/24: **final** (2026-09-11).
+- SCA from Kaggle: **awaiting Tyler's decision**.
+- Snapshot freeze (scripted download + manifest): planned next.
+- Consistency checks as code (rules 2–5): not started.
+- Browser gap pages (the earlier Tier 1/Tier 2 plan): **abandoned**. Pure CDP
+  mode fetches FBref pages fine, but since 20 Jan 2026 there's no advanced data
+  on them to fetch (gca, defense and standard 2023/24 checked in raw HTML; see
+  the diagnostics doc).
