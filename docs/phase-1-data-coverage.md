@@ -34,6 +34,7 @@ Decided 2026-09-11. This is the final window, not a fallback.
 | **Kaggle**: "FBref 2017-2024 for Europe's Top 5 leagues" (`akshankrithick/fbref-2017-2024-for-europes-top-5-leagues`, version 2, updated 2026-05-07, MIT licence) | SCA and GCA **per 90** for all seven seasons, plus 60-odd other columns | Validated against the snapshot (SCA section). No FBref IDs. The MIT licence covers the uploader's work; the underlying data belongs to Sports Reference/Opta |
 | `fbref_to_tm_mapping.csv` (same repo) | FBref player ↔ Transfermarkt player | Frozen, last updated 2025-06-21 |
 | Live FBref | Basic stats only | **Not a source for advanced data** since 20 Jan 2026 |
+| **transfermarkt-datasets** (GitHub `dcaribou/transfermarkt-datasets`, CC0) | Clubs, fixtures and league points, transfer fees, market values, per-match manager names | **Adopted** 2026-09-11. Frozen: updates stopped in July 2026, so transfers after 11 July 2026 are missing and the 2026/27 recency layer is incomplete. Evaluation: [`phase-1-transfermarkt-evaluation.md`](phase-1-transfermarkt-evaluation.md) |
 
 Not used: the match-level release (`fb_advanced_match_stats`) stops at
 2025-02-03 and can't complete any season, and live FBref's remaining basic
@@ -131,12 +132,90 @@ How it's applied:
    Key passes have the same problem on a smaller scale: 1.5–2.3% low before
    2022/23, with only 3 of 98 teams matching. Any other passing-file column must
    pass the same player-versus-team test before it's used.
-3. **Team figures are built by summing player figures.** Player sums match the
-   team files exactly (progressive passes above).
+3. **Team figures are built by summing player figures.** For counting stats
+   (goals, penalties, progressive passes and carries, tackles plus
+   interceptions) player sums match the team files exactly for 99–100% of
+   teams, once teams with a blank player row are set aside (see "Known gaps").
+   **xG is the exception:** FBref's team xG runs 1.45–2.10% *below* the sum of
+   its own player xG in every season. It isn't penalties (non-penalty xG shows
+   the same gap) or a data revision (player xG is identical to the pre-2023
+   release). Team xG is therefore always the sum of player xG, and is never
+   mixed with FBref's team figure.
 4. **Nothing from a second source is combined with the snapshot until it has
    matched the snapshot where they overlap**, as Kaggle was tested in the SCA
    section below.
-5. **Joins use FBref IDs, never names** (previous section).
+5. **Joins use FBref IDs, never names** (previous section), with one guard:
+   an ID must stand for one person (see "Known gaps").
+
+## Known gaps in the snapshot
+
+Found by `scripts/12_check_fbref_consistency.py`; each is re-checked on every
+run.
+
+- **13 player-seasons with 450+ minutes had every advanced column blank**
+  (21,091 minutes), in all advanced files, while their minutes and goals are
+  there. Most are in 2022/23: Lee Kang-in (Mallorca, 2,823 min), Yan Valery
+  (Angers), Gabriel Strefezza (Lecce), Thijs Dallinga (Toulouse), Robert
+  Sánchez (Brighton), Hugo Guillamón (Valencia), Omar Marmoush (Wolfsburg),
+  plus a few in other seasons.
+  **Filled from Kaggle** (decision 2026-09-11) by
+  `scripts/13_fill_blank_players_from_kaggle.py`: 384 values across 19 blank
+  rows, **all 13 of the 450+ minute player-seasons included**. Only Kaggle
+  columns that agree with the snapshot for at least 97% of players are used
+  (25 of 44 candidate pairs). Proof: clubs whose player sums equal their team
+  totals rise from 669 to 681 of 684 team-seasons for progressive passes, 670
+  to 683 for progressive carries, and 665 to 682 for clearances. The fill is a
+  correction table (`reference/fbref_blank_fill.csv`, report alongside)
+  applied on load; the snapshot itself is never modified.
+  **Still blank for those rows (known gap):** xAG, aerials won (the count; the
+  win rate is filled), touches, all passing detail (Kaggle's passing columns
+  are a different data version, 29–62% agreement), and all goalkeeping stats
+  (86–88% agreement). So two goalkeepers, **Robert Sánchez (Brighton 2022/23)
+  and Léo Jardim (Lille 2021/22 and 2022/23)**, can't be scored on
+  goalkeeping for those seasons, and no filled player has xAG for the filled
+  season. 12 more blank rows are low-minute players with no Kaggle link.
+- **One FBref player ID stands for two people:** `4acd733a` ("Valery", born
+  1999) covers Valery Fernández (Girona) and Yan Valery (Southampton, then
+  Angers) in 2022/23, 56 league matches in one season. It's the only
+  impossible season total in the window. The crosswalk links each club's row
+  to the right Kaggle player (Girona to Valery Fernández, Angers and
+  Southampton to Yan Valery). Any join to Transfermarkt for this ID must still
+  be resolved by hand, and the check fails if a new case appears.
+- **The passing file's older version** covers 2017/18–2021/22 (rule 2). The
+  check found no difference in 2022/23 once blank rows are set aside.
+
+## Known limitation: loan fees, and loans vs free transfers
+
+Loan fees are a real part of what clubs pay and receive, and leaving them out
+is a genuine limitation of this analysis.
+
+They are left out because the Transfermarkt source records every loan, loan
+return and free transfer as a fee of 0, and discards loan fees: its parser
+only reads fee text beginning with "€", and Transfermarkt writes loan fees as
+"Loan fee:€5.80m". Transfermarkt's own club pages do label them, but
+recovering them would take about 1,015 live page fetches from a site that
+already blocks automated clients from cloud servers. That's a fragile
+dependency of the same kind that ended this project's FBref scraping, and it
+would recover a small share of the money: Chelsea's six loan fees received in
+2023/24 came to €17.6m.
+
+What this means:
+
+- **The club page's spending breakdown is two-way, not three-way:** permanent
+  transfers with a disclosed fee, and free transfers and loans combined (moves
+  recorded with no fee). Transfers with an undisclosed fee (NULL) are counted
+  as moves but not valued (scoping doc 7).
+- **Loan fees paid and received appear in no money flow.**
+- **Loan returns look like zero-fee moves** back to the parent club (dated 30
+  June, filed in the season that's ending). The warehouse will need to
+  identify them by pattern: a zero-fee move that reverses an earlier
+  zero-fee move of the same player between the same two clubs. They should
+  then be left out of transfer counts.
+
+**Revisit criterion:** if clubs that run large loan operations look
+systematically mis-scored in a way loan fees would explain (for example, a
+club earning heavily from loan fees ranking implausibly low on trading), loan
+fees get added from Transfermarkt's club pages.
 
 ## Shot-creating actions (SCA): kept, sourced from Kaggle for all seven seasons
 
@@ -190,7 +269,19 @@ scores on SCA.
   CSV conversions are identical to their `.rds` sources, and re-runs are
   idempotent. The player mapping CSV has mixed encoding (UTF-8 except 3 lines
   in Windows-1252), so decode it per line when loading.
-- Consistency checks as code (rules 2–5): not started.
+- Consistency checks as code: **done** (2026-09-11).
+  `scripts/12_check_fbref_consistency.py` checks rules 1–5 on the frozen data,
+  after first re-hashing every file against the manifest. All checks pass. It
+  writes `reference/fbref_consistency_report.md` and the Kaggle-to-FBref
+  crosswalk `reference/kaggle_fbref_crosswalk.csv` (18,224 links: 18,052 by
+  name, 164 by fingerprint within the same club, 8 blank-row matches). Both
+  files are byte-identical on a re-run.
+- Blank player-seasons: **filled from Kaggle** (2026-09-11) by
+  `scripts/13_fill_blank_players_from_kaggle.py`, all 13 of the 450+ minute
+  cases; what remains blank is listed in "Known gaps".
+- Transfermarkt source: **`transfermarkt-datasets` adopted** (2026-09-11), with
+  the loan limitation accepted and managers taken from per-match names. See
+  [`phase-1-transfermarkt-evaluation.md`](phase-1-transfermarkt-evaluation.md).
 - Browser gap pages (the earlier Tier 1/Tier 2 plan): **abandoned**. Pure CDP
   mode fetches FBref pages fine, but since 20 Jan 2026 there's no advanced data
   on them to fetch (gca, defense and standard 2023/24 checked in raw HTML; see
