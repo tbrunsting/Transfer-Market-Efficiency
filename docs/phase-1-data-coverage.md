@@ -138,10 +138,10 @@ How it's applied:
    section below.
 5. **Joins use FBref IDs, never names** (previous section).
 
-## Shot-creating actions (SCA): keep them, sourced from Kaggle (recommended)
+## Shot-creating actions (SCA): kept, sourced from Kaggle for all seven seasons
 
-*Awaiting Tyler's decision. If it's declined, rule 1 drops SCA and creators are
-scored on xAG plus progressive passes and carries.*
+**Decided 2026-09-11 (Tyler).** Section 4.4 of the scoping doc stands as
+written.
 
 No FBref-derived source has complete player SCA for the whole window: the
 snapshot's old GCA file stops at matchweek 23 of 2022/23 and has nothing for
@@ -173,8 +173,8 @@ for all seven seasons, 100% filled. Tests against the snapshot:
   data revision; Kaggle matches the current team totals, so the differences
   look like those revisions.
 
-Recommendation: **Kaggle SCA per 90 for all seven seasons**, one source and one
-data version, rather than splicing the old file (to 2021/22) onto Kaggle
+Decision: **Kaggle SCA per 90 for all seven seasons**, one source and one data
+version, rather than splicing the old file (to 2021/22) onto Kaggle
 (2022/23 on). Scoring uses per-90 rates (the quality axis in 4.5), so the lack
 of totals doesn't matter. Kaggle's GCA per 90 wasn't validated; section 4.4
 scores on SCA.
@@ -182,7 +182,7 @@ scores on SCA.
 ## Status
 
 - Window 2017/18–2023/24: **final** (2026-09-11).
-- SCA from Kaggle: **awaiting Tyler's decision**.
+- SCA from Kaggle for all seven seasons: **decided** (2026-09-11).
 - Snapshot freeze (scripted download + manifest): planned next.
 - Consistency checks as code (rules 2–5): not started.
 - Browser gap pages (the earlier Tier 1/Tier 2 plan): **abandoned**. Pure CDP
