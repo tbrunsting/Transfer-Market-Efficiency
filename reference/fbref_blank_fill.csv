@@ -1,0 +1,385 @@
+season_end_year,fbref_player_id,fbref_squad,player,minutes,file,column,value,kaggle_column
+2019,75e60d75,Sampdoria,Ronaldo Vieira,599,big5_player_defense,Clr,24.0,Clearances
+2019,75e60d75,Sampdoria,Ronaldo Vieira,599,big5_player_defense,Err,1.0,Errors made
+2019,75e60d75,Sampdoria,Ronaldo Vieira,599,big5_player_defense,Pass_Blocks,8.0,Passes blocked
+2019,75e60d75,Sampdoria,Ronaldo Vieira,599,big5_player_defense,Sh_Blocks,2.0,Shots blocked
+2019,75e60d75,Sampdoria,Ronaldo Vieira,599,big5_player_defense,Tkl_Tackles,19.0,Tackles attempted
+2019,75e60d75,Sampdoria,Ronaldo Vieira,599,big5_player_misc,Won_percent_Aerial,40.0,% Aerial Duels won
+2019,75e60d75,Sampdoria,Ronaldo Vieira,599,big5_player_possession,Att_Take,7.0,Take ons attempted
+2019,75e60d75,Sampdoria,Ronaldo Vieira,599,big5_player_possession,CPA_Carries,0.0,carries penalty area
+2019,75e60d75,Sampdoria,Ronaldo Vieira,599,big5_player_possession,Def Pen_Touches,30.0,touches_def_pen
+2019,75e60d75,Sampdoria,Ronaldo Vieira,599,big5_player_possession,Dis_Carries,7.0,Possessions lost
+2019,75e60d75,Sampdoria,Ronaldo Vieira,599,big5_player_possession,Final_Third_Carries,7.0,carries final 3rd
+2019,75e60d75,Sampdoria,Ronaldo Vieira,599,big5_player_possession,PrgC_Carries,4.0,carries_prgc
+2019,75e60d75,Sampdoria,Ronaldo Vieira,599,big5_player_possession,Succ_percent_Take,85.7,% Successful take-ons
+2019,75e60d75,Sampdoria,Ronaldo Vieira,599,big5_player_shooting,npxG_Expected,0.5,Exp NPG
+2019,75e60d75,Sampdoria,Ronaldo Vieira,599,big5_player_shooting,xG_Expected,0.5,Expected Goals
+2019,75e60d75,Sampdoria,Ronaldo Vieira,599,big5_player_standard,PrgC_Progression,4.0,Progressive Carries
+2019,75e60d75,Sampdoria,Ronaldo Vieira,599,big5_player_standard,PrgP_Progression,33.0,Progressive Passes
+2019,75e60d75,Sampdoria,Ronaldo Vieira,599,big5_player_standard,npxG_Expected,0.5,Exp NPG
+2019,75e60d75,Sampdoria,Ronaldo Vieira,599,big5_player_standard,xG_Expected,0.5,Expected Goals
+2020,75e60d75,Sampdoria,Ronaldo Vieira,1819,big5_player_defense,Clr,31.0,Clearances
+2020,75e60d75,Sampdoria,Ronaldo Vieira,1819,big5_player_defense,Err,0.0,Errors made
+2020,75e60d75,Sampdoria,Ronaldo Vieira,1819,big5_player_defense,Pass_Blocks,12.0,Passes blocked
+2020,75e60d75,Sampdoria,Ronaldo Vieira,1819,big5_player_defense,Sh_Blocks,2.0,Shots blocked
+2020,75e60d75,Sampdoria,Ronaldo Vieira,1819,big5_player_defense,Tkl_Tackles,33.0,Tackles attempted
+2020,75e60d75,Sampdoria,Ronaldo Vieira,1819,big5_player_misc,Won_percent_Aerial,43.2,% Aerial Duels won
+2020,75e60d75,Sampdoria,Ronaldo Vieira,1819,big5_player_possession,Att_Take,22.0,Take ons attempted
+2020,75e60d75,Sampdoria,Ronaldo Vieira,1819,big5_player_possession,CPA_Carries,2.0,carries penalty area
+2020,75e60d75,Sampdoria,Ronaldo Vieira,1819,big5_player_possession,Def Pen_Touches,54.0,touches_def_pen
+2020,75e60d75,Sampdoria,Ronaldo Vieira,1819,big5_player_possession,Dis_Carries,27.0,Possessions lost
+2020,75e60d75,Sampdoria,Ronaldo Vieira,1819,big5_player_possession,Final_Third_Carries,22.0,carries final 3rd
+2020,75e60d75,Sampdoria,Ronaldo Vieira,1819,big5_player_possession,PrgC_Carries,29.0,carries_prgc
+2020,75e60d75,Sampdoria,Ronaldo Vieira,1819,big5_player_possession,Succ_percent_Take,54.5,% Successful take-ons
+2020,75e60d75,Sampdoria,Ronaldo Vieira,1819,big5_player_shooting,npxG_Expected,1.5,Exp NPG
+2020,75e60d75,Sampdoria,Ronaldo Vieira,1819,big5_player_shooting,xG_Expected,1.5,Expected Goals
+2020,75e60d75,Sampdoria,Ronaldo Vieira,1819,big5_player_standard,PrgC_Progression,29.0,Progressive Carries
+2020,75e60d75,Sampdoria,Ronaldo Vieira,1819,big5_player_standard,PrgP_Progression,126.0,Progressive Passes
+2020,75e60d75,Sampdoria,Ronaldo Vieira,1819,big5_player_standard,npxG_Expected,1.5,Exp NPG
+2020,75e60d75,Sampdoria,Ronaldo Vieira,1819,big5_player_standard,xG_Expected,1.5,Expected Goals
+2021,75e60d75,Hellas Verona,Ronaldo Vieira,226,big5_player_defense,Clr,2.0,Clearances
+2021,75e60d75,Hellas Verona,Ronaldo Vieira,226,big5_player_defense,Err,0.0,Errors made
+2021,75e60d75,Hellas Verona,Ronaldo Vieira,226,big5_player_defense,Pass_Blocks,1.0,Passes blocked
+2021,75e60d75,Hellas Verona,Ronaldo Vieira,226,big5_player_defense,Sh_Blocks,3.0,Shots blocked
+2021,75e60d75,Hellas Verona,Ronaldo Vieira,226,big5_player_defense,Tkl_Tackles,5.0,Tackles attempted
+2021,75e60d75,Hellas Verona,Ronaldo Vieira,226,big5_player_misc,Won_percent_Aerial,66.7,% Aerial Duels won
+2021,75e60d75,Hellas Verona,Ronaldo Vieira,226,big5_player_possession,Att_Take,1.0,Take ons attempted
+2021,75e60d75,Hellas Verona,Ronaldo Vieira,226,big5_player_possession,CPA_Carries,0.0,carries penalty area
+2021,75e60d75,Hellas Verona,Ronaldo Vieira,226,big5_player_possession,Def Pen_Touches,6.0,touches_def_pen
+2021,75e60d75,Hellas Verona,Ronaldo Vieira,226,big5_player_possession,Dis_Carries,4.0,Possessions lost
+2021,75e60d75,Hellas Verona,Ronaldo Vieira,226,big5_player_possession,Final_Third_Carries,3.0,carries final 3rd
+2021,75e60d75,Hellas Verona,Ronaldo Vieira,226,big5_player_possession,PrgC_Carries,2.0,carries_prgc
+2021,75e60d75,Hellas Verona,Ronaldo Vieira,226,big5_player_possession,Succ_percent_Take,100.0,% Successful take-ons
+2021,75e60d75,Hellas Verona,Ronaldo Vieira,226,big5_player_shooting,G_per_SoT_Standard,0.0,Goals per shot on target
+2021,75e60d75,Hellas Verona,Ronaldo Vieira,226,big5_player_shooting,npxG_Expected,0.1,Exp NPG
+2021,75e60d75,Hellas Verona,Ronaldo Vieira,226,big5_player_shooting,xG_Expected,0.1,Expected Goals
+2021,75e60d75,Hellas Verona,Ronaldo Vieira,226,big5_player_standard,PrgC_Progression,2.0,Progressive Carries
+2021,75e60d75,Hellas Verona,Ronaldo Vieira,226,big5_player_standard,PrgP_Progression,15.0,Progressive Passes
+2021,75e60d75,Hellas Verona,Ronaldo Vieira,226,big5_player_standard,npxG_Expected,0.1,Exp NPG
+2021,75e60d75,Hellas Verona,Ronaldo Vieira,226,big5_player_standard,xG_Expected,0.1,Expected Goals
+2022,f5dfc256,Lille,Leonardo César Jardim,1530,big5_player_defense,Clr,10.0,Clearances
+2022,f5dfc256,Lille,Leonardo César Jardim,1530,big5_player_defense,Err,0.0,Errors made
+2022,f5dfc256,Lille,Leonardo César Jardim,1530,big5_player_defense,Pass_Blocks,0.0,Passes blocked
+2022,f5dfc256,Lille,Leonardo César Jardim,1530,big5_player_defense,Sh_Blocks,0.0,Shots blocked
+2022,f5dfc256,Lille,Leonardo César Jardim,1530,big5_player_defense,Tkl_Tackles,0.0,Tackles attempted
+2022,f5dfc256,Lille,Leonardo César Jardim,1530,big5_player_misc,Won_percent_Aerial,50.0,% Aerial Duels won
+2022,f5dfc256,Lille,Leonardo César Jardim,1530,big5_player_possession,Att_Take,0.0,Take ons attempted
+2022,f5dfc256,Lille,Leonardo César Jardim,1530,big5_player_possession,CPA_Carries,0.0,carries penalty area
+2022,f5dfc256,Lille,Leonardo César Jardim,1530,big5_player_possession,Def Pen_Touches,402.0,touches_def_pen
+2022,f5dfc256,Lille,Leonardo César Jardim,1530,big5_player_possession,Dis_Carries,0.0,Possessions lost
+2022,f5dfc256,Lille,Leonardo César Jardim,1530,big5_player_possession,Final_Third_Carries,0.0,carries final 3rd
+2022,f5dfc256,Lille,Leonardo César Jardim,1530,big5_player_possession,PrgC_Carries,0.0,carries_prgc
+2022,f5dfc256,Lille,Leonardo César Jardim,1530,big5_player_possession,Succ_percent_Take,0.0,% Successful take-ons
+2022,f5dfc256,Lille,Leonardo César Jardim,1530,big5_player_shooting,G_per_Sh_Standard,0.0,Goals per shot
+2022,f5dfc256,Lille,Leonardo César Jardim,1530,big5_player_shooting,G_per_SoT_Standard,0.0,Goals per shot on target
+2022,f5dfc256,Lille,Leonardo César Jardim,1530,big5_player_shooting,SoT_percent_Standard,0.0,% Shots on target
+2022,f5dfc256,Lille,Leonardo César Jardim,1530,big5_player_shooting,npxG_Expected,0.0,Exp NPG
+2022,f5dfc256,Lille,Leonardo César Jardim,1530,big5_player_shooting,xG_Expected,0.0,Expected Goals
+2022,f5dfc256,Lille,Leonardo César Jardim,1530,big5_player_standard,PrgC_Progression,0.0,Progressive Carries
+2022,f5dfc256,Lille,Leonardo César Jardim,1530,big5_player_standard,PrgP_Progression,0.0,Progressive Passes
+2022,f5dfc256,Lille,Leonardo César Jardim,1530,big5_player_standard,npxG_Expected,0.0,Exp NPG
+2022,f5dfc256,Lille,Leonardo César Jardim,1530,big5_player_standard,xG_Expected,0.0,Expected Goals
+2022,75e60d75,Sampdoria,Ronaldo Vieira,495,big5_player_defense,Clr,5.0,Clearances
+2022,75e60d75,Sampdoria,Ronaldo Vieira,495,big5_player_defense,Err,1.0,Errors made
+2022,75e60d75,Sampdoria,Ronaldo Vieira,495,big5_player_defense,Pass_Blocks,3.0,Passes blocked
+2022,75e60d75,Sampdoria,Ronaldo Vieira,495,big5_player_defense,Sh_Blocks,2.0,Shots blocked
+2022,75e60d75,Sampdoria,Ronaldo Vieira,495,big5_player_defense,Tkl_Tackles,10.0,Tackles attempted
+2022,75e60d75,Sampdoria,Ronaldo Vieira,495,big5_player_misc,Won_percent_Aerial,25.0,% Aerial Duels won
+2022,75e60d75,Sampdoria,Ronaldo Vieira,495,big5_player_possession,Att_Take,4.0,Take ons attempted
+2022,75e60d75,Sampdoria,Ronaldo Vieira,495,big5_player_possession,CPA_Carries,1.0,carries penalty area
+2022,75e60d75,Sampdoria,Ronaldo Vieira,495,big5_player_possession,Def Pen_Touches,14.0,touches_def_pen
+2022,75e60d75,Sampdoria,Ronaldo Vieira,495,big5_player_possession,Dis_Carries,6.0,Possessions lost
+2022,75e60d75,Sampdoria,Ronaldo Vieira,495,big5_player_possession,Final_Third_Carries,6.0,carries final 3rd
+2022,75e60d75,Sampdoria,Ronaldo Vieira,495,big5_player_possession,PrgC_Carries,8.0,carries_prgc
+2022,75e60d75,Sampdoria,Ronaldo Vieira,495,big5_player_possession,Succ_percent_Take,50.0,% Successful take-ons
+2022,75e60d75,Sampdoria,Ronaldo Vieira,495,big5_player_shooting,G_per_SoT_Standard,0.0,Goals per shot on target
+2022,75e60d75,Sampdoria,Ronaldo Vieira,495,big5_player_shooting,npxG_Expected,0.1,Exp NPG
+2022,75e60d75,Sampdoria,Ronaldo Vieira,495,big5_player_shooting,xG_Expected,0.1,Expected Goals
+2022,75e60d75,Sampdoria,Ronaldo Vieira,495,big5_player_standard,PrgC_Progression,8.0,Progressive Carries
+2022,75e60d75,Sampdoria,Ronaldo Vieira,495,big5_player_standard,PrgP_Progression,13.0,Progressive Passes
+2022,75e60d75,Sampdoria,Ronaldo Vieira,495,big5_player_standard,npxG_Expected,0.1,Exp NPG
+2022,75e60d75,Sampdoria,Ronaldo Vieira,495,big5_player_standard,xG_Expected,0.1,Expected Goals
+2023,4acd733a,Angers,Valery,2497,big5_player_defense,Clr,82.0,Clearances
+2023,4acd733a,Angers,Valery,2497,big5_player_defense,Err,0.0,Errors made
+2023,4acd733a,Angers,Valery,2497,big5_player_defense,Pass_Blocks,20.0,Passes blocked
+2023,4acd733a,Angers,Valery,2497,big5_player_defense,Sh_Blocks,15.0,Shots blocked
+2023,4acd733a,Angers,Valery,2497,big5_player_defense,Tkl_Tackles,54.0,Tackles attempted
+2023,4acd733a,Angers,Valery,2497,big5_player_misc,Won_percent_Aerial,62.7,% Aerial Duels won
+2023,4acd733a,Angers,Valery,2497,big5_player_possession,Att_Take,69.0,Take ons attempted
+2023,4acd733a,Angers,Valery,2497,big5_player_possession,CPA_Carries,6.0,carries penalty area
+2023,4acd733a,Angers,Valery,2497,big5_player_possession,Def Pen_Touches,112.0,touches_def_pen
+2023,4acd733a,Angers,Valery,2497,big5_player_possession,Dis_Carries,31.0,Possessions lost
+2023,4acd733a,Angers,Valery,2497,big5_player_possession,Final_Third_Carries,71.0,carries final 3rd
+2023,4acd733a,Angers,Valery,2497,big5_player_possession,PrgC_Carries,72.0,carries_prgc
+2023,4acd733a,Angers,Valery,2497,big5_player_possession,Succ_percent_Take,47.8,% Successful take-ons
+2023,4acd733a,Angers,Valery,2497,big5_player_shooting,npxG_Expected,0.8,Exp NPG
+2023,4acd733a,Angers,Valery,2497,big5_player_shooting,xG_Expected,0.8,Expected Goals
+2023,4acd733a,Angers,Valery,2497,big5_player_standard,PrgC_Progression,72.0,Progressive Carries
+2023,4acd733a,Angers,Valery,2497,big5_player_standard,PrgP_Progression,84.0,Progressive Passes
+2023,4acd733a,Angers,Valery,2497,big5_player_standard,npxG_Expected,0.8,Exp NPG
+2023,4acd733a,Angers,Valery,2497,big5_player_standard,xG_Expected,0.8,Expected Goals
+2023,cce694d4,Brighton,Robert Sanchez,2070,big5_player_defense,Clr,9.0,Clearances
+2023,cce694d4,Brighton,Robert Sanchez,2070,big5_player_defense,Err,2.0,Errors made
+2023,cce694d4,Brighton,Robert Sanchez,2070,big5_player_defense,Pass_Blocks,0.0,Passes blocked
+2023,cce694d4,Brighton,Robert Sanchez,2070,big5_player_defense,Sh_Blocks,0.0,Shots blocked
+2023,cce694d4,Brighton,Robert Sanchez,2070,big5_player_defense,Tkl_Tackles,1.0,Tackles attempted
+2023,cce694d4,Brighton,Robert Sanchez,2070,big5_player_misc,Won_percent_Aerial,100.0,% Aerial Duels won
+2023,cce694d4,Brighton,Robert Sanchez,2070,big5_player_possession,Att_Take,0.0,Take ons attempted
+2023,cce694d4,Brighton,Robert Sanchez,2070,big5_player_possession,CPA_Carries,0.0,carries penalty area
+2023,cce694d4,Brighton,Robert Sanchez,2070,big5_player_possession,Def Pen_Touches,692.0,touches_def_pen
+2023,cce694d4,Brighton,Robert Sanchez,2070,big5_player_possession,Dis_Carries,0.0,Possessions lost
+2023,cce694d4,Brighton,Robert Sanchez,2070,big5_player_possession,Final_Third_Carries,0.0,carries final 3rd
+2023,cce694d4,Brighton,Robert Sanchez,2070,big5_player_possession,PrgC_Carries,0.0,carries_prgc
+2023,cce694d4,Brighton,Robert Sanchez,2070,big5_player_possession,Succ_percent_Take,0.0,% Successful take-ons
+2023,cce694d4,Brighton,Robert Sanchez,2070,big5_player_shooting,G_per_Sh_Standard,0.0,Goals per shot
+2023,cce694d4,Brighton,Robert Sanchez,2070,big5_player_shooting,G_per_SoT_Standard,0.0,Goals per shot on target
+2023,cce694d4,Brighton,Robert Sanchez,2070,big5_player_shooting,SoT_percent_Standard,0.0,% Shots on target
+2023,cce694d4,Brighton,Robert Sanchez,2070,big5_player_shooting,npxG_Expected,0.0,Exp NPG
+2023,cce694d4,Brighton,Robert Sanchez,2070,big5_player_shooting,xG_Expected,0.0,Expected Goals
+2023,cce694d4,Brighton,Robert Sanchez,2070,big5_player_standard,PrgC_Progression,0.0,Progressive Carries
+2023,cce694d4,Brighton,Robert Sanchez,2070,big5_player_standard,PrgP_Progression,0.0,Progressive Passes
+2023,cce694d4,Brighton,Robert Sanchez,2070,big5_player_standard,npxG_Expected,0.0,Exp NPG
+2023,cce694d4,Brighton,Robert Sanchez,2070,big5_player_standard,xG_Expected,0.0,Expected Goals
+2023,e8deefd6,Cádiz,Blanco,158,big5_player_defense,Clr,3.0,Clearances
+2023,e8deefd6,Cádiz,Blanco,158,big5_player_defense,Err,0.0,Errors made
+2023,e8deefd6,Cádiz,Blanco,158,big5_player_defense,Pass_Blocks,5.0,Passes blocked
+2023,e8deefd6,Cádiz,Blanco,158,big5_player_defense,Sh_Blocks,0.0,Shots blocked
+2023,e8deefd6,Cádiz,Blanco,158,big5_player_defense,Tkl_Tackles,6.0,Tackles attempted
+2023,e8deefd6,Cádiz,Blanco,158,big5_player_misc,Won_percent_Aerial,100.0,% Aerial Duels won
+2023,e8deefd6,Cádiz,Blanco,158,big5_player_possession,Att_Take,1.0,Take ons attempted
+2023,e8deefd6,Cádiz,Blanco,158,big5_player_possession,CPA_Carries,0.0,carries penalty area
+2023,e8deefd6,Cádiz,Blanco,158,big5_player_possession,Def Pen_Touches,4.0,touches_def_pen
+2023,e8deefd6,Cádiz,Blanco,158,big5_player_possession,Dis_Carries,3.0,Possessions lost
+2023,e8deefd6,Cádiz,Blanco,158,big5_player_possession,Final_Third_Carries,1.0,carries final 3rd
+2023,e8deefd6,Cádiz,Blanco,158,big5_player_possession,PrgC_Carries,1.0,carries_prgc
+2023,e8deefd6,Cádiz,Blanco,158,big5_player_possession,Succ_percent_Take,0.0,% Successful take-ons
+2023,e8deefd6,Cádiz,Blanco,158,big5_player_shooting,G_per_Sh_Standard,0.0,Goals per shot
+2023,e8deefd6,Cádiz,Blanco,158,big5_player_shooting,G_per_SoT_Standard,0.0,Goals per shot on target
+2023,e8deefd6,Cádiz,Blanco,158,big5_player_shooting,SoT_percent_Standard,0.0,% Shots on target
+2023,e8deefd6,Cádiz,Blanco,158,big5_player_shooting,npxG_Expected,0.0,Exp NPG
+2023,e8deefd6,Cádiz,Blanco,158,big5_player_shooting,xG_Expected,0.0,Expected Goals
+2023,e8deefd6,Cádiz,Blanco,158,big5_player_standard,PrgC_Progression,1.0,Progressive Carries
+2023,e8deefd6,Cádiz,Blanco,158,big5_player_standard,PrgP_Progression,2.0,Progressive Passes
+2023,e8deefd6,Cádiz,Blanco,158,big5_player_standard,npxG_Expected,0.0,Exp NPG
+2023,e8deefd6,Cádiz,Blanco,158,big5_player_standard,xG_Expected,0.0,Expected Goals
+2023,ebeb2c4a,Girona,Casals,84,big5_player_defense,Clr,1.0,Clearances
+2023,ebeb2c4a,Girona,Casals,84,big5_player_defense,Err,0.0,Errors made
+2023,ebeb2c4a,Girona,Casals,84,big5_player_defense,Pass_Blocks,0.0,Passes blocked
+2023,ebeb2c4a,Girona,Casals,84,big5_player_defense,Sh_Blocks,1.0,Shots blocked
+2023,ebeb2c4a,Girona,Casals,84,big5_player_defense,Tkl_Tackles,2.0,Tackles attempted
+2023,ebeb2c4a,Girona,Casals,84,big5_player_misc,Won_percent_Aerial,0.0,% Aerial Duels won
+2023,ebeb2c4a,Girona,Casals,84,big5_player_possession,Att_Take,14.0,Take ons attempted
+2023,ebeb2c4a,Girona,Casals,84,big5_player_possession,CPA_Carries,2.0,carries penalty area
+2023,ebeb2c4a,Girona,Casals,84,big5_player_possession,Def Pen_Touches,2.0,touches_def_pen
+2023,ebeb2c4a,Girona,Casals,84,big5_player_possession,Dis_Carries,2.0,Possessions lost
+2023,ebeb2c4a,Girona,Casals,84,big5_player_possession,Final_Third_Carries,2.0,carries final 3rd
+2023,ebeb2c4a,Girona,Casals,84,big5_player_possession,PrgC_Carries,3.0,carries_prgc
+2023,ebeb2c4a,Girona,Casals,84,big5_player_possession,Succ_percent_Take,35.7,% Successful take-ons
+2023,ebeb2c4a,Girona,Casals,84,big5_player_shooting,npxG_Expected,0.3,Exp NPG
+2023,ebeb2c4a,Girona,Casals,84,big5_player_shooting,xG_Expected,0.3,Expected Goals
+2023,ebeb2c4a,Girona,Casals,84,big5_player_standard,PrgC_Progression,3.0,Progressive Carries
+2023,ebeb2c4a,Girona,Casals,84,big5_player_standard,PrgP_Progression,0.0,Progressive Passes
+2023,ebeb2c4a,Girona,Casals,84,big5_player_standard,npxG_Expected,0.3,Exp NPG
+2023,ebeb2c4a,Girona,Casals,84,big5_player_standard,xG_Expected,0.3,Expected Goals
+2023,ac4a4508,Lecce,Gabriel Strefezza,2442,big5_player_defense,Clr,15.0,Clearances
+2023,ac4a4508,Lecce,Gabriel Strefezza,2442,big5_player_defense,Err,0.0,Errors made
+2023,ac4a4508,Lecce,Gabriel Strefezza,2442,big5_player_defense,Pass_Blocks,33.0,Passes blocked
+2023,ac4a4508,Lecce,Gabriel Strefezza,2442,big5_player_defense,Sh_Blocks,3.0,Shots blocked
+2023,ac4a4508,Lecce,Gabriel Strefezza,2442,big5_player_defense,Tkl_Tackles,50.0,Tackles attempted
+2023,ac4a4508,Lecce,Gabriel Strefezza,2442,big5_player_misc,Won_percent_Aerial,26.2,% Aerial Duels won
+2023,ac4a4508,Lecce,Gabriel Strefezza,2442,big5_player_possession,Att_Take,92.0,Take ons attempted
+2023,ac4a4508,Lecce,Gabriel Strefezza,2442,big5_player_possession,CPA_Carries,19.0,carries penalty area
+2023,ac4a4508,Lecce,Gabriel Strefezza,2442,big5_player_possession,Def Pen_Touches,14.0,touches_def_pen
+2023,ac4a4508,Lecce,Gabriel Strefezza,2442,big5_player_possession,Dis_Carries,69.0,Possessions lost
+2023,ac4a4508,Lecce,Gabriel Strefezza,2442,big5_player_possession,Final_Third_Carries,58.0,carries final 3rd
+2023,ac4a4508,Lecce,Gabriel Strefezza,2442,big5_player_possession,PrgC_Carries,72.0,carries_prgc
+2023,ac4a4508,Lecce,Gabriel Strefezza,2442,big5_player_possession,Succ_percent_Take,39.1,% Successful take-ons
+2023,ac4a4508,Lecce,Gabriel Strefezza,2442,big5_player_shooting,npxG_Expected,3.9,Exp NPG
+2023,ac4a4508,Lecce,Gabriel Strefezza,2442,big5_player_shooting,xG_Expected,6.2,Expected Goals
+2023,ac4a4508,Lecce,Gabriel Strefezza,2442,big5_player_standard,PrgC_Progression,72.0,Progressive Carries
+2023,ac4a4508,Lecce,Gabriel Strefezza,2442,big5_player_standard,PrgP_Progression,107.0,Progressive Passes
+2023,ac4a4508,Lecce,Gabriel Strefezza,2442,big5_player_standard,npxG_Expected,3.9,Exp NPG
+2023,ac4a4508,Lecce,Gabriel Strefezza,2442,big5_player_standard,xG_Expected,6.2,Expected Goals
+2023,f5dfc256,Lille,Leonardo César Jardim,540,big5_player_defense,Clr,0.0,Clearances
+2023,f5dfc256,Lille,Leonardo César Jardim,540,big5_player_defense,Err,1.0,Errors made
+2023,f5dfc256,Lille,Leonardo César Jardim,540,big5_player_defense,Pass_Blocks,0.0,Passes blocked
+2023,f5dfc256,Lille,Leonardo César Jardim,540,big5_player_defense,Sh_Blocks,0.0,Shots blocked
+2023,f5dfc256,Lille,Leonardo César Jardim,540,big5_player_defense,Tkl_Tackles,0.0,Tackles attempted
+2023,f5dfc256,Lille,Leonardo César Jardim,540,big5_player_misc,Won_percent_Aerial,100.0,% Aerial Duels won
+2023,f5dfc256,Lille,Leonardo César Jardim,540,big5_player_possession,Att_Take,0.0,Take ons attempted
+2023,f5dfc256,Lille,Leonardo César Jardim,540,big5_player_possession,CPA_Carries,0.0,carries penalty area
+2023,f5dfc256,Lille,Leonardo César Jardim,540,big5_player_possession,Def Pen_Touches,136.0,touches_def_pen
+2023,f5dfc256,Lille,Leonardo César Jardim,540,big5_player_possession,Dis_Carries,0.0,Possessions lost
+2023,f5dfc256,Lille,Leonardo César Jardim,540,big5_player_possession,Final_Third_Carries,0.0,carries final 3rd
+2023,f5dfc256,Lille,Leonardo César Jardim,540,big5_player_possession,PrgC_Carries,0.0,carries_prgc
+2023,f5dfc256,Lille,Leonardo César Jardim,540,big5_player_possession,Succ_percent_Take,0.0,% Successful take-ons
+2023,f5dfc256,Lille,Leonardo César Jardim,540,big5_player_shooting,G_per_Sh_Standard,0.0,Goals per shot
+2023,f5dfc256,Lille,Leonardo César Jardim,540,big5_player_shooting,G_per_SoT_Standard,0.0,Goals per shot on target
+2023,f5dfc256,Lille,Leonardo César Jardim,540,big5_player_shooting,SoT_percent_Standard,0.0,% Shots on target
+2023,f5dfc256,Lille,Leonardo César Jardim,540,big5_player_shooting,npxG_Expected,0.0,Exp NPG
+2023,f5dfc256,Lille,Leonardo César Jardim,540,big5_player_shooting,xG_Expected,0.0,Expected Goals
+2023,f5dfc256,Lille,Leonardo César Jardim,540,big5_player_standard,PrgC_Progression,0.0,Progressive Carries
+2023,f5dfc256,Lille,Leonardo César Jardim,540,big5_player_standard,PrgP_Progression,0.0,Progressive Passes
+2023,f5dfc256,Lille,Leonardo César Jardim,540,big5_player_standard,npxG_Expected,0.0,Exp NPG
+2023,f5dfc256,Lille,Leonardo César Jardim,540,big5_player_standard,xG_Expected,0.0,Expected Goals
+2023,461d1848,Mallorca,이강인,2823,big5_player_defense,Clr,7.0,Clearances
+2023,461d1848,Mallorca,이강인,2823,big5_player_defense,Err,0.0,Errors made
+2023,461d1848,Mallorca,이강인,2823,big5_player_defense,Pass_Blocks,23.0,Passes blocked
+2023,461d1848,Mallorca,이강인,2823,big5_player_defense,Sh_Blocks,2.0,Shots blocked
+2023,461d1848,Mallorca,이강인,2823,big5_player_defense,Tkl_Tackles,42.0,Tackles attempted
+2023,461d1848,Mallorca,이강인,2823,big5_player_misc,Won_percent_Aerial,28.8,% Aerial Duels won
+2023,461d1848,Mallorca,이강인,2823,big5_player_possession,Att_Take,134.0,Take ons attempted
+2023,461d1848,Mallorca,이강인,2823,big5_player_possession,CPA_Carries,14.0,carries penalty area
+2023,461d1848,Mallorca,이강인,2823,big5_player_possession,Def Pen_Touches,15.0,touches_def_pen
+2023,461d1848,Mallorca,이강인,2823,big5_player_possession,Dis_Carries,43.0,Possessions lost
+2023,461d1848,Mallorca,이강인,2823,big5_player_possession,Final_Third_Carries,58.0,carries final 3rd
+2023,461d1848,Mallorca,이강인,2823,big5_player_possession,PrgC_Carries,107.0,carries_prgc
+2023,461d1848,Mallorca,이강인,2823,big5_player_possession,Succ_percent_Take,67.2,% Successful take-ons
+2023,461d1848,Mallorca,이강인,2823,big5_player_shooting,npxG_Expected,5.4,Exp NPG
+2023,461d1848,Mallorca,이강인,2823,big5_player_shooting,xG_Expected,5.4,Expected Goals
+2023,461d1848,Mallorca,이강인,2823,big5_player_standard,PrgC_Progression,107.0,Progressive Carries
+2023,461d1848,Mallorca,이강인,2823,big5_player_standard,PrgP_Progression,96.0,Progressive Passes
+2023,461d1848,Mallorca,이강인,2823,big5_player_standard,npxG_Expected,5.4,Exp NPG
+2023,461d1848,Mallorca,이강인,2823,big5_player_standard,xG_Expected,5.4,Expected Goals
+2023,75e60d75,Sampdoria,Ronaldo Vieira,815,big5_player_defense,Clr,10.0,Clearances
+2023,75e60d75,Sampdoria,Ronaldo Vieira,815,big5_player_defense,Err,2.0,Errors made
+2023,75e60d75,Sampdoria,Ronaldo Vieira,815,big5_player_defense,Pass_Blocks,10.0,Passes blocked
+2023,75e60d75,Sampdoria,Ronaldo Vieira,815,big5_player_defense,Sh_Blocks,5.0,Shots blocked
+2023,75e60d75,Sampdoria,Ronaldo Vieira,815,big5_player_defense,Tkl_Tackles,18.0,Tackles attempted
+2023,75e60d75,Sampdoria,Ronaldo Vieira,815,big5_player_misc,Won_percent_Aerial,42.1,% Aerial Duels won
+2023,75e60d75,Sampdoria,Ronaldo Vieira,815,big5_player_possession,Att_Take,3.0,Take ons attempted
+2023,75e60d75,Sampdoria,Ronaldo Vieira,815,big5_player_possession,CPA_Carries,1.0,carries penalty area
+2023,75e60d75,Sampdoria,Ronaldo Vieira,815,big5_player_possession,Def Pen_Touches,34.0,touches_def_pen
+2023,75e60d75,Sampdoria,Ronaldo Vieira,815,big5_player_possession,Dis_Carries,6.0,Possessions lost
+2023,75e60d75,Sampdoria,Ronaldo Vieira,815,big5_player_possession,Final_Third_Carries,3.0,carries final 3rd
+2023,75e60d75,Sampdoria,Ronaldo Vieira,815,big5_player_possession,PrgC_Carries,6.0,carries_prgc
+2023,75e60d75,Sampdoria,Ronaldo Vieira,815,big5_player_possession,Succ_percent_Take,66.7,% Successful take-ons
+2023,75e60d75,Sampdoria,Ronaldo Vieira,815,big5_player_shooting,npxG_Expected,0.4,Exp NPG
+2023,75e60d75,Sampdoria,Ronaldo Vieira,815,big5_player_shooting,xG_Expected,0.4,Expected Goals
+2023,75e60d75,Sampdoria,Ronaldo Vieira,815,big5_player_standard,PrgC_Progression,6.0,Progressive Carries
+2023,75e60d75,Sampdoria,Ronaldo Vieira,815,big5_player_standard,PrgP_Progression,39.0,Progressive Passes
+2023,75e60d75,Sampdoria,Ronaldo Vieira,815,big5_player_standard,npxG_Expected,0.4,Exp NPG
+2023,75e60d75,Sampdoria,Ronaldo Vieira,815,big5_player_standard,xG_Expected,0.4,Expected Goals
+2023,4acd733a,Southampton,Valery,45,big5_player_defense,Clr,3.0,Clearances
+2023,4acd733a,Southampton,Valery,45,big5_player_defense,Err,0.0,Errors made
+2023,4acd733a,Southampton,Valery,45,big5_player_defense,Pass_Blocks,1.0,Passes blocked
+2023,4acd733a,Southampton,Valery,45,big5_player_defense,Sh_Blocks,0.0,Shots blocked
+2023,4acd733a,Southampton,Valery,45,big5_player_defense,Tkl_Tackles,0.0,Tackles attempted
+2023,4acd733a,Southampton,Valery,45,big5_player_misc,Won_percent_Aerial,100.0,% Aerial Duels won
+2023,4acd733a,Southampton,Valery,45,big5_player_possession,Att_Take,0.0,Take ons attempted
+2023,4acd733a,Southampton,Valery,45,big5_player_possession,CPA_Carries,0.0,carries penalty area
+2023,4acd733a,Southampton,Valery,45,big5_player_possession,Def Pen_Touches,3.0,touches_def_pen
+2023,4acd733a,Southampton,Valery,45,big5_player_possession,Dis_Carries,3.0,Possessions lost
+2023,4acd733a,Southampton,Valery,45,big5_player_possession,Final_Third_Carries,1.0,carries final 3rd
+2023,4acd733a,Southampton,Valery,45,big5_player_possession,PrgC_Carries,0.0,carries_prgc
+2023,4acd733a,Southampton,Valery,45,big5_player_possession,Succ_percent_Take,0.0,% Successful take-ons
+2023,4acd733a,Southampton,Valery,45,big5_player_shooting,G_per_Sh_Standard,0.0,Goals per shot
+2023,4acd733a,Southampton,Valery,45,big5_player_shooting,G_per_SoT_Standard,0.0,Goals per shot on target
+2023,4acd733a,Southampton,Valery,45,big5_player_shooting,SoT_percent_Standard,0.0,% Shots on target
+2023,4acd733a,Southampton,Valery,45,big5_player_shooting,npxG_Expected,0.0,Exp NPG
+2023,4acd733a,Southampton,Valery,45,big5_player_shooting,xG_Expected,0.0,Expected Goals
+2023,4acd733a,Southampton,Valery,45,big5_player_standard,PrgC_Progression,0.0,Progressive Carries
+2023,4acd733a,Southampton,Valery,45,big5_player_standard,PrgP_Progression,0.0,Progressive Passes
+2023,4acd733a,Southampton,Valery,45,big5_player_standard,npxG_Expected,0.0,Exp NPG
+2023,4acd733a,Southampton,Valery,45,big5_player_standard,xG_Expected,0.0,Expected Goals
+2023,75e60d75,Torino,Ronaldo Vieira,16,big5_player_defense,Clr,2.0,Clearances
+2023,75e60d75,Torino,Ronaldo Vieira,16,big5_player_defense,Err,0.0,Errors made
+2023,75e60d75,Torino,Ronaldo Vieira,16,big5_player_defense,Pass_Blocks,0.0,Passes blocked
+2023,75e60d75,Torino,Ronaldo Vieira,16,big5_player_defense,Sh_Blocks,0.0,Shots blocked
+2023,75e60d75,Torino,Ronaldo Vieira,16,big5_player_defense,Tkl_Tackles,1.0,Tackles attempted
+2023,75e60d75,Torino,Ronaldo Vieira,16,big5_player_misc,Won_percent_Aerial,0.0,% Aerial Duels won
+2023,75e60d75,Torino,Ronaldo Vieira,16,big5_player_possession,Att_Take,0.0,Take ons attempted
+2023,75e60d75,Torino,Ronaldo Vieira,16,big5_player_possession,CPA_Carries,0.0,carries penalty area
+2023,75e60d75,Torino,Ronaldo Vieira,16,big5_player_possession,Def Pen_Touches,3.0,touches_def_pen
+2023,75e60d75,Torino,Ronaldo Vieira,16,big5_player_possession,Dis_Carries,1.0,Possessions lost
+2023,75e60d75,Torino,Ronaldo Vieira,16,big5_player_possession,Final_Third_Carries,0.0,carries final 3rd
+2023,75e60d75,Torino,Ronaldo Vieira,16,big5_player_possession,PrgC_Carries,0.0,carries_prgc
+2023,75e60d75,Torino,Ronaldo Vieira,16,big5_player_possession,Succ_percent_Take,0.0,% Successful take-ons
+2023,75e60d75,Torino,Ronaldo Vieira,16,big5_player_shooting,G_per_Sh_Standard,0.0,Goals per shot
+2023,75e60d75,Torino,Ronaldo Vieira,16,big5_player_shooting,G_per_SoT_Standard,0.0,Goals per shot on target
+2023,75e60d75,Torino,Ronaldo Vieira,16,big5_player_shooting,SoT_percent_Standard,0.0,% Shots on target
+2023,75e60d75,Torino,Ronaldo Vieira,16,big5_player_shooting,npxG_Expected,0.0,Exp NPG
+2023,75e60d75,Torino,Ronaldo Vieira,16,big5_player_shooting,xG_Expected,0.0,Expected Goals
+2023,75e60d75,Torino,Ronaldo Vieira,16,big5_player_standard,PrgC_Progression,0.0,Progressive Carries
+2023,75e60d75,Torino,Ronaldo Vieira,16,big5_player_standard,PrgP_Progression,1.0,Progressive Passes
+2023,75e60d75,Torino,Ronaldo Vieira,16,big5_player_standard,npxG_Expected,0.0,Exp NPG
+2023,75e60d75,Torino,Ronaldo Vieira,16,big5_player_standard,xG_Expected,0.0,Expected Goals
+2023,51590dff,Toulouse,Thijs Dallinga,2353,big5_player_defense,Clr,20.0,Clearances
+2023,51590dff,Toulouse,Thijs Dallinga,2353,big5_player_defense,Err,0.0,Errors made
+2023,51590dff,Toulouse,Thijs Dallinga,2353,big5_player_defense,Pass_Blocks,14.0,Passes blocked
+2023,51590dff,Toulouse,Thijs Dallinga,2353,big5_player_defense,Sh_Blocks,3.0,Shots blocked
+2023,51590dff,Toulouse,Thijs Dallinga,2353,big5_player_defense,Tkl_Tackles,8.0,Tackles attempted
+2023,51590dff,Toulouse,Thijs Dallinga,2353,big5_player_misc,Won_percent_Aerial,45.2,% Aerial Duels won
+2023,51590dff,Toulouse,Thijs Dallinga,2353,big5_player_possession,Att_Take,24.0,Take ons attempted
+2023,51590dff,Toulouse,Thijs Dallinga,2353,big5_player_possession,CPA_Carries,8.0,carries penalty area
+2023,51590dff,Toulouse,Thijs Dallinga,2353,big5_player_possession,Def Pen_Touches,24.0,touches_def_pen
+2023,51590dff,Toulouse,Thijs Dallinga,2353,big5_player_possession,Dis_Carries,18.0,Possessions lost
+2023,51590dff,Toulouse,Thijs Dallinga,2353,big5_player_possession,Final_Third_Carries,21.0,carries final 3rd
+2023,51590dff,Toulouse,Thijs Dallinga,2353,big5_player_possession,PrgC_Carries,23.0,carries_prgc
+2023,51590dff,Toulouse,Thijs Dallinga,2353,big5_player_possession,Succ_percent_Take,41.7,% Successful take-ons
+2023,51590dff,Toulouse,Thijs Dallinga,2353,big5_player_shooting,npxG_Expected,9.8,Exp NPG
+2023,51590dff,Toulouse,Thijs Dallinga,2353,big5_player_shooting,xG_Expected,9.8,Expected Goals
+2023,51590dff,Toulouse,Thijs Dallinga,2353,big5_player_standard,PrgC_Progression,23.0,Progressive Carries
+2023,51590dff,Toulouse,Thijs Dallinga,2353,big5_player_standard,PrgP_Progression,30.0,Progressive Passes
+2023,51590dff,Toulouse,Thijs Dallinga,2353,big5_player_standard,npxG_Expected,9.8,Exp NPG
+2023,51590dff,Toulouse,Thijs Dallinga,2353,big5_player_standard,xG_Expected,9.8,Expected Goals
+2023,45d96179,Valencia,Hugo Guillamón,1632,big5_player_defense,Clr,30.0,Clearances
+2023,45d96179,Valencia,Hugo Guillamón,1632,big5_player_defense,Err,2.0,Errors made
+2023,45d96179,Valencia,Hugo Guillamón,1632,big5_player_defense,Pass_Blocks,12.0,Passes blocked
+2023,45d96179,Valencia,Hugo Guillamón,1632,big5_player_defense,Sh_Blocks,2.0,Shots blocked
+2023,45d96179,Valencia,Hugo Guillamón,1632,big5_player_defense,Tkl_Tackles,20.0,Tackles attempted
+2023,45d96179,Valencia,Hugo Guillamón,1632,big5_player_misc,Won_percent_Aerial,50.0,% Aerial Duels won
+2023,45d96179,Valencia,Hugo Guillamón,1632,big5_player_possession,Att_Take,5.0,Take ons attempted
+2023,45d96179,Valencia,Hugo Guillamón,1632,big5_player_possession,CPA_Carries,0.0,carries penalty area
+2023,45d96179,Valencia,Hugo Guillamón,1632,big5_player_possession,Def Pen_Touches,60.0,touches_def_pen
+2023,45d96179,Valencia,Hugo Guillamón,1632,big5_player_possession,Dis_Carries,15.0,Possessions lost
+2023,45d96179,Valencia,Hugo Guillamón,1632,big5_player_possession,Final_Third_Carries,15.0,carries final 3rd
+2023,45d96179,Valencia,Hugo Guillamón,1632,big5_player_possession,PrgC_Carries,11.0,carries_prgc
+2023,45d96179,Valencia,Hugo Guillamón,1632,big5_player_possession,Succ_percent_Take,20.0,% Successful take-ons
+2023,45d96179,Valencia,Hugo Guillamón,1632,big5_player_shooting,npxG_Expected,0.3,Exp NPG
+2023,45d96179,Valencia,Hugo Guillamón,1632,big5_player_shooting,xG_Expected,1.1,Expected Goals
+2023,45d96179,Valencia,Hugo Guillamón,1632,big5_player_standard,PrgC_Progression,11.0,Progressive Carries
+2023,45d96179,Valencia,Hugo Guillamón,1632,big5_player_standard,PrgP_Progression,101.0,Progressive Passes
+2023,45d96179,Valencia,Hugo Guillamón,1632,big5_player_standard,npxG_Expected,0.3,Exp NPG
+2023,45d96179,Valencia,Hugo Guillamón,1632,big5_player_standard,xG_Expected,1.1,Expected Goals
+2023,589449ec,Wolfsburg,Omar Marmoush,1476,big5_player_defense,Clr,4.0,Clearances
+2023,589449ec,Wolfsburg,Omar Marmoush,1476,big5_player_defense,Err,0.0,Errors made
+2023,589449ec,Wolfsburg,Omar Marmoush,1476,big5_player_defense,Pass_Blocks,20.0,Passes blocked
+2023,589449ec,Wolfsburg,Omar Marmoush,1476,big5_player_defense,Sh_Blocks,1.0,Shots blocked
+2023,589449ec,Wolfsburg,Omar Marmoush,1476,big5_player_defense,Tkl_Tackles,16.0,Tackles attempted
+2023,589449ec,Wolfsburg,Omar Marmoush,1476,big5_player_misc,Won_percent_Aerial,48.9,% Aerial Duels won
+2023,589449ec,Wolfsburg,Omar Marmoush,1476,big5_player_possession,Att_Take,99.0,Take ons attempted
+2023,589449ec,Wolfsburg,Omar Marmoush,1476,big5_player_possession,CPA_Carries,22.0,carries penalty area
+2023,589449ec,Wolfsburg,Omar Marmoush,1476,big5_player_possession,Def Pen_Touches,10.0,touches_def_pen
+2023,589449ec,Wolfsburg,Omar Marmoush,1476,big5_player_possession,Dis_Carries,42.0,Possessions lost
+2023,589449ec,Wolfsburg,Omar Marmoush,1476,big5_player_possession,Final_Third_Carries,31.0,carries final 3rd
+2023,589449ec,Wolfsburg,Omar Marmoush,1476,big5_player_possession,PrgC_Carries,36.0,carries_prgc
+2023,589449ec,Wolfsburg,Omar Marmoush,1476,big5_player_possession,Succ_percent_Take,38.4,% Successful take-ons
+2023,589449ec,Wolfsburg,Omar Marmoush,1476,big5_player_shooting,npxG_Expected,6.1,Exp NPG
+2023,589449ec,Wolfsburg,Omar Marmoush,1476,big5_player_shooting,xG_Expected,6.1,Expected Goals
+2023,589449ec,Wolfsburg,Omar Marmoush,1476,big5_player_standard,PrgC_Progression,36.0,Progressive Carries
+2023,589449ec,Wolfsburg,Omar Marmoush,1476,big5_player_standard,PrgP_Progression,51.0,Progressive Passes
+2023,589449ec,Wolfsburg,Omar Marmoush,1476,big5_player_standard,npxG_Expected,6.1,Exp NPG
+2023,589449ec,Wolfsburg,Omar Marmoush,1476,big5_player_standard,xG_Expected,6.1,Expected Goals
+2024,9ace87ba,Celta Vigo,Javier Rueda Garcia,20,big5_player_defense,Clr,0.0,Clearances
+2024,9ace87ba,Celta Vigo,Javier Rueda Garcia,20,big5_player_defense,Err,0.0,Errors made
+2024,9ace87ba,Celta Vigo,Javier Rueda Garcia,20,big5_player_defense,Pass_Blocks,0.0,Passes blocked
+2024,9ace87ba,Celta Vigo,Javier Rueda Garcia,20,big5_player_defense,Sh_Blocks,0.0,Shots blocked
+2024,9ace87ba,Celta Vigo,Javier Rueda Garcia,20,big5_player_defense,Tkl_Tackles,0.0,Tackles attempted
+2024,9ace87ba,Celta Vigo,Javier Rueda Garcia,20,big5_player_misc,Won_percent_Aerial,0.0,% Aerial Duels won
+2024,9ace87ba,Celta Vigo,Javier Rueda Garcia,20,big5_player_possession,Att_Take,0.0,Take ons attempted
+2024,9ace87ba,Celta Vigo,Javier Rueda Garcia,20,big5_player_possession,CPA_Carries,0.0,carries penalty area
+2024,9ace87ba,Celta Vigo,Javier Rueda Garcia,20,big5_player_possession,Def Pen_Touches,0.0,touches_def_pen
+2024,9ace87ba,Celta Vigo,Javier Rueda Garcia,20,big5_player_possession,Dis_Carries,0.0,Possessions lost
+2024,9ace87ba,Celta Vigo,Javier Rueda Garcia,20,big5_player_possession,Final_Third_Carries,1.0,carries final 3rd
+2024,9ace87ba,Celta Vigo,Javier Rueda Garcia,20,big5_player_possession,PrgC_Carries,0.0,carries_prgc
+2024,9ace87ba,Celta Vigo,Javier Rueda Garcia,20,big5_player_possession,Succ_percent_Take,0.0,% Successful take-ons
+2024,9ace87ba,Celta Vigo,Javier Rueda Garcia,20,big5_player_shooting,G_per_Sh_Standard,0.0,Goals per shot
+2024,9ace87ba,Celta Vigo,Javier Rueda Garcia,20,big5_player_shooting,G_per_SoT_Standard,0.0,Goals per shot on target
+2024,9ace87ba,Celta Vigo,Javier Rueda Garcia,20,big5_player_shooting,SoT_percent_Standard,0.0,% Shots on target
+2024,9ace87ba,Celta Vigo,Javier Rueda Garcia,20,big5_player_shooting,npxG_Expected,0.0,Exp NPG
+2024,9ace87ba,Celta Vigo,Javier Rueda Garcia,20,big5_player_shooting,xG_Expected,0.0,Expected Goals
+2024,9ace87ba,Celta Vigo,Javier Rueda Garcia,20,big5_player_standard,PrgC_Progression,0.0,Progressive Carries
+2024,9ace87ba,Celta Vigo,Javier Rueda Garcia,20,big5_player_standard,PrgP_Progression,1.0,Progressive Passes
+2024,9ace87ba,Celta Vigo,Javier Rueda Garcia,20,big5_player_standard,npxG_Expected,0.0,Exp NPG
+2024,9ace87ba,Celta Vigo,Javier Rueda Garcia,20,big5_player_standard,xG_Expected,0.0,Expected Goals
