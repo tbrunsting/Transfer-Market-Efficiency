@@ -66,19 +66,47 @@ print(f"--- ALL {len(flat)} COLUMNS ---")
 for i, c in enumerate(flat):
     print(f"  [{i:>2}] {c}")
 
-# The whole question: is any expected-goals column present AND populated?
-print("\n--- EXPECTED-GOALS CHECK ---")
-xg_cols = [(i, c) for i, c in enumerate(flat) if any(k in c.lower() for k in ("xg", "npxg", "xa"))]
-if not xg_cols:
-    print("  NONE. No xG/npxG/xA column in this table.")
+# The columns that prove this page carries the advanced data we need.
+# Each stat type has its own; checking xG on a GCA page would report a false failure.
+MARKERS = {
+    "standard": ["xg", "xag", "prgp"],
+    "shooting": ["xg", "npxg"],
+    "passing": ["prgp", "xag", "kp"],
+    "playing_time": ["min", "mp"],
+    "defense": ["tkl", "int", "clr"],
+    "possession": ["prgc", "touches", "succ"],
+    "misc": ["aerial", "won"],
+    "gca": ["sca", "gca"],
+    "keeper": ["saves", "save%"],
+    "keeper_adv": ["psxg"],
+}
+
+print(f"\n--- KEY COLUMNS FOR '{stat_type}' (present AND populated?) ---")
+all_ok = True
+for marker in MARKERS.get(stat_type, []):
+    hits = [(i, c) for i, c in enumerate(flat) if marker in c.lower()]
+    if not hits:
+        print(f"  [MISSING] no column matching {marker!r}")
+        all_ok = False
+        continue
+    i, c = hits[0]
+    s = pd.to_numeric(df.iloc[:, i], errors="coerce")
+    nn = s.notna().sum()
+    pct = nn / len(df) * 100 if len(df) else 0
+    print(f"  [{'OK   ' if nn else 'EMPTY'}] {marker!r} -> {c}: {nn}/{len(df)} populated ({pct:.1f}%)")
+    all_ok = all_ok and nn > 0
+
+# Row counts hide partial seasons, so check how much of the season is in the table.
+print("\n--- IS THIS A COMPLETE SEASON? ---")
+nineties = [(i, c) for i, c in enumerate(flat) if c.endswith("90s")]
+if nineties:
+    i, c = nineties[0]
+    top = pd.to_numeric(df.iloc[:, i], errors="coerce").max()
+    print(f"  most 90s played by any player ({c}): {top}  (a complete season is about 34-38)")
 else:
-    for i, c in xg_cols:
-        s = df.iloc[:, i]
-        nn = s.notna().sum()
-        pct = nn / len(df) * 100 if len(df) else 0
-        sample = s.dropna().iloc[0] if nn else None
-        flag = "OK  " if nn else "EMPTY"
-        print(f"  [{flag}] {c}: {nn}/{len(df)} populated ({pct:.0f}%)  e.g. {sample}")
+    print("  no 90s column in this table -- judge completeness from the row count")
+
+print(f"\nVERDICT: key columns {'all present and populated' if all_ok else 'NOT all usable -- see above'}")
 
 print("\n--- FIRST ROW ---")
 print(df.head(1).T.to_string())
