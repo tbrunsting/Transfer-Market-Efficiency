@@ -92,15 +92,24 @@ Other facts checked:
 ## Closing the gaps
 
 Every gap maps to a Big 5 combined FBref page. Each page covers all five
-leagues for one stat type in one season. They're fetched through the browser
-route, **one page per process, launched by Tyler**:
+leagues for one stat type in one season. soccerdata's own fetching can't be used
+at all: its chromedriver reconnect runs on every FBref page and fails (see the
+diagnostics doc). Gap pages are fetched with seleniumbase's Pure CDP mode
+instead, **launched by Tyler**:
 
-`.venv\Scripts\python scripts\03_probe_one_page.py player <stat_type> <season>`
+`.venv\Scripts\python scripts\04_fetch_fbref_cdp.py <stat_type>:<season> ...`
 
-**First, a single test page:** `player gca 2324`. It fills a season no other
-source covers and shows whether FBref still publishes the advanced stats. Tier 1
-only goes ahead if this succeeds cleanly (no retry or reconnect lines, SCA
-populated, complete season). The outcome is recorded in the diagnostics doc.
+**First, a single test page: `gca:2324`.** It fills a season no other source
+covers and shows whether FBref still publishes the advanced stats. Tier 1 only
+goes ahead if it passes (key columns over 90% populated, complete season). The
+outcome is recorded in the diagnostics doc.
+
+The `03` soccerdata probe failed on this same page on 2026-09-11.
+
+If CDP mode also fails, Tyler saves each page from his normal Chrome under the
+cache filename `--dry-run` prints, and `--dry-run` then verifies the files. That
+works whatever the automation does, so the gap pages don't depend on fixing a
+bug.
 
 **Tier 1, making 2024/25 scoreable (9 pages):**
 
@@ -138,4 +147,14 @@ recent activity, alongside 2026/27 (scoping doc 4.8).
 
 - Snapshot freeze (scripted download + manifest): not started.
 - Consistency checks as code (rules 2–4): not started.
-- Test page `player gca 2324`: pending, Tyler runs it.
+- Test page `gca:2324` via soccerdata (`03`): **failed** 2026-09-11 (reconnect bug).
+- Test page `gca:2324` via Pure CDP mode (`04`): **fetched cleanly, but FBref's
+  page has SCA/GCA blank for all 2,852 players** (complete season, minutes
+  filled). 2023/24 player GCA therefore has no source on FBref either.
+- `defense:2324` and `standard:2324` via `04`: **live FBref no longer serves
+  advanced data.** On the defense page every advanced column is blank; on the
+  standard page xG and progression columns are removed. The few basic columns
+  left (Int, TklW) differ from the snapshot for about 39% of players. Tiers 1
+  and 2 can't be filled from FBref. Details are in the diagnostics doc.
+- FBref has renamed clubs (e.g. "Nott'ham Forest" to "Nottingham"). Player IDs
+  are stable, so the club mapping table must key on FBref team IDs, not names.
