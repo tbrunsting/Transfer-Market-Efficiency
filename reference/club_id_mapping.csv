@@ -1,0 +1,146 @@
+fbref_team_id,fbref_name_aliases,transfermarkt_club_id,transfermarkt_name,country,league,match_method,squad_share,name_score,needs_manual_review,notes
+4ba7cbea,Bournemouth,989,AFC Bournemouth,England,Premier League,exact,0.97,1.0,no,squad overlap: 97% of 134 mapped players played for AFC Bournemouth
+18bb7c10,Arsenal,11,Arsenal FC,England,Premier League,exact,0.889,1.0,no,squad overlap: 89% of 190 mapped players played for Arsenal FC
+8602292d,Aston Villa,405,Aston Villa,England,Premier League,exact,0.957,1.0,no,squad overlap: 96% of 138 mapped players played for Aston Villa
+cd051869,Brentford,1148,Brentford FC,England,Premier League,exact,1.0,1.0,no,squad overlap: 100% of 81 mapped players played for Brentford FC
+d07537b9,Brighton,1237,Brighton & Hove Albion,England,Premier League,squad-overlap,0.972,0.571,no,"no name candidate above 0.60 (best 0.57: Brighton & Hove Albion); squad overlap: 97% of 179 mapped players played for Brighton & Hove Albion; identified by squad overlap only, names too different; accepted by Tyler on 2026-09-12: squad-overlap name match corroborated by squad overlap (97% of mapped players)"
+943e8050,Burnley,1132,Burnley FC,England,Premier League,exact,0.98,1.0,no,squad overlap: 98% of 147 mapped players played for Burnley FC
+75fae011,Cardiff City,603,Cardiff City,England,Premier League,exact,1.0,1.0,no,squad overlap: 100% of 25 mapped players played for Cardiff City
+cff3d9bb,Chelsea,631,Chelsea FC,England,Premier League,exact,0.948,1.0,no,squad overlap: 95% of 193 mapped players played for Chelsea FC
+47c64c55,Crystal Palace,873,Crystal Palace,England,Premier League,exact,0.966,1.0,no,squad overlap: 97% of 177 mapped players played for Crystal Palace
+d3fd31cc,Everton,29,Everton FC,England,Premier League,exact,0.936,1.0,no,squad overlap: 94% of 188 mapped players played for Everton FC
+fd962109,Fulham,931,Fulham FC,England,Premier League,exact,0.963,1.0,no,squad overlap: 96% of 109 mapped players played for Fulham FC
+f5922ca5,Huddersfield,1110,Huddersfield Town,England,Premier League,fuzzy,1.0,0.828,no,name similarity 0.83 ('huddersfield' vs 'huddersfield town'); squad overlap: 100% of 53 mapped players played for Huddersfield Town; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (100% of mapped players)
+5bfb9659,Leeds United,399,Leeds United,England,Premier League,exact,0.949,1.0,no,squad overlap: 95% of 78 mapped players played for Leeds United
+a2d435b3,Leicester City,1003,Leicester City,England,Premier League,exact,0.936,1.0,no,squad overlap: 94% of 156 mapped players played for Leicester City
+822bd0ba,Liverpool,31,Liverpool FC,England,Premier League,exact,0.973,1.0,no,squad overlap: 97% of 185 mapped players played for Liverpool FC
+e297cd13,Luton Town,1031,Luton Town,England,Premier League,exact,1.0,1.0,no,squad overlap: 100% of 27 mapped players played for Luton Town
+b8fd03ef,Manchester City,281,Manchester City,England,Premier League,exact,0.963,1.0,no,squad overlap: 96% of 164 mapped players played for Manchester City
+19538871,Manchester Utd,985,Manchester United,England,Premier League,exact,0.939,1.0,no,squad overlap: 94% of 198 mapped players played for Manchester United
+b2b47a98,Newcastle Utd,762,Newcastle United,England,Premier League,exact,0.954,1.0,no,squad overlap: 95% of 194 mapped players played for Newcastle United
+1c781004,Norwich City,1123,Norwich City,England,Premier League,exact,0.982,1.0,no,squad overlap: 98% of 57 mapped players played for Norwich City
+e4a775cb,Nott'ham Forest,703,Nottingham Forest,England,Premier League,exact,0.924,1.0,no,squad overlap: 92% of 66 mapped players played for Nottingham Forest
+1df6b87e,Sheffield Utd,350,Sheffield United,England,Premier League,exact,0.988,1.0,no,squad overlap: 99% of 85 mapped players played for Sheffield United
+33c895d4,Southampton,180,Southampton FC,England,Premier League,exact,0.958,1.0,no,squad overlap: 96% of 166 mapped players played for Southampton FC
+17892952,Stoke City,512,Stoke City,England,Premier League,exact,0.967,1.0,no,squad overlap: 97% of 30 mapped players played for Stoke City
+fb10988f,Swansea City,2288,Swansea City,England,Premier League,exact,0.923,1.0,no,squad overlap: 92% of 26 mapped players played for Swansea City
+361ca564,Tottenham,148,Tottenham Hotspur,England,Premier League,fuzzy,0.919,0.692,no,name similarity 0.69 ('tottenham' vs 'tottenham hotspur'); squad overlap: 92% of 186 mapped players played for Tottenham Hotspur; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (92% of mapped players)
+2abfe087,Watford,1010,Watford FC,England,Premier League,exact,0.934,1.0,no,squad overlap: 93% of 106 mapped players played for Watford FC
+60c6b05f,West Brom,984,West Bromwich Albion,England,Premier League,fuzzy,0.981,0.621,no,name similarity 0.62 ('west brom' vs 'west bromwich albion'); squad overlap: 98% of 54 mapped players played for West Bromwich Albion; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (98% of mapped players)
+7c21e445,West Ham,379,West Ham United,England,Premier League,fuzzy,0.944,0.696,no,name similarity 0.70 ('west ham' vs 'west ham united'); squad overlap: 94% of 177 mapped players played for West Ham United; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (94% of mapped players)
+8cec06e1,Wolves,543,Wolverhampton Wanderers,England,Premier League,squad-overlap,0.947,0.414,no,"no name candidate above 0.60 (best 0.41: Wolverhampton Wanderers); squad overlap: 95% of 152 mapped players played for Wolverhampton Wanderers; identified by squad overlap only, names too different; accepted by Tyler on 2026-09-12: squad-overlap name match corroborated by squad overlap (95% of mapped players)"
+7a54bb4f,Ajaccio,1147,AC Ajaccio,France,Ligue 1,exact,1.0,1.0,no,squad overlap: 100% of 35 mapped players played for AC Ajaccio
+5ae09109,Auxerre,290,AJ Auxerre,France,Ligue 1,exact,1.0,1.0,no,squad overlap: 100% of 32 mapped players played for AJ Auxerre
+fd6114db,Monaco,162,AS Monaco,France,Ligue 1,exact,0.928,1.0,no,squad overlap: 93% of 209 mapped players played for AS Monaco
+d298ef2c,Saint-Étienne,618,AS Saint-Étienne,France,Ligue 1,exact,0.955,1.0,no,squad overlap: 96% of 157 mapped players played for AS Saint-Étienne
+25622401,Amiens,1416,Amiens SC,France,Ligue 1,exact,0.964,1.0,no,squad overlap: 96% of 83 mapped players played for Amiens SC
+69236f98,Angers,1420,Angers SCO,France,Ligue 1,fuzzy,0.958,0.75,no,name similarity 0.75 ('angers' vs 'angers sco'); squad overlap: 96% of 168 mapped players played for Angers SCO; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (96% of mapped players)
+d9676424,Clermont Foot,3524,Clermont Foot 63,France,Ligue 1,exact,0.988,1.0,no,squad overlap: 99% of 81 mapped players played for Clermont Foot 63
+8dfb7350,Dijon,2969,Dijon FCO,France,Ligue 1,fuzzy,0.973,0.714,no,name similarity 0.71 ('dijon' vs 'dijon fco'); squad overlap: 97% of 113 mapped players played for Dijon FCO; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (97% of mapped players)
+d41b5f53,Guingamp,855,EA Guingamp,France,Ligue 1,fuzzy,0.981,0.842,no,name similarity 0.84 ('guingamp' vs 'ea guingamp'); squad overlap: 98% of 53 mapped players played for EA Guingamp; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (98% of mapped players)
+54195385,Troyes,1095,ESTAC Troyes,France,Ligue 1,fuzzy,0.988,0.667,no,name similarity 0.67 ('troyes' vs 'estac troyes'); squad overlap: 99% of 85 mapped players played for ESTAC Troyes; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (99% of mapped players)
+123f3efe,Bordeaux,40,FC Girondins Bordeaux,France,Ligue 1,fuzzy,0.944,0.615,no,name similarity 0.62 ('bordeaux' vs 'girondins bordeaux'); squad overlap: 94% of 143 mapped players played for FC Girondins Bordeaux; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (94% of mapped players)
+d2c87802,Lorient,1158,FC Lorient,France,Ligue 1,exact,0.943,1.0,no,squad overlap: 94% of 122 mapped players played for FC Lorient
+f83960ae,Metz,347,FC Metz,France,Ligue 1,exact,0.986,1.0,no,squad overlap: 99% of 146 mapped players played for FC Metz
+d7a486cd,Nantes,995,FC Nantes,France,Ligue 1,exact,0.971,1.0,no,squad overlap: 97% of 204 mapped players played for FC Nantes
+3f8c4b5f,Toulouse,415,FC Toulouse,France,Ligue 1,exact,0.978,1.0,no,squad overlap: 98% of 136 mapped players played for FC Toulouse
+cb188c0c,Lille,1082,LOSC Lille,France,Ligue 1,fuzzy,0.942,0.667,no,name similarity 0.67 ('lille' vs 'losc lille'); squad overlap: 94% of 173 mapped players played for LOSC Lille; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (94% of mapped players)
+5c2737db,Le Havre,738,Le Havre AC,France,Ligue 1,exact,1.0,1.0,no,squad overlap: 100% of 27 mapped players played for Le Havre AC
+281b0e73,Montpellier,969,Montpellier HSC,France,Ligue 1,fuzzy,0.968,0.846,no,name similarity 0.85 ('montpellier' vs 'montpellier hsc'); squad overlap: 97% of 185 mapped players played for Montpellier HSC; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (97% of mapped players)
+1cbf5f9e,Nîmes,1160,Nîmes Olympique,France,Ligue 1,squad-overlap,0.976,0.5,no,"no name candidate above 0.60 (best 0.55: FC Nantes); squad overlap: 98% of 82 mapped players played for Nîmes Olympique; identified by squad overlap only, names too different; accepted by Tyler on 2026-09-12: squad-overlap name match corroborated by squad overlap (98% of mapped players)"
+132ebc33,Nice,417,OGC Nice,France,Ligue 1,fuzzy,0.922,0.667,no,name similarity 0.67 ('nice' vs 'ogc nice'); squad overlap: 92% of 205 mapped players played for OGC Nice; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (92% of mapped players)
+d53c0b06,Lyon,1041,Olympique Lyon,France,Ligue 1,squad-overlap,0.89,0.444,no,"no name candidate above 0.60 (best 0.55: FC Lorient); squad overlap: 89% of 200 mapped players played for Olympique Lyon; identified by squad overlap only, names too different; accepted by Tyler on 2026-09-12: squad-overlap name match corroborated by squad overlap (89% of mapped players)"
+5725cc7b,Marseille,244,Olympique Marseille,France,Ligue 1,fuzzy,0.916,0.643,no,name similarity 0.64 ('marseille' vs 'olympique marseille'); squad overlap: 92% of 191 mapped players played for Olympique Marseille; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (92% of mapped players)
+e2d8892c,Paris S-G,583,Paris Saint-Germain,France,Ligue 1,exact,0.943,1.0,no,squad overlap: 94% of 210 mapped players played for Paris Saint-Germain
+fd4e0f7d,Lens,826,RC Lens,France,Ligue 1,exact,0.953,1.0,no,squad overlap: 95% of 107 mapped players played for RC Lens
+c0d3eab4,Strasbourg,667,RC Strasbourg Alsace,France,Ligue 1,fuzzy,0.967,0.741,no,name similarity 0.74 ('strasbourg' vs 'strasbourg alsace'); squad overlap: 97% of 184 mapped players played for RC Strasbourg Alsace; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (97% of mapped players)
+74229020,Caen,1162,SM Caen,France,Ligue 1,exact,0.962,1.0,no,squad overlap: 96% of 52 mapped players played for SM Caen
+fb08dbb3,Brest,3911,Stade Brestois 29,France,Ligue 1,squad-overlap,0.953,0.526,no,"no name candidate above 0.60 (best 0.53: Stade Brestois 29); squad overlap: 95% of 127 mapped players played for Stade Brestois 29; identified by squad overlap only, names too different; accepted by Tyler on 2026-09-12: squad-overlap name match corroborated by squad overlap (95% of mapped players)"
+7fdd64e0,Reims,1421,Stade Reims,France,Ligue 1,fuzzy,0.977,0.625,no,name similarity 0.62 ('reims' vs 'stade reims'); squad overlap: 98% of 173 mapped players played for Stade Reims; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (98% of mapped players)
+b3072e00,Rennes,273,Stade Rennais FC,France,Ligue 1,manual,0.886,0.526,no,"name similarity 0.67 ('rennes' vs 'nantes'); squad overlap: 89% of 201 mapped players played for Stade Rennais FC; CONFLICT: names say FC Nantes (995), squads say Stade Rennais FC (273); resolved by Tyler on 2026-09-12: names and squads disagreed; chose the squad answer: weak name score, strong squad evidence, and the name-matcher's pick was exactly the club left unused"
+18d9d2a7,Heidenheim,2036,1. Fußballclub Heidenheim 1846,Germany,Bundesliga,manual,1.0,0.645,no,"name similarity 0.70 ('heidenheim' vs 'hoffenheim'); squad overlap: 100% of 21 mapped players played for 1. Fußballclub Heidenheim 1846; CONFLICT: names say TSG 1899 Hoffenheim (533), squads say 1. Fußballclub Heidenheim 1846 (2036); resolved by Tyler on 2026-09-12: names and squads disagreed; chose the squad answer: weak name score, strong squad evidence, and the name-matcher's pick was exactly the club left unused"
+bc357bf7,Köln,3,1.FC Köln,Germany,Bundesliga,exact,0.976,1.0,no,squad overlap: 98% of 164 mapped players played for 1.FC Köln
+6f2c108c,Nürnberg,4,1.FC Nuremberg,Germany,Bundesliga,fuzzy,1.0,0.824,no,name similarity 0.82 ('nurnberg' vs 'nuremberg'); squad overlap: 100% of 27 mapped players played for 1.FC Nuremberg; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (100% of mapped players)
+7a41008f,Union Berlin,89,1.FC Union Berlin,Germany,Bundesliga,exact,0.941,1.0,no,squad overlap: 94% of 135 mapped players played for 1.FC Union Berlin
+a224b06a,Mainz 05,39,1.FSV Mainz 05,Germany,Bundesliga,exact,0.953,1.0,no,squad overlap: 95% of 192 mapped players played for 1.FSV Mainz 05
+247c4b67,Arminia,10,Arminia Bielefeld,Germany,Bundesliga,squad-overlap,1.0,0.583,no,"no name candidate above 0.60 (best 0.58: Arminia Bielefeld); squad overlap: 100% of 51 mapped players played for Arminia Bielefeld; identified by squad overlap only, names too different; accepted by Tyler on 2026-09-12: squad-overlap name match corroborated by squad overlap (100% of mapped players)"
+c7a9f859,Leverkusen,15,Bayer 04 Leverkusen,Germany,Bundesliga,fuzzy,0.961,0.769,no,name similarity 0.77 ('leverkusen' vs 'bayer leverkusen'); squad overlap: 96% of 179 mapped players played for Bayer 04 Leverkusen; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (96% of mapped players)
+054efa67,Bayern Munich,27,Bayern Munich,Germany,Bundesliga,exact,0.933,1.0,no,squad overlap: 93% of 194 mapped players played for Bayern Munich
+add600ae,Dortmund,16,Borussia Dortmund,Germany,Bundesliga,fuzzy,0.955,0.64,no,name similarity 0.64 ('dortmund' vs 'borussia dortmund'); squad overlap: 95% of 198 mapped players played for Borussia Dortmund; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (95% of mapped players)
+32f3ee20,M'Gladbach | Gladbach,18,Borussia Mönchengladbach,Germany,Bundesliga,fuzzy,0.983,0.769,no,name similarity 0.77 ('monchengladbach' vs 'borussia monchengladbach'); squad overlap: 98% of 176 mapped players played for Borussia Mönchengladbach; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (98% of mapped players)
+f0ac8ee6,Eint Frankfurt,24,Eintracht Frankfurt,Germany,Bundesliga,fuzzy,0.944,0.848,no,name similarity 0.85 ('eint frankfurt' vs 'eintracht frankfurt'); squad overlap: 94% of 195 mapped players played for Eintracht Frankfurt; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (94% of mapped players)
+0cdc4311,Augsburg,167,FC Augsburg,Germany,Bundesliga,exact,0.97,1.0,no,squad overlap: 97% of 197 mapped players played for FC Augsburg
+c539e393,Schalke 04,33,FC Schalke 04,Germany,Bundesliga,exact,0.951,1.0,no,squad overlap: 95% of 162 mapped players played for FC Schalke 04
+b1278397,Düsseldorf,38,Fortuna Düsseldorf,Germany,Bundesliga,fuzzy,0.981,0.714,no,name similarity 0.71 ('dusseldorf' vs 'fortuna dusseldorf'); squad overlap: 98% of 52 mapped players played for Fortuna Düsseldorf; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (98% of mapped players)
+26790c6a,Hamburger SV,41,Hamburger SV,Germany,Bundesliga,exact,1.0,1.0,no,squad overlap: 100% of 29 mapped players played for Hamburger SV
+60b5e41f,Hannover 96,42,Hannover 96,Germany,Bundesliga,exact,0.948,1.0,no,squad overlap: 95% of 58 mapped players played for Hannover 96
+2818f8bc,Hertha BSC,44,Hertha BSC,Germany,Bundesliga,exact,0.942,1.0,no,squad overlap: 94% of 171 mapped players played for Hertha BSC
+acbb6a5b,RB Leipzig,23826,RB Leipzig,Germany,Bundesliga,exact,0.96,1.0,no,squad overlap: 96% of 177 mapped players played for RB Leipzig
+a486e511,Freiburg,60,SC Freiburg,Germany,Bundesliga,exact,0.973,1.0,no,squad overlap: 97% of 185 mapped players played for SC Freiburg
+d9f93f02,Paderborn 07,127,SC Paderborn 07,Germany,Bundesliga,exact,1.0,1.0,no,squad overlap: 100% of 27 mapped players played for SC Paderborn 07
+6a6967fc,Darmstadt 98,105,SV Darmstadt 98,Germany,Bundesliga,exact,1.0,1.0,no,squad overlap: 100% of 31 mapped players played for SV Darmstadt 98
+62add3bf,Werder Bremen,86,SV Werder Bremen,Germany,Bundesliga,exact,0.975,1.0,no,squad overlap: 98% of 161 mapped players played for SV Werder Bremen
+12192a4c,Greuther Fürth,65,SpVgg Greuther Fürth,Germany,Bundesliga,exact,1.0,1.0,no,squad overlap: 100% of 26 mapped players played for SpVgg Greuther Fürth
+033ea6b8,Hoffenheim,533,TSG 1899 Hoffenheim,Germany,Bundesliga,exact,0.923,1.0,no,squad overlap: 92% of 207 mapped players played for TSG 1899 Hoffenheim
+598bc722,Stuttgart,79,VfB Stuttgart,Germany,Bundesliga,exact,0.976,1.0,no,squad overlap: 98% of 168 mapped players played for VfB Stuttgart
+b42c6323,Bochum,80,VfL Bochum,Germany,Bundesliga,exact,1.0,1.0,no,squad overlap: 100% of 77 mapped players played for VfL Bochum
+4eaa11d7,Wolfsburg,82,VfL Wolfsburg,Germany,Bundesliga,exact,0.91,1.0,no,squad overlap: 91% of 189 mapped players played for VfL Wolfsburg
+dc56fe14,Milan,5,AC Milan,Italy,Serie A,exact,0.934,1.0,no,squad overlap: 93% of 198 mapped players played for AC Milan
+21680aa4,Monza,2919,AC Monza,Italy,Serie A,exact,0.967,1.0,no,squad overlap: 97% of 61 mapped players played for AC Monza
+421387cf,Fiorentina,430,ACF Fiorentina,Italy,Serie A,fuzzy,0.872,0.833,no,name similarity 0.83 ('fiorentina' vs 'acf fiorentina'); squad overlap: 87% of 203 mapped players played for ACF Fiorentina; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (87% of mapped players)
+cf74a709,Roma,12,Associazione Sportiva Roma,Italy,Serie A,manual,0.94,0.267,no,"name similarity 0.67 ('roma' vs 'parma'); squad overlap: 94% of 200 mapped players played for Associazione Sportiva Roma; CONFLICT: names say Parma Calcio 1913 (130), squads say Associazione Sportiva Roma (12); resolved by Tyler on 2026-09-12: names and squads disagreed; chose the squad answer: weak name score, strong squad evidence, and the name-matcher's pick was exactly the club left unused"
+922493f3,Atalanta,800,Atalanta BC,Italy,Serie A,fuzzy,0.897,0.842,no,name similarity 0.84 ('atalanta' vs 'atalanta bc'); squad overlap: 90% of 194 mapped players played for Atalanta BC; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (90% of mapped players)
+4fcb34fd,Benevento,4171,Benevento Calcio,Italy,Serie A,exact,1.0,1.0,no,squad overlap: 100% of 69 mapped players played for Benevento Calcio
+1d8099f8,Bologna,1025,Bologna Football Club 1909,Italy,Serie A,exact,0.957,1.0,no,squad overlap: 96% of 210 mapped players played for Bologna Football Club 1909
+4ef57aeb,Brescia,19,Brescia Calcio,Italy,Serie A,exact,0.969,1.0,no,squad overlap: 97% of 32 mapped players played for Brescia Calcio
+c4260e09,Cagliari,1390,Cagliari Calcio,Italy,Serie A,exact,0.928,1.0,no,squad overlap: 93% of 181 mapped players played for Cagliari Calcio
+cc919b35,Chievo,862,Chievo Verona,Italy,Serie A,fuzzy,1.0,0.632,no,name similarity 0.63 ('chievo' vs 'chievo verona'); squad overlap: 100% of 58 mapped players played for Chievo Verona; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (100% of mapped players)
+3074d7b1,Crotone,4083,FC Crotone,Italy,Serie A,exact,0.967,1.0,no,squad overlap: 97% of 60 mapped players played for FC Crotone
+a3d88bd8,Empoli,749,FC Empoli,Italy,Serie A,exact,0.959,1.0,no,squad overlap: 96% of 121 mapped players played for FC Empoli
+6a7ad59d,Frosinone,8970,Frosinone Calcio,Italy,Serie A,exact,1.0,1.0,no,squad overlap: 100% of 67 mapped players played for Frosinone Calcio
+658bf2de,Genoa,252,Genoa CFC,Italy,Serie A,exact,0.924,1.0,no,squad overlap: 92% of 198 mapped players played for Genoa CFC
+0e72edf2,Hellas Verona,276,Hellas Verona,Italy,Serie A,exact,0.959,1.0,no,squad overlap: 96% of 194 mapped players played for Hellas Verona
+d609edc0,Inter,46,Inter Milan,Italy,Serie A,fuzzy,0.938,0.625,no,name similarity 0.62 ('inter' vs 'inter milan'); squad overlap: 94% of 176 mapped players played for Inter Milan; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (94% of mapped players)
+e0652b02,Juventus,506,Juventus FC,Italy,Serie A,exact,0.935,1.0,no,squad overlap: 94% of 200 mapped players played for Juventus FC
+eab4234c,Parma,130,Parma Calcio 1913,Italy,Serie A,exact,0.959,1.0,no,squad overlap: 96% of 98 mapped players played for Parma Calcio 1913
+1d2fe027,SPAL,2722,SPAL,Italy,Serie A,exact,0.967,1.0,no,squad overlap: 97% of 91 mapped players played for SPAL
+d48ad4ff,Napoli,6195,SSC Napoli,Italy,Serie A,exact,0.906,1.0,no,squad overlap: 91% of 180 mapped players played for SSC Napoli
+7213da33,Lazio,398,Società Sportiva Lazio S.p.A.,Italy,Serie A,squad-overlap,0.945,0.303,no,"no name candidate above 0.60 (best 0.46: Cagliari Calcio); squad overlap: 95% of 182 mapped players played for Società Sportiva Lazio S.p.A.; identified by squad overlap only, names too different; accepted by Tyler on 2026-09-12: squad-overlap name match corroborated by squad overlap (95% of mapped players)"
+68449f6d,Spezia,3522,Spezia Calcio,Italy,Serie A,exact,0.99,1.0,no,squad overlap: 99% of 97 mapped players played for Spezia Calcio
+105360fe,Torino,416,Torino FC,Italy,Serie A,exact,0.891,1.0,no,squad overlap: 89% of 193 mapped players played for Torino FC
+8ff9e3b3,Sampdoria,1038,UC Sampdoria,Italy,Serie A,fuzzy,0.91,0.857,no,name similarity 0.86 ('sampdoria' vs 'uc sampdoria'); squad overlap: 91% of 177 mapped players played for UC Sampdoria; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (91% of mapped players)
+9aad3a77,Cremonese,2239,US Cremonese,Italy,Serie A,exact,0.939,1.0,no,squad overlap: 94% of 33 mapped players played for US Cremonese
+ffcbe334,Lecce,1005,US Lecce,Italy,Serie A,exact,1.0,1.0,no,squad overlap: 100% of 85 mapped players played for US Lecce
+c5577084,Salernitana,380,US Salernitana 1919,Italy,Serie A,exact,0.98,1.0,no,squad overlap: 98% of 100 mapped players played for US Salernitana 1919
+e2befd26,Sassuolo,6574,US Sassuolo,Italy,Serie A,exact,0.941,1.0,no,squad overlap: 94% of 205 mapped players played for US Sassuolo
+04eea015,Udinese,410,Udinese Calcio,Italy,Serie A,exact,0.924,1.0,no,squad overlap: 92% of 198 mapped players played for Udinese Calcio
+af5d5982,Venezia,607,Venezia FC,Italy,Serie A,exact,1.0,1.0,no,squad overlap: 100% of 30 mapped players played for Venezia FC
+2b390eca,Athletic Club,621,Athletic Bilbao,Spain,La Liga,fuzzy,0.978,0.696,no,name similarity 0.70 ('athletic' vs 'athletic bilbao'); squad overlap: 98% of 183 mapped players played for Athletic Bilbao; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (98% of mapped players)
+db3b9613,Atlético Madrid,13,Atlético de Madrid,Spain,La Liga,fuzzy,0.908,0.909,no,name similarity 0.91 ('atletico madrid' vs 'atletico de madrid'); squad overlap: 91% of 185 mapped players played for Atlético de Madrid; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (91% of mapped players)
+03c57e2b,Osasuna,331,CA Osasuna,Spain,La Liga,exact,0.993,1.0,no,squad overlap: 99% of 134 mapped players played for CA Osasuna
+7c6f2c78,Leganés,1244,CD Leganés,Spain,La Liga,exact,0.941,1.0,no,squad overlap: 94% of 85 mapped players played for CD Leganés
+f25da7fb,Celta Vigo,940,Celta de Vigo,Spain,La Liga,fuzzy,0.963,0.87,no,name similarity 0.87 ('celta vigo' vs 'celta de vigo'); squad overlap: 96% of 188 mapped players played for Celta de Vigo; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (96% of mapped players)
+ee7c297c,Cádiz,2687,Cádiz CF,Spain,La Liga,exact,0.992,1.0,no,squad overlap: 99% of 128 mapped players played for Cádiz CF
+8d6fd021,Alavés,1108,Deportivo Alavés,Spain,La Liga,squad-overlap,0.983,0.545,no,"no name candidate above 0.60 (best 0.55: Deportivo Alavés); squad overlap: 98% of 173 mapped players played for Deportivo Alavés; identified by squad overlap only, names too different; accepted by Tyler on 2026-09-12: squad-overlap name match corroborated by squad overlap (98% of mapped players)"
+2a60ed82,La Coruña,897,Deportivo de La Coruña,Spain,La Liga,squad-overlap,0.969,0.581,no,"no name candidate above 0.60 (best 0.58: Deportivo de La Coruña); squad overlap: 97% of 32 mapped players played for Deportivo de La Coruña; identified by squad overlap only, names too different; accepted by Tyler on 2026-09-12: squad-overlap name match corroborated by squad overlap (97% of mapped players)"
+6c8b07df,Elche,1531,Elche CF,Spain,La Liga,exact,0.954,1.0,no,squad overlap: 95% of 87 mapped players played for Elche CF
+206d90db,Barcelona,131,FC Barcelona,Spain,La Liga,exact,0.894,1.0,no,squad overlap: 89% of 189 mapped players played for FC Barcelona
+7848bd64,Getafe,3709,Getafe CF,Spain,La Liga,exact,0.94,1.0,no,squad overlap: 94% of 200 mapped players played for Getafe CF
+9024a00a,Girona,12321,Girona FC,Spain,La Liga,exact,0.97,1.0,no,squad overlap: 97% of 101 mapped players played for Girona FC
+a0435291,Granada,16795,Granada CF,Spain,La Liga,exact,0.952,1.0,no,squad overlap: 95% of 126 mapped players played for Granada CF
+9800b6a1,Levante,3368,Levante UD,Spain,La Liga,exact,0.972,1.0,no,squad overlap: 97% of 145 mapped players played for Levante UD
+1c896955,Málaga,1084,Málaga CF,Spain,La Liga,exact,0.973,1.0,no,squad overlap: 97% of 37 mapped players played for Málaga CF
+a8661628,Espanyol,714,RCD Espanyol Barcelona,Spain,La Liga,fuzzy,0.957,0.615,no,name similarity 0.62 ('espanyol' vs 'espanyol barcelona'); squad overlap: 96% of 138 mapped players played for RCD Espanyol Barcelona; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (96% of mapped players)
+2aa12281,Mallorca,237,RCD Mallorca,Spain,La Liga,exact,0.991,1.0,no,squad overlap: 99% of 115 mapped players played for RCD Mallorca
+98e8af82,Rayo Vallecano,367,Rayo Vallecano,Spain,La Liga,exact,0.972,1.0,no,squad overlap: 97% of 106 mapped players played for Rayo Vallecano
+fc536746,Betis,150,Real Betis Balompié,Spain,La Liga,fuzzy,0.965,0.667,no,name similarity 0.67 ('betis' vs 'real betis'); squad overlap: 96% of 198 mapped players played for Real Betis Balompié; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (96% of mapped players)
+53a2f082,Real Madrid,418,Real Madrid,Spain,La Liga,exact,0.972,1.0,no,squad overlap: 97% of 181 mapped players played for Real Madrid
+e31d1cd9,Real Sociedad,681,Real Sociedad,Spain,La Liga,exact,0.959,1.0,no,squad overlap: 96% of 197 mapped players played for Real Sociedad
+17859612,Valladolid,366,Real Valladolid CF,Spain,La Liga,fuzzy,0.968,0.8,no,name similarity 0.80 ('valladolid' vs 'real valladolid'); squad overlap: 97% of 125 mapped players played for Real Valladolid CF; accepted by Tyler on 2026-09-12: fuzzy name match corroborated by squad overlap (97% of mapped players)
+bea5c710,Eibar,1533,SD Eibar,Spain,La Liga,exact,0.972,1.0,no,squad overlap: 97% of 107 mapped players played for SD Eibar
+c6c493e6,Huesca,5358,SD Huesca,Spain,La Liga,exact,1.0,1.0,no,squad overlap: 100% of 57 mapped players played for SD Huesca
+ad2be733,Sevilla,368,Sevilla FC,Spain,La Liga,exact,0.947,1.0,no,squad overlap: 95% of 206 mapped players played for Sevilla FC
+78ecf4bb,Almería,3302,UD Almería,Spain,La Liga,exact,0.968,1.0,no,squad overlap: 97% of 63 mapped players played for UD Almería
+0049d422,Las Palmas,472,UD Las Palmas,Spain,La Liga,exact,0.969,1.0,no,squad overlap: 97% of 64 mapped players played for UD Las Palmas
+dcc91a7b,Valencia,1049,Valencia CF,Spain,La Liga,exact,0.915,1.0,no,squad overlap: 91% of 188 mapped players played for Valencia CF
+2a8183b3,Villarreal,1050,Villarreal CF,Spain,La Liga,exact,0.965,1.0,no,squad overlap: 97% of 202 mapped players played for Villarreal CF
