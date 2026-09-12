@@ -1,0 +1,98 @@
+fbref_team_id,club,season,category,competition,source,source_ref,detail
+206d90db,FC Barcelona,2017/18,domestic_cups,Copa del Rey,transfermarkt-datasets games (final),game_id=3000614,Sevilla FC 0-5 FC Barcelona on 2018-04-21
+dcc91a7b,Valencia CF,2018/19,domestic_cups,Copa del Rey,transfermarkt-datasets games (final),game_id=3162692,FC Barcelona 1-2 Valencia CF on 2019-05-25
+e31d1cd9,Real Sociedad,2019/20,domestic_cups,Copa del Rey,transfermarkt-datasets games (final),game_id=3476206,Athletic Bilbao 0-1 Real Sociedad on 2021-04-03
+206d90db,FC Barcelona,2020/21,domestic_cups,Copa del Rey,transfermarkt-datasets games (final),game_id=3531491,Athletic Bilbao 0-4 FC Barcelona on 2021-04-17
+fc536746,Real Betis Balompié,2021/22,domestic_cups,Copa del Rey,transfermarkt-datasets games (final),game_id=3801696,Real Betis Balompié 6-5 Valencia CF on 2022-04-23
+53a2f082,Real Madrid,2022/23,domestic_cups,Copa del Rey,transfermarkt-datasets games (final),game_id=4070772,Real Madrid 2-1 CA Osasuna on 2023-05-06
+2b390eca,Athletic Bilbao,2023/24,domestic_cups,Copa del Rey,transfermarkt-datasets games (final),game_id=4308543,Athletic Bilbao 5-3 RCD Mallorca on 2024-04-06
+e0652b02,Juventus FC,2017/18,domestic_cups,Coppa Italia,transfermarkt-datasets games (final),game_id=3011975,Juventus FC 4-0 AC Milan on 2018-05-09
+7213da33,Società Sportiva Lazio S.p.A.,2018/19,domestic_cups,Coppa Italia,transfermarkt-datasets games (final),game_id=3180032,Atalanta BC 0-2 Società Sportiva Lazio S.p.A. on 2019-05-15
+d48ad4ff,SSC Napoli,2019/20,domestic_cups,Coppa Italia,transfermarkt-datasets games (final),game_id=3384650,SSC Napoli 4-2 Juventus FC on 2020-06-17
+e0652b02,Juventus FC,2020/21,domestic_cups,Coppa Italia,transfermarkt-datasets games (final),game_id=3520038,Atalanta BC 1-2 Juventus FC on 2021-05-19
+d609edc0,Inter Milan,2021/22,domestic_cups,Coppa Italia,transfermarkt-datasets games (final),game_id=3800178,Juventus FC 2-4 Inter Milan on 2022-05-11
+d609edc0,Inter Milan,2022/23,domestic_cups,Coppa Italia,transfermarkt-datasets games (final),game_id=4080529,ACF Fiorentina 1-2 Inter Milan on 2023-05-24
+e0652b02,Juventus FC,2023/24,domestic_cups,Coppa Italia,transfermarkt-datasets games (final),game_id=4336025,Atalanta BC 0-1 Juventus FC on 2024-05-15
+e2d8892c,Paris Saint-Germain FC,2017/18,domestic_cups,Coupe de France,"wikidata edition item (P3450 competition, P1346 winner)",Q30306812,"2017–18 Coupe de France, Transfermarkt club 583"
+b3072e00,Stade Rennais F.C.,2018/19,domestic_cups,Coupe de France,"wikidata edition item (P3450 competition, P1346 winner)",Q55220860,"2018–19 Coupe de France, Transfermarkt club 273"
+e2d8892c,Paris Saint-Germain FC,2019/20,domestic_cups,Coupe de France,"wikidata edition item (P3450 competition, P1346 winner)",Q64624922,"2019–20 Coupe de France, Transfermarkt club 583"
+e2d8892c,Paris Saint-Germain FC,2020/21,domestic_cups,Coupe de France,"wikidata edition item (P3450 competition, P1346 winner)",Q97167021,"2020–21 Coupe de France, Transfermarkt club 583"
+d7a486cd,FC Nantes,2021/22,domestic_cups,Coupe de France,"wikidata edition item (P3450 competition, P1346 winner)",Q107114962,"2021–22 Coupe de France, Transfermarkt club 995"
+3f8c4b5f,Toulouse FC,2022/23,domestic_cups,Coupe de France,"wikidata edition item (P3450 competition, P1346 winner)",Q113535552,"2022–23 Coupe de France, Transfermarkt club 415"
+e2d8892c,Paris Saint-Germain FC,2023/24,domestic_cups,Coupe de France,"wikidata edition item (P3450 competition, P1346 winner)",Q118107813,"2023-24 Coupe de France, Transfermarkt club 583"
+e2d8892c,Paris Saint-Germain FC,2017/18,domestic_cups,Coupe de la Ligue,"wikidata edition item (P3450 competition, P1346 winner)",Q33779779,"2017–18 Coupe de la Ligue, Transfermarkt club 583"
+c0d3eab4,RC Strasbourg Alsace,2018/19,domestic_cups,Coupe de la Ligue,"wikidata edition item (P3450 competition, P1346 winner)",Q55187618,"2018–19 Coupe de la Ligue, Transfermarkt club 667"
+e2d8892c,Paris Saint-Germain FC,2019/20,domestic_cups,Coupe de la Ligue,"wikidata edition item (P3450 competition, P1346 winner)",Q63615759,"2019–20 Coupe de la Ligue, Transfermarkt club 583"
+f0ac8ee6,Eintracht Frankfurt,2017/18,domestic_cups,DFB-Pokal,transfermarkt-datasets games (final),game_id=3034033,Bayern Munich 1-3 Eintracht Frankfurt on 2018-05-19
+054efa67,Bayern Munich,2018/19,domestic_cups,DFB-Pokal,transfermarkt-datasets games (final),game_id=3179584,RB Leipzig 0-3 Bayern Munich on 2019-05-25
+054efa67,Bayern Munich,2019/20,domestic_cups,DFB-Pokal,transfermarkt-datasets games (final),game_id=3383750,Bayer 04 Leverkusen 2-4 Bayern Munich on 2020-07-04
+add600ae,Borussia Dortmund,2020/21,domestic_cups,DFB-Pokal,transfermarkt-datasets games (final),game_id=3560009,RB Leipzig 1-4 Borussia Dortmund on 2021-05-13
+acbb6a5b,RB Leipzig,2021/22,domestic_cups,DFB-Pokal,transfermarkt-datasets games (final),game_id=3800215,SC Freiburg 3-5 RB Leipzig on 2022-05-21
+acbb6a5b,RB Leipzig,2022/23,domestic_cups,DFB-Pokal,transfermarkt-datasets games (final),game_id=4070233,RB Leipzig 2-0 Eintracht Frankfurt on 2023-06-03
+c7a9f859,Bayer 04 Leverkusen,2023/24,domestic_cups,DFB-Pokal,transfermarkt-datasets games (final),game_id=4323506,1.FC Kaiserslautern 0-1 Bayer 04 Leverkusen on 2024-05-25
+b8fd03ef,Manchester City F.C.,2017/18,domestic_cups,EFL Cup,"wikidata edition item (P3450 competition, P1346 winner)",Q30310823,"2017–18 EFL Cup, Transfermarkt club 281"
+b8fd03ef,Manchester City F.C.,2018/19,domestic_cups,EFL Cup,"wikidata edition item (P3450 competition, P1346 winner)",Q48784990,"2018–19 EFL Cup, Transfermarkt club 281"
+b8fd03ef,Manchester City F.C.,2019/20,domestic_cups,EFL Cup,"wikidata edition item (P3450 competition, P1346 winner)",Q64625065,"2019–20 EFL Cup, Transfermarkt club 281"
+b8fd03ef,Manchester City F.C.,2020/21,domestic_cups,EFL Cup,"wikidata edition item (P3450 competition, P1346 winner)",Q96417449,"2020–21 EFL Cup, Transfermarkt club 281"
+822bd0ba,Liverpool F.C.,2021/22,domestic_cups,EFL Cup,"wikidata edition item (P3450 competition, P1346 winner)",Q106970289,"2021–22 EFL Cup, Transfermarkt club 31"
+19538871,Manchester United F.C.,2022/23,domestic_cups,EFL Cup,"wikidata edition item (P3450 competition, P1346 winner)",Q111940268,"2022–23 EFL Cup, Transfermarkt club 985"
+822bd0ba,Liverpool F.C.,2023/24,domestic_cups,EFL Cup,"wikidata edition item (P3450 competition, P1346 winner)",Q119848572,"2023–24 EFL Cup, Transfermarkt club 31"
+cff3d9bb,Chelsea FC,2017/18,domestic_cups,FA Cup,transfermarkt-datasets games (final),game_id=3035722,Chelsea FC 1-0 Manchester United on 2018-05-19
+b8fd03ef,Manchester City,2018/19,domestic_cups,FA Cup,transfermarkt-datasets games (final),game_id=3174643,Manchester City 6-0 Watford FC on 2019-05-18
+18bb7c10,Arsenal FC,2019/20,domestic_cups,FA Cup,transfermarkt-datasets games (final),game_id=3401687,Arsenal FC 2-1 Chelsea FC on 2020-08-01
+a2d435b3,Leicester City,2020/21,domestic_cups,FA Cup,transfermarkt-datasets games (final),game_id=3554787,Chelsea FC 0-1 Leicester City on 2021-05-15
+822bd0ba,Liverpool FC,2021/22,domestic_cups,FA Cup,transfermarkt-datasets games (final),game_id=3813442,Chelsea FC 5-6 Liverpool FC on 2022-05-14
+b8fd03ef,Manchester City,2022/23,domestic_cups,FA Cup,transfermarkt-datasets games (final),game_id=4064735,Manchester City 2-1 Manchester United on 2023-06-03
+19538871,Manchester United,2023/24,domestic_cups,FA Cup,transfermarkt-datasets games (final),game_id=4334126,Manchester City 1-2 Manchester United on 2024-05-25
+53a2f082,Real Madrid,2017/18,european_trophies,Champions League,transfermarkt-datasets games (final),game_id=3038747,Real Madrid 3-1 Liverpool FC on 2018-05-26
+822bd0ba,Liverpool FC,2018/19,european_trophies,Champions League,transfermarkt-datasets games (final),game_id=3183105,Tottenham Hotspur 0-2 Liverpool FC on 2019-06-01
+054efa67,Bayern Munich,2019/20,european_trophies,Champions League,transfermarkt-datasets games (final),game_id=3421017,Paris Saint-Germain 0-1 Bayern Munich on 2020-08-23
+cff3d9bb,Chelsea FC,2020/21,european_trophies,Champions League,transfermarkt-datasets games (final),game_id=3562547,Manchester City 0-1 Chelsea FC on 2021-05-29
+53a2f082,Real Madrid,2021/22,european_trophies,Champions League,transfermarkt-datasets games (final),game_id=3812391,Liverpool FC 0-1 Real Madrid on 2022-05-28
+b8fd03ef,Manchester City,2022/23,european_trophies,Champions League,transfermarkt-datasets games (final),game_id=4077814,Manchester City 1-0 Inter Milan on 2023-06-10
+53a2f082,Real Madrid,2023/24,european_trophies,Champions League,transfermarkt-datasets games (final),game_id=4343512,Borussia Dortmund 0-2 Real Madrid on 2024-06-01
+cf74a709,Associazione Sportiva Roma,2021/22,european_trophies,Conference League,transfermarkt-datasets games (final),game_id=3813155,Associazione Sportiva Roma 1-0 Feyenoord Rotterdam on 2022-05-25
+7c21e445,West Ham United,2022/23,european_trophies,Conference League,transfermarkt-datasets games (final),game_id=4078395,ACF Fiorentina 1-2 West Ham United on 2023-06-07
+,Olympiakos Syndesmos Filathlon Peiraios,2023/24,european_trophies,Conference League,transfermarkt-datasets games (final),game_id=4344180,Olympiakos Syndesmos Filathlon Peiraios 1-0 ACF Fiorentina on 2024-05-29
+db3b9613,Atlético de Madrid,2017/18,european_trophies,Europa League,transfermarkt-datasets games (final),game_id=3038918,Olympique Marseille 0-3 Atlético de Madrid on 2018-05-16
+cff3d9bb,Chelsea FC,2018/19,european_trophies,Europa League,transfermarkt-datasets games (final),game_id=3184382,Chelsea FC 4-1 Arsenal FC on 2019-05-29
+ad2be733,Sevilla FC,2019/20,european_trophies,Europa League,transfermarkt-datasets games (final),game_id=3419625,Sevilla FC 3-2 Inter Milan on 2020-08-21
+2a8183b3,Villarreal CF,2020/21,european_trophies,Europa League,transfermarkt-datasets games (final),game_id=3563783,Villarreal CF 12-11 Manchester United on 2021-05-26
+f0ac8ee6,Eintracht Frankfurt,2021/22,european_trophies,Europa League,transfermarkt-datasets games (final),game_id=3813154,Eintracht Frankfurt 6-5 Rangers FC on 2022-05-18
+ad2be733,Sevilla FC,2022/23,european_trophies,Europa League,transfermarkt-datasets games (final),game_id=4078394,Sevilla FC 5-2 Associazione Sportiva Roma on 2023-05-31
+922493f3,Atalanta BC,2023/24,european_trophies,Europa League,transfermarkt-datasets games (final),game_id=4344179,Atalanta BC 3-0 Bayer 04 Leverkusen on 2024-05-22
+054efa67,Bayern Munich,2017/18,league_titles,Bundesliga,transfermarkt-datasets games (league table),L1:2017:table from 306 games,"84 pts, GD +64"
+054efa67,Bayern Munich,2018/19,league_titles,Bundesliga,transfermarkt-datasets games (league table),L1:2018:table from 306 games,"78 pts, GD +56"
+054efa67,Bayern Munich,2019/20,league_titles,Bundesliga,transfermarkt-datasets games (league table),L1:2019:table from 306 games,"82 pts, GD +68"
+054efa67,Bayern Munich,2020/21,league_titles,Bundesliga,transfermarkt-datasets games (league table),L1:2020:table from 306 games,"78 pts, GD +55"
+054efa67,Bayern Munich,2021/22,league_titles,Bundesliga,transfermarkt-datasets games (league table),L1:2021:table from 306 games,"77 pts, GD +60"
+054efa67,Bayern Munich,2022/23,league_titles,Bundesliga,transfermarkt-datasets games (league table),L1:2022:table from 306 games,"71 pts, GD +54"
+c7a9f859,Bayer 04 Leverkusen,2023/24,league_titles,Bundesliga,transfermarkt-datasets games (league table),L1:2023:table from 306 games,"90 pts, GD +65"
+206d90db,FC Barcelona,2017/18,league_titles,La Liga,transfermarkt-datasets games (league table),ES1:2017:table from 380 games,"93 pts, GD +70"
+206d90db,FC Barcelona,2018/19,league_titles,La Liga,transfermarkt-datasets games (league table),ES1:2018:table from 380 games,"87 pts, GD +54"
+53a2f082,Real Madrid,2019/20,league_titles,La Liga,transfermarkt-datasets games (league table),ES1:2019:table from 380 games,"87 pts, GD +45"
+db3b9613,Atlético de Madrid,2020/21,league_titles,La Liga,transfermarkt-datasets games (league table),ES1:2020:table from 380 games,"86 pts, GD +42"
+53a2f082,Real Madrid,2021/22,league_titles,La Liga,transfermarkt-datasets games (league table),ES1:2021:table from 380 games,"86 pts, GD +49"
+206d90db,FC Barcelona,2022/23,league_titles,La Liga,transfermarkt-datasets games (league table),ES1:2022:table from 380 games,"88 pts, GD +50"
+53a2f082,Real Madrid,2023/24,league_titles,La Liga,transfermarkt-datasets games (league table),ES1:2023:table from 380 games,"95 pts, GD +61"
+e2d8892c,Paris Saint-Germain,2017/18,league_titles,Ligue 1,transfermarkt-datasets games (league table),FR1:2017:table from 380 games,"93 pts, GD +79"
+e2d8892c,Paris Saint-Germain,2018/19,league_titles,Ligue 1,transfermarkt-datasets games (league table),FR1:2018:table from 380 games,"91 pts, GD +70"
+e2d8892c,Paris Saint-Germain,2019/20,league_titles,Ligue 1,transfermarkt-datasets games (league table),FR1:2019:table from 279 games,"68 pts, GD +51"
+cb188c0c,LOSC Lille,2020/21,league_titles,Ligue 1,transfermarkt-datasets games (league table),FR1:2020:table from 380 games,"83 pts, GD +41"
+e2d8892c,Paris Saint-Germain,2021/22,league_titles,Ligue 1,transfermarkt-datasets games (league table),FR1:2021:table from 380 games,"86 pts, GD +54"
+e2d8892c,Paris Saint-Germain,2022/23,league_titles,Ligue 1,transfermarkt-datasets games (league table),FR1:2022:table from 380 games,"85 pts, GD +49"
+e2d8892c,Paris Saint-Germain,2023/24,league_titles,Ligue 1,transfermarkt-datasets games (league table),FR1:2023:table from 306 games,"76 pts, GD +48"
+b8fd03ef,Manchester City,2017/18,league_titles,Premier League,transfermarkt-datasets games (league table),GB1:2017:table from 380 games,"100 pts, GD +79"
+b8fd03ef,Manchester City,2018/19,league_titles,Premier League,transfermarkt-datasets games (league table),GB1:2018:table from 380 games,"98 pts, GD +72"
+822bd0ba,Liverpool FC,2019/20,league_titles,Premier League,transfermarkt-datasets games (league table),GB1:2019:table from 380 games,"99 pts, GD +52"
+b8fd03ef,Manchester City,2020/21,league_titles,Premier League,transfermarkt-datasets games (league table),GB1:2020:table from 380 games,"86 pts, GD +51"
+b8fd03ef,Manchester City,2021/22,league_titles,Premier League,transfermarkt-datasets games (league table),GB1:2021:table from 380 games,"93 pts, GD +73"
+b8fd03ef,Manchester City,2022/23,league_titles,Premier League,transfermarkt-datasets games (league table),GB1:2022:table from 380 games,"89 pts, GD +61"
+b8fd03ef,Manchester City,2023/24,league_titles,Premier League,transfermarkt-datasets games (league table),GB1:2023:table from 380 games,"91 pts, GD +62"
+e0652b02,Juventus FC,2017/18,league_titles,Serie A,transfermarkt-datasets games (league table),IT1:2017:table from 380 games,"95 pts, GD +62"
+e0652b02,Juventus FC,2018/19,league_titles,Serie A,transfermarkt-datasets games (league table),IT1:2018:table from 380 games,"90 pts, GD +40"
+e0652b02,Juventus FC,2019/20,league_titles,Serie A,transfermarkt-datasets games (league table),IT1:2019:table from 380 games,"83 pts, GD +33"
+d609edc0,Inter Milan,2020/21,league_titles,Serie A,transfermarkt-datasets games (league table),IT1:2020:table from 380 games,"91 pts, GD +54"
+dc56fe14,AC Milan,2021/22,league_titles,Serie A,transfermarkt-datasets games (league table),IT1:2021:table from 380 games,"86 pts, GD +38"
+d48ad4ff,SSC Napoli,2022/23,league_titles,Serie A,transfermarkt-datasets games (league table),IT1:2022:table from 380 games,"90 pts, GD +49"
+d609edc0,Inter Milan,2023/24,league_titles,Serie A,transfermarkt-datasets games (league table),IT1:2023:table from 380 games,"94 pts, GD +67"

@@ -1,0 +1,26 @@
+fbref_team_id,club_name,field,value,decision,decided_by,decided_on,reason
+8602292d,Aston Villa,city,Birmingham,accepted,Tyler,2026-09-12,"Aston is a district of Birmingham, so Birmingham is right"
+2b390eca,Athletic Bilbao,city,Bilbao,accepted,Tyler,2026-09-12,headquarters is Ibaigane Palace in Bilbao; the city is right
+ee7c297c,Cádiz CF,city,Cádiz,accepted,Tyler,2026-09-12,"headquarters class was unknown, but Cádiz is right"
+0cdc4311,FC Augsburg,city,Augsburg,accepted,Tyler,2026-09-12,"no headquarters on Wikidata; the stadium's city, Augsburg, is right"
+281b0e73,Montpellier HSC,city,Montpellier,accepted,Tyler,2026-09-12,headquarters is a château in Montpellier; the city is right
+b3072e00,Stade Rennais FC,city,Rennes,accepted,Tyler,2026-09-12,"headquarters is a training centre, but it resolved to Rennes, which is right"
+fd6114db,AS Monaco,city,Monaco,override,Tyler,2026-09-12,derived value was 'Commune of Monaco'
+d298ef2c,AS Saint-Étienne,city,Saint-Étienne,override,Tyler,2026-09-12,"Wikidata's headquarters is the club's training ground, not its city"
+c4260e09,Cagliari Calcio,city,Cagliari,override,Tyler,2026-09-12,"Wikidata's headquarters is the club's training ground, not its city"
+123f3efe,FC Girondins Bordeaux,city,Bordeaux,override,Tyler,2026-09-12,"Wikidata's headquarters is the club's training ground, not its city"
+d7a486cd,FC Nantes,city,Nantes,override,Tyler,2026-09-12,"Wikidata's headquarters is the club's training ground, not its city"
+cb188c0c,LOSC Lille,city,Lille,override,Tyler,2026-09-12,"Wikidata's headquarters is the club's training ground, not its city"
+e4a775cb,Nottingham Forest,city,Nottingham,override,Tyler,2026-09-12,"the City Ground is just outside the city boundary, in West Bridgford"
+d53c0b06,Olympique Lyon,city,Lyon,override,Tyler,2026-09-12,"derived value was the stadium's commune, Décines-Charpieu"
+5725cc7b,Olympique Marseille,city,Marseille,override,Tyler,2026-09-12,"derived value was a training-centre name, not a place"
+fd4e0f7d,RC Lens,city,Lens,override,Tyler,2026-09-12,"Wikidata's headquarters is the club's training ground, not its city"
+a8661628,RCD Espanyol Barcelona,city,Barcelona,override,Tyler,2026-09-12,"derived value was the stadium's suburb, Cornellà de Llobregat"
+7213da33,Società Sportiva Lazio S.p.A.,city,Rome,override,Tyler,2026-09-12,"Wikidata's headquarters is the club's training ground, not its city"
+12192a4c,SpVgg Greuther Fürth,city,Fürth,override,Tyler,2026-09-12,"derived value was Furth im Wald, a different town about 200km away"
+7fdd64e0,Stade Reims,city,Reims,override,Tyler,2026-09-12,"Wikidata's headquarters is the club's training ground, not its city"
+361ca564,Tottenham Hotspur,city,London,override,Tyler,2026-09-12,borough-level value; London for consistency with the other London clubs
+7c21e445,West Ham United,city,London,override,Tyler,2026-09-12,borough-level value; London for consistency with the other London clubs
+fd6114db,AS Monaco,country,Monaco,override,Tyler,2026-09-12,Monégasque club playing in the French league; same rule as the Welsh clubs
+75fae011,Cardiff City,country,Wales,override,Tyler,2026-09-12,"Welsh club playing in the English league; country should be accurate, the league field carries the competition"
+fb10988f,Swansea City,country,Wales,override,Tyler,2026-09-12,"Welsh club playing in the English league; country should be accurate, the league field carries the competition"
