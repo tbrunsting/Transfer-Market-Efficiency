@@ -1,0 +1,12 @@
+manager_name,club,resolved_name,decision,decided_by,decided_on,reason
+Luis García,Villarreal CF,Luis García Plaza,split,Tyler,2026-09-12,"Luis García Plaza managed Villarreal (Dec 2018), Mallorca (2020-22) and Alavés (2022-24)"
+Luis García,RCD Mallorca,Luis García Plaza,split,Tyler,2026-09-12,"Luis García Plaza managed Villarreal (Dec 2018), Mallorca (2020-22) and Alavés (2022-24)"
+Luis García,Deportivo Alavés,Luis García Plaza,split,Tyler,2026-09-12,"Luis García Plaza managed Villarreal (Dec 2018), Mallorca (2020-22) and Alavés (2022-24)"
+Luis García,RCD Espanyol Barcelona,Luis García Fernández,split,Tyler,2026-09-12,"Luis García Fernández managed Espanyol in 2023, overlapping the Alavés spell"
+Míchel,Rayo Vallecano,Míchel Sánchez,split,Tyler,2026-09-12,"Míchel Sánchez managed Rayo (2017-19), Huesca (2019-21), Getafe (2021) and Girona (2021-24)"
+Míchel,SD Huesca,Míchel Sánchez,split,Tyler,2026-09-12,"Míchel Sánchez managed Rayo (2017-19), Huesca (2019-21), Getafe (2021) and Girona (2021-24)"
+Míchel,Getafe CF,Míchel Sánchez,split,Tyler,2026-09-12,"Míchel Sánchez managed Rayo (2017-19), Huesca (2019-21), Getafe (2021) and Girona (2021-24)"
+Míchel,Girona FC,Míchel Sánchez,split,Tyler,2026-09-12,"Míchel Sánchez managed Rayo (2017-19), Huesca (2019-21), Getafe (2021) and Girona (2021-24)"
+Míchel,Málaga CF,Míchel González,split,Tyler,2026-09-12,"Míchel González managed Málaga in 2017-18, overlapping the Rayo spell"
+Cristian Brocchi,(all),Cristian Brocchi,confirmed_distinct,Tyler,2026-09-12,"similar spelling to Cristian Bucchi, but they are two different Italian managers; no merge"
+Cristian Bucchi,(all),Cristian Bucchi,confirmed_distinct,Tyler,2026-09-12,"similar spelling to Cristian Brocchi, but they are two different Italian managers; no merge"

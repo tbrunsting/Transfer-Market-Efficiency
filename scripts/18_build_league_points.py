@@ -14,6 +14,13 @@ TWO THINGS THIS TABLE IS HONEST ABOUT
    cannot know about. Where a deduction happened, the official table differs.
    The check below detects those cases from the data instead of from memory, by
    comparing the computed position with Transfermarkt's own reported position.
+1b. Known administrative deductions are FLAGGED, not applied:
+   known_deduction marks the cases identified so far, each corroborated by the
+   position check below rather than asserted from memory. This is not a complete
+   list of every deduction in the window. Revisit criterion (the same one used
+   for wages and loan fees): if the sporting-return pillar produces results that
+   look wrong in a way deductions would explain, fetch official tables from
+   Transfermarkt's 35 league-table pages and use those instead.
 2. Ranking uses points, then goal difference, then goals scored. That matches
    the official rules in England, Germany and France, but Spain and Italy break
    ties on head-to-head results first, so a position could differ from the
@@ -43,6 +50,12 @@ OUT = REPO_ROOT / "reference" / "club_season_points.csv"
 SEASONS = range(2017, 2024)
 LEAGUES = {"GB1": "Premier League", "ES1": "La Liga", "IT1": "Serie A", "L1": "Bundesliga", "FR1": "Ligue 1"}
 HEAD_TO_HEAD_LEAGUES = {"ES1", "IT1"}  # these break ties on head-to-head, which a table alone can't reproduce
+# Deductions confirmed by Tyler (2026-09-12). Each was surfaced by the position check below: the computed
+# position sits several places above the one Transfermarkt reports, which a tie-break cannot explain.
+KNOWN_DEDUCTIONS = {
+    ("IT1", 2022, "Juventus FC"): "Serie A points deduction in January 2023: computed 4th on 72 points, listed 7th",
+    ("GB1", 2023, "Everton FC"): "Premier League points deductions in 2023/24: computed 12th on 48 points, listed 15th",
+}
 
 label = lambda s: f"{s}/{(s + 1) % 100:02d}"
 problems, rows = [], []
@@ -86,7 +99,11 @@ for comp, comp_name in LEAGUES.items():
                 above = ranked[pos - 2][1]
                 if above["pts"] == t["pts"] and (above["gf"] - above["ga"]) == (t["gf"] - t["ga"]) and comp in HEAD_TO_HEAD_LEAGUES:
                     note = "level on points and goal difference with the club above; this league breaks ties on head-to-head, so the order here may differ from the official table"
+            ded = KNOWN_DEDUCTIONS.get((comp, season, meta.club_name.get(fb, "")))
+            if ded:
+                note = (note + "; " if note else "") + ded
             rows.append({"fbref_team_id": fb, "club": meta.club_name.get(fb, ""), "country": meta.country.get(fb, ""),
+                         "known_deduction": "yes" if ded else "no",
                          "league": comp_name, "season": label(season), "matches": t["mp"], "wins": t["w"],
                          "draws": t["d"], "losses": t["l"], "goals_for": t["gf"], "goals_against": t["ga"],
                          "goal_difference": t["gf"] - t["ga"], "points_from_results": t["pts"],
@@ -107,6 +124,9 @@ for r in champs.itertuples():
         problems.append(f"{r.league} {r.season}: computed champion {r.club} does not match the trophies table ({expect})")
 if len(points) != sum(98 if s < 2023 else 96 for s in SEASONS):
     problems.append(f"{len(points)} club-seasons, expected {sum(98 if s < 2023 else 96 for s in SEASONS)}")
+found = {(r.league, r.season, r.club) for r in points[points.known_deduction == "yes"].itertuples()}
+if len(found) != len(KNOWN_DEDUCTIONS):
+    problems.append(f"{len(found)} of {len(KNOWN_DEDUCTIONS)} known deduction flags landed on a row: {found}")
 if points.fbref_team_id.eq("").any():
     problems.append(f"{points.fbref_team_id.eq('').sum()} rows could not be mapped to an FBref club")
 per_season = points.groupby(["league", "season"]).matches.sum() / 2

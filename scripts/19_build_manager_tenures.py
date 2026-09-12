@@ -27,6 +27,13 @@ risks, both flagged rather than guessed at:
 A name appearing at two clubs at the same time is proof of the second, so that
 is reported as a contradiction, not a warning.
 
+Resolutions live in reference/manager_name_review.csv, keyed on (name, club),
+the same club-context method the club mapping used for its conflicts: a shared
+name is separated by which club's matches each stint belongs to. "split" renames
+that name at that club; "confirmed_distinct" records that two similar names are
+genuinely two people, so the similarity check stops asking. A stint whose
+(name, club) is not in the ledger is still flagged.
+
 Run:  .venv\Scripts\python scripts\19_build_manager_tenures.py
 """
 
@@ -66,6 +73,27 @@ print(f"{len(m):,} club-matches in the window for the 145 clubs, "
       f"{m.own_manager_name.isna().sum()} with no manager name")
 print(f"  competitions: {', '.join(f'{k} {v:,}' for k, v in m.competition_type.value_counts().items())}")
 
+# ---------------------------------------------------------------- apply the name ledger
+LEDGER = REPO_ROOT / "reference" / "manager_name_review.csv"
+splits, distinct, used = {}, set(), set()
+if LEDGER.exists():
+    with LEDGER.open(newline="", encoding="utf-8") as fh:
+        for d in csv.DictReader(fh):
+            if d["decision"] == "split":
+                splits[(d["manager_name"], d["club"])] = d
+            else:
+                distinct.add(d["manager_name"])
+    club_name_of = {cid: meta.club_name.get(fb, "") for cid, fb in tm_to_fbref.items()}
+    renamed = 0
+    for (name, club), d in splits.items():
+        hit = (m.own_manager_name == name) & (m.club_id.map(club_name_of) == club)
+        if hit.any():
+            m.loc[hit, "own_manager_name"] = d["resolved_name"]
+            used.add((name, club))
+            renamed += int(hit.sum())
+    print(f"  name ledger: {len(splits)} split rule(s) renamed {renamed} club-matches, "
+          f"{len(distinct)} name(s) confirmed as distinct people")
+
 # ---------------------------------------------------------------- fill unrecorded managers where it is unambiguous
 absorbed = 0
 for club_id, grp in m.groupby("club_id"):
@@ -102,6 +130,8 @@ names = sorted(t.manager_name.dropna().unique())
 spelling_pairs = []
 for i, a in enumerate(names):
     for b in names[i + 1:]:
+        if a in distinct and b in distinct:
+            continue  # already checked by a human and confirmed to be two different people
         if strip(a) == strip(b) or difflib.SequenceMatcher(None, strip(a), strip(b)).ratio() >= SPELLING_SIMILARITY:
             spelling_pairs.append((a, b))
 
@@ -129,6 +159,12 @@ if t.matches.sum() != len(m):
     problems.append(f"tenure matches sum to {t.matches.sum()}, but there are {len(m)} club-matches")
 if t.fbref_team_id.nunique() != len(mapping):
     problems.append(f"{t.fbref_team_id.nunique()} clubs have tenures, expected {len(mapping)}")
+stale = [k for k in splits if k not in used]
+if stale:
+    problems.append(f"{len(stale)} name-ledger split rule(s) matched nothing: {stale}")
+if overlaps:
+    problems.append(f"{len(overlaps)} shared manager name(s) still unresolved: "
+                    + "; ".join(f"{o[0]} at {o[1]} and {o[4]}" for o in overlaps))
 # Independently known, used only to verify: who took at least one LEAGUE match for that club that season.
 CROSSCHECK = {
     ("Chelsea FC", 2022): ["Thomas Tuchel", "Graham Potter", "Bruno Saltor", "Frank Lampard"],
