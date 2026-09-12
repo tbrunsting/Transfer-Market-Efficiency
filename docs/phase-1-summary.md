@@ -123,7 +123,7 @@ as Manchester City's 100 points in 2017/18.
 |---|---|---|
 | Seven seasons, 2017/18–2023/24 | The advanced data stops there | Sports Reference has said some advanced data may return "at a dramatically smaller scale"; anything returning must pass the overlap test first |
 | SCA from Kaggle | Absent from the snapshot at player level; validated against the snapshot where they overlap | — |
-| Loan fees not counted | The Transfermarkt build discards them and cannot separate loans from free transfers. The club-page breakdown is permanent vs free/loan combined | If a club's ranking looks driven by loan activity |
+| ~~Loan fees not counted~~ **Resolved 2026-09-12** | The frozen build discards them, but the club-page pull that fixed the fee-completeness bias recovered €2,189m of loan fees across 1,617 loans and labels every row | Satisfied: breakdown is three-way again (permanent / loan / free) |
 | `points_from_results` is the primary figure | Match results cannot know about administrative deductions | If the sporting-return pillar looks wrong in a way deductions would explain; the fix is 35 Transfermarkt league-table pages |
 | Manager tenures are match-based | This source has no appointment or departure dates | If official dates are ever needed for something finer than section 4.9's season-snapped bands |
 | `country` is the club's own | Cardiff and Swansea are Welsh, Monaco Monegasque; the league field carries the competition | — |

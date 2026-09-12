@@ -184,38 +184,43 @@ run.
 - **The passing file's older version** covers 2017/18–2021/22 (rule 2). The
   check found no difference in 2022/23 once blank rows are set aside.
 
-## Known limitation: loan fees, and loans vs free transfers
+## Resolved: loan fees, and loans vs free transfers
 
-Loan fees are a real part of what clubs pay and receive, and leaving them out
-is a genuine limitation of this analysis.
+**This was a known limitation. It is no longer one** (resolved 2026-09-12).
 
-They are left out because the Transfermarkt source records every loan, loan
-return and free transfer as a fee of 0, and discards loan fees: its parser
+It was accepted because the Transfermarkt build first used records every loan,
+loan return and free transfer as a fee of 0 and discards loan fees: its parser
 only reads fee text beginning with "€", and Transfermarkt writes loan fees as
-"Loan fee:€5.80m". Transfermarkt's own club pages do label them, but
-recovering them would take about 1,015 live page fetches from a site that
-already blocks automated clients from cloud servers. That's a fragile
-dependency of the same kind that ended this project's FBref scraping, and it
-would recover a small share of the money: Chelsea's six loan fees received in
-2023/24 came to €17.6m.
+"Loan fee:€5.80m". Recovering them meant about 1,015 live page fetches, which
+looked like a fragile dependency for a small share of the money.
 
-What this means:
+**What changed.** A different, larger problem forced the same fetch anyway: the
+frozen transfers table turned out to be missing real fee-bearing signings, and
+missing them unevenly across the window (79% of true spend present in 2017/18,
+99.6% in 2023/24 — see [`phase-2-schema.md`](phase-2-schema.md) section 2).
+Fixing that required pulling fees from Transfermarkt's club pages, and those
+pages label every row, so the loan data came with it.
 
-- **The club page's spending breakdown is two-way, not three-way:** permanent
-  transfers with a disclosed fee, and free transfers and loans combined (moves
-  recorded with no fee). Transfers with an undisclosed fee (NULL) are counted
-  as moves but not valued (scoping doc 7).
-- **Loan fees paid and received appear in no money flow.**
-- **Loan returns look like zero-fee moves** back to the parent club (dated 30
-  June, filed in the season that's ending). The warehouse will need to
-  identify them by pattern: a zero-fee move that reverses an earlier
-  zero-fee move of the same player between the same two clubs. They should
-  then be left out of transfer counts.
+**The revisit criterion has been satisfied rather than left open.** What the
+pull recovered:
 
-**Revisit criterion:** if clubs that run large loan operations look
-systematically mis-scored in a way loan fees would explain (for example, a
-club earning heavily from loan fees ranking implausibly low on trading), loan
-fees get added from Transfermarkt's club pages.
+- **€2,189m of loan fees across 1,617 loans**, entirely absent from the frozen
+  table. 14.4% of loans carry a fee (median €0.6m, up to €20m).
+- **Every row's own label**, so loans, loan returns, free transfers and
+  undisclosed fees are read rather than inferred: 8,245 permanent fees, 11,596
+  end-of-loan, 9,648 loans, 7,460 free, 5,479 undisclosed, 1,617 loans with a
+  fee.
+
+What this now means:
+
+- **The club page's spending breakdown is three-way again:** permanent, loan
+  and free, as the original mockup had it. The two-way compromise is reverted.
+- **Loan fees paid and received appear in the money flows.**
+- **Loan returns are identified by their own label**, not by pattern-matching
+  reversal pairs. The reversal-pair rule survives only as a documented fallback
+  for rows that exist solely in the frozen table.
+- Transfers with an undisclosed fee are still counted as moves but never
+  valued (scoping doc 7).
 
 ## Shot-creating actions (SCA): kept, sourced from Kaggle for all seven seasons
 

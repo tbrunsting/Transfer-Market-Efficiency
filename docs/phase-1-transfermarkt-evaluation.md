@@ -91,12 +91,15 @@ two, and 103 had three or more (caretakers included).
 
 1. **Adopted.** `transfermarkt-datasets` is the Transfermarkt source for clubs,
    fixtures and league points, transfer fees, market values and managers.
-2. **Loan limitation accepted; no live fetches.** Loan fees aren't recovered,
-   and loans aren't separated from free transfers. The club page's spending
-   breakdown becomes two-way: permanent transfers with a disclosed fee, and
-   free transfers and loans combined. Documented as a known limitation, with a
-   revisit criterion, in
-   [`phase-1-data-coverage.md`](phase-1-data-coverage.md).
+2. **Loan limitation accepted; no live fetches.** ~~Loan fees aren't recovered,
+   and loans aren't separated from free transfers.~~
+   **Superseded 2026-09-12.** A separate finding — the frozen table is missing
+   real fee-bearing signings, unevenly across the window — forced a full pull of
+   Transfermarkt's club transfer pages anyway, and those pages label every row.
+   Loan fees are recovered (€2,189m across 1,617 loans) and the club page's
+   spending breakdown is three-way again. See
+   [`phase-1-data-coverage.md`](phase-1-data-coverage.md) and
+   [`phase-2-schema.md`](phase-2-schema.md) section 2.
 3. **Managers from the per-match names.** Tenure bands for scoping doc 4.9 are
    built from them. There are no official appointment dates, and names are
    checked by hand for spelling variants because there are no manager IDs.
