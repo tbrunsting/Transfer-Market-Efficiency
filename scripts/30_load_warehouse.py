@@ -288,6 +288,19 @@ def build_player_season():
 
     # SCA and GCA come from Kaggle via the stored crosswalk, per-90 turned back into totals.
     cw = pd.read_csv(REF / "kaggle_fbref_crosswalk.csv")
+    # Manual links from reference/kaggle_crosswalk_review.csv ("gap" rows are provenance only).
+    kled = pd.read_csv(REF / "kaggle_crosswalk_review.csv", dtype={"fbref_player_id": str})
+    klinks = kled[kled.decision == "link"]
+    cw = pd.concat([cw, pd.DataFrame({
+        "season_end_year": klinks.season_end_year.astype(int), "kaggle_player": klinks.kaggle_player,
+        "kaggle_squad": klinks.kaggle_squad, "kaggle_born": klinks.kaggle_born.astype(float),
+        "fbref_player_id": klinks.fbref_player_id, "fbref_squad": klinks.fbref_squad,
+        "match_method": "manual"})], ignore_index=True)
+    for key, what in ((["season_end_year", "fbref_squad", "fbref_player_id"], "FBref player-season"),
+                      (["season_end_year", "kaggle_squad", "kaggle_player"], "Kaggle row")):
+        dupes = cw[cw.duplicated(key, keep=False)]
+        if len(dupes):
+            sys.exit(f"STOP: a {what} is linked more than once in the crosswalk: {dupes[key].head().to_dict('records')}")
     kag = pd.concat([pd.read_csv(p) for p in sorted(KAGGLE.glob("cleaned_*.csv"))], ignore_index=True)
     kag["season_end_year"] = kag.season.str[:4].astype(int) + 1
     sca_col = next((c for c in kag.columns if c.lower().startswith("shot creating")), None)
@@ -299,8 +312,11 @@ def build_player_season():
                     right_on=["season_end_year", "player", "squad"], how="left")
     link = link.rename(columns={"season_end_year": "Season_End_Year", "fbref_player_id": "fbref_player_id",
                                 "fbref_squad": "Squad"})
+    before = len(f)
     f = f.merge(link[["Season_End_Year", "Squad", "fbref_player_id", sca_col] + ([gca_col] if gca_col else [])],
                 on=["Season_End_Year", "Squad", "fbref_player_id"], how="left")
+    if len(f) != before:
+        sys.exit(f"STOP: joining SCA changed the player-season count from {before:,} to {len(f):,}")
     f["sca"] = (f[sca_col] * f.nineties).round()
     f["gca"] = (f[gca_col] * f.nineties).round() if gca_col else None
     f["sca_source"] = f[sca_col].notna().map({True: "kaggle", False: None})
@@ -528,7 +544,8 @@ def build_meta():
     man = pd.concat([pd.read_csv(REF / m).assign(manifest=m) for m in MANIFESTS], ignore_index=True)
     tables["meta.source_manifest"] = man
     ledgers = {"club_mapping_review.csv": "club_id_mapping", "club_metadata_review.csv": "club_metadata",
-               "manager_name_review.csv": "manager_tenures", "player_id_review.csv": "dim_player"}
+               "manager_name_review.csv": "manager_tenures", "player_id_review.csv": "dim_player",
+               "kaggle_crosswalk_review.csv": "fact_player_season"}
     rows = []
     for f, src in ledgers.items():
         d = pd.read_csv(REF / f)
@@ -536,7 +553,8 @@ def build_meta():
             rows.append({"source_table": src,
                          "entity_id": getattr(r, "fbref_team_id", None) or getattr(r, "fbref_player_id", None)
                                       or getattr(r, "manager_name", ""),
-                         "field": getattr(r, "field", None) or getattr(r, "club", None),
+                         "field": getattr(r, "field", None) or getattr(r, "club", None)
+                                  or (str(r.season_end_year) if hasattr(r, "season_end_year") else None),
                          "value": str(getattr(r, "value", "") or getattr(r, "resolved_name", "")),
                          "decision": r.decision, "decided_by": r.decided_by, "decided_on": r.decided_on,
                          "reason": r.reason})

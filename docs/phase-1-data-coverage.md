@@ -291,3 +291,24 @@ scores on SCA.
   mode fetches FBref pages fine, but since 20 Jan 2026 there's no advanced data
   on them to fetch (gca, defense and standard 2023/24 checked in raw HTML; see
   the diagnostics doc).
+
+## Known gaps in shot-creating actions (2026-09-13)
+
+SCA comes from Kaggle for all seven seasons (one source per metric). Measured in
+the loaded warehouse, it covers **99.79% of minutes played**. Most of the
+player-seasons without it are cameos under 90 minutes, where a per-90 figure
+barely exists.
+
+Two regulars (900+ minutes) were investigated individually:
+
+- **Gabriel Martinelli, Arsenal 2022/23: fixed.** The crosswalk missed him
+  twice for legitimate reasons: FBref names him "Martinelli" that season, and
+  FBref's xG (9.3) differs from Kaggle's (9.1). Linked by hand after confirming
+  the Kaggle row is not a duplicate of his 2023/24 row (47 of 64 columns
+  differ). Recorded in `reference/kaggle_crosswalk_review.csv`.
+- **Atakan Karazor, Stuttgart 2020/21 to 2023/24: documented gap.** He has no
+  row in the Kaggle dataset in any season. The old worldfootballR GCA release
+  could supply two of those seasons, but that would mix SCA sources, so these
+  four player-seasons have no SCA. Recorded as `gap` rows in the same ledger,
+  and checked by `sql/03_checks.sql`, which fails if any other regular appears
+  without SCA.

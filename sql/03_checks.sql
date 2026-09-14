@@ -23,7 +23,11 @@ UNION ALL SELECT 'fact_club_season rows', '684', count(*)::text FROM fact_club_s
 UNION ALL SELECT 'fact_club_trophy rows', '96', count(*)::text FROM fact_club_trophy
 UNION ALL SELECT 'fact_manager_tenure rows', '906', count(*)::text FROM fact_manager_tenure
 UNION ALL SELECT 'dim_season scored seasons', '7', count(*)::text FROM dim_season WHERE is_scored
-UNION ALL SELECT 'meta.decision rows (human calls)', '96', count(*)::text FROM meta.decision
+UNION ALL SELECT 'meta.decision rows (human calls)', '101', count(*)::text FROM meta.decision
+UNION ALL SELECT 'Kaggle link applied: Martinelli 2022/23 has SCA', '1',
+       count(*)::text FROM fact_player_season f JOIN dim_player p USING (player_key)
+       JOIN dim_season s USING (season_key)
+       WHERE p.fbref_player_id = '48a5a5d6' AND s.season_label = '2022/23' AND f.sca IS NOT NULL
 UNION ALL SELECT 'dim_player: the 14 identity fixes applied (Rønnow relinked)', '107775',
        coalesce(max(transfermarkt_id)::text, 'not found') FROM dim_player WHERE fbref_player_id = 'a70b8345'
 UNION ALL SELECT 'meta.source_manifest rows', '1104', count(*)::text FROM meta.source_manifest
@@ -32,11 +36,14 @@ UNION ALL SELECT 'meta.source_manifest rows', '1104', count(*)::text FROM meta.s
 -- NULL means undisclosed. If a load ever zero-fills, undisclosed drops to 0 and
 -- the count of zero fees jumps: both numbers are checked, not just one.
 UNION ALL
-SELECT 'fee rule: undisclosed fees are NULL, not 0',
-       'more than 4000 undisclosed',
-       count(*) FILTER (WHERE fee_eur IS NULL)::text || ' NULL, '
-       || count(*) FILTER (WHERE fee_eur = 0)::text || ' zero'
+SELECT 'fee rule: undisclosed fees are stored as NULL', '>=4000',
+       count(*) FILTER (WHERE fee_eur IS NULL)::text
 FROM fact_transfer
+UNION ALL
+SELECT 'fee rule: every zero fee is a loan, loan return or free transfer', '0',
+       count(*)::text
+FROM fact_transfer t JOIN dim_transfer_type tt USING (transfer_type_key)
+WHERE t.fee_eur = 0 AND tt.transfer_type NOT IN ('loan', 'loan_return', 'free')
 UNION ALL
 SELECT 'fee rule: no row claims disclosed with a NULL fee', '0',
        count(*)::text FROM fact_transfer WHERE is_fee_disclosed AND fee_eur IS NULL
@@ -97,12 +104,16 @@ UNION ALL
 SELECT 'player-seasons: every row has a position group', '0 missing',
        count(*)::text || ' missing' FROM fact_player_season WHERE position_group_key IS NULL
 UNION ALL
-SELECT 'player-seasons: SCA present for the vast majority', 'over 95%',
-       round(100.0 * count(*) FILTER (WHERE sca IS NOT NULL) / count(*), 1)::text || '%'
+SELECT 'player-seasons: SCA covers at least 99.5% of minutes played', '>=99.5',
+       round(100.0 * sum(minutes) FILTER (WHERE sca IS NOT NULL) / sum(minutes), 2)::text
 FROM fact_player_season
 UNION ALL
-SELECT 'player-seasons: availability denominator is populated', 'over 99%',
-       round(100.0 * count(*) FILTER (WHERE team_matches_available IS NOT NULL) / count(*), 1)::text || '%'
+SELECT 'player-seasons: 900+ minutes with no SCA (known gap: Atakan Karazor, 4 seasons)', '4',
+       count(*)::text
+FROM fact_player_season WHERE minutes >= 900 AND sca IS NULL
+UNION ALL
+SELECT 'player-seasons: availability denominator is populated', '>=99',
+       round(100.0 * count(*) FILTER (WHERE team_matches_available IS NOT NULL) / count(*), 1)::text
 FROM fact_player_season
 UNION ALL
 SELECT 'player-seasons: minutes never exceed the season',
@@ -145,8 +156,16 @@ judged AS (
            CASE
                WHEN expected ~ '^\d+$' AND actual ~ '^\d+$' AND expected = actual THEN 'PASS'
                WHEN expected ~ '^\d+$' AND actual ~ '^\d+$'                        THEN 'FAIL'
+               -- '>=99.5': a floor
+               WHEN expected ~ '^>=[\d.]+$' AND actual ~ '^[\d.]+$'
+                   THEN CASE WHEN actual::numeric >= substr(expected, 3)::numeric THEN 'PASS' ELSE 'FAIL' END
+               -- '5400-5700': an inclusive range
+               WHEN expected ~ '^\d+-\d+$' AND actual ~ '^\d+$'
+                   THEN CASE WHEN actual::numeric BETWEEN split_part(expected, '-', 1)::numeric
+                                                      AND split_part(expected, '-', 2)::numeric
+                             THEN 'PASS' ELSE 'FAIL' END
                WHEN expected = actual                                                 THEN 'PASS'
-               ELSE 'REVIEW'      -- ranges and percentages: read the numbers
+               ELSE 'REVIEW'
            END AS status
     FROM checks
 )
@@ -157,6 +176,13 @@ ORDER BY CASE status WHEN 'FAIL' THEN 0 WHEN 'REVIEW' THEN 1 ELSE 2 END, check_n
 -- =============================================================================
 -- Informational: things to read rather than assert
 -- =============================================================================
+
+-- Regulars with no SCA. Anything here beyond the documented Karazor gap is new and needs a look.
+SELECT s.season_label, c.club_name, p.player_name, f.minutes
+FROM fact_player_season f
+JOIN dim_player p USING (player_key) JOIN dim_club c USING (club_key) JOIN dim_season s USING (season_key)
+WHERE f.minutes >= 900 AND f.sca IS NULL
+ORDER BY f.minutes DESC;
 
 -- Where the money is, by season, and how much of it was invisible before the pull.
 SELECT s.season_label,
