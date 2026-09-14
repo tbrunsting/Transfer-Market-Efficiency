@@ -8,6 +8,7 @@ SQL, and a run fails unless the two agree.
 |---|---|---|
 | `R/10_player_quality.R` | `score.player_quality`, `score.player_quality_metric` | `sql/11_check_player_quality.sql` |
 | `R/20_sporting_return.R` | `score.club_season_sporting` (Pillar 4) | `sql/21_check_sporting_return.sql` |
+| `R/30_recruitment_roi.R` | `score.club_season_recruitment`, `score.signing_credit`, `score.league_premium`, `score.run_parameter` (Pillar 1) | `sql/31_check_recruitment_roi.sql` |
 
 Run from the repository root, after any warehouse load (the score tables hold
 the warehouse's surrogate keys, which a reload renumbers):
@@ -15,6 +16,7 @@ the warehouse's surrogate keys, which a reload renumbers):
 ```
 "C:\Program Files\R\R-4.4.1\bin\Rscript.exe" R\10_player_quality.R
 "C:\Program Files\R\R-4.4.1\bin\Rscript.exe" R\20_sporting_return.R
+"C:\Program Files\R\R-4.4.1\bin\Rscript.exe" R\30_recruitment_roi.R
 ```
 
 **R setup.** R 4.4.1 with DBI, RPostgres, dplyr and tidyr in the user library.
@@ -197,3 +199,136 @@ complete fixtures except Ligue 1 2019/20.
 match SQL to 1e-9, every league-season has mean 0 and sd 1, Ligue 1 2019/20 is
 scored on its own 27–28 matches, and Juventus 2022/23 keeps its 72 results
 points.
+
+## 3. Pillar 1: recruitment ROI (scoping doc 5)
+
+One row per club-season: the output that season's signings delivered, per
+deflated euro of fee. It is attributed to the signing window, so a trend line
+reads "how well did this club recruit that summer and winter".
+
+### How output is credited
+
+Grounding showed that crediting output to a signing's first spell loses real
+value. City paid €21.4m for Julián Álvarez and loaned him straight back to River
+Plate. The loan ended the spell, and his City seasons were then credited to a
+loan return, which is not a signing. 267 fee signings were affected. The rule
+(`score.signing_credit`, one row per credited player-season):
+
+- **Fee, free and undisclosed signings** keep the credit through loans out,
+  until a permanent departure (sold, released, or an undisclosed move).
+- **A loan's** credit ends at the next departure of any kind.
+- **A newer arrival** to the same club always takes over, so no season is
+  credited twice. Events on the same date do not end each other.
+- **Output per season** = season-equivalents x quality weight.
+  Season-equivalents = minutes / 90 / the club's league matches, so 34- and
+  38-match seasons compare. Quality weight = `quality_pctile` / 100: 0 for a
+  season under the 900-minute floor, and 0.5 (the group median) for the 9
+  player-seasons whose stats are missing from the snapshot.
+- **Horizon: three seasons**, the signing season plus two. For complete fee
+  cohorts, 29% of a signing's output comes in the signing season, 26% the next
+  and 19% the third, so two seasons would capture about 55% and three about
+  74%.
+
+**Spend** is disclosed fees that count as spend (permanent and loan fees), each
+divided by that season's median permanent fee (scoping doc 4.6).
+Per-season permanent fees reconcile exactly to `dim_season.total_fees_eur`.
+
+### Guardrails
+
+1. **Spend floor.** Club-seasons below the 10th percentile of spend (1.154
+   median fees, about €5.7m) are labelled *insufficient spend* and not scored:
+   69 of 684. Athletic Bilbao, with its Basque-only policy, is the most frequent.
+2. **Log transform.** log ROI = log(output + 0.1) − log(spend). The offset keeps
+   a cohort with no output finite; 0.5 instead moves club ranks by only
+   rho 0.98.
+3. **Scale normalisation.** log ROI is regressed on log squad value at season
+   start, with season and league effects, and the residual is the score
+   (`roi_normalised`, and `roi_z` = residual / sd). Squad value stands in for
+   revenue, and the season effects are the 4.6 deflator in log form. Before
+   normalising, log ROI and log squad value correlate at −0.68: bigger clubs
+   pay far more per unit of output.
+
+### Decisions (Tyler, 2026-09-14)
+
+**1. League effects in the normalisation, with the league effect published as
+a finding.** With season effects only, 11 of the bottom 12 clubs were Premier
+League, with a mean `roi_z` of −0.82. Squad value does not capture Premier League
+broadcast money, so the index was partly measuring "is this club English".
+With league effects, each club is judged against its own league, and the
+bottom twenty spreads across all five leagues (Bundesliga 6, La Liga 6, Ligue 1
+4, Serie A 2, Premier League 2).
+
+The league effect is not thrown away. `score.league_premium` publishes it as a
+**headline finding**: output per deflated euro at the same squad value and
+season, relative to the Bundesliga.
+
+| League | Output per euro vs Bundesliga | Club-seasons |
+|---|---|---|
+| Ligue 1 | 1.08 | 116 |
+| La Liga | 1.02 | 119 |
+| Bundesliga | 1.00 | 109 |
+| Serie A | 0.79 | 133 |
+| **Premier League** | **0.42** | 138 |
+
+Premier League clubs get about 42% of the signing output per euro that
+comparable Bundesliga clubs get. The raw, unadjusted medians
+(`median_output_per_spend`) tell the same story: 0.11 in the Premier League
+against 0.32–0.53 elsewhere.
+
+**2. Three-season horizon.** Club ranks under two and three seasons correlate
+at rho 0.95. Three better captures development signings, which this project
+cares about: Brighton, Leipzig and Gladbach buy young and often loan out. The
+cost: **the 2022/23 and 2023/24 cohorts are provisional** (`is_provisional`,
+194 club-seasons) and must be flagged in any trend visualisation.
+
+**3. Undisclosed-fee output excluded from the score.** This applies the scoping
+doc's existing rule, "excluded and documented, not guessed". Counting output
+from signings whose cost is unknown would turn the disclosure gap into fake
+efficiency: including it lifted Chelsea by +0.27 and Liverpool by +0.24.
+`n_undisclosed` and `output_undisclosed` stay on every club-season for context.
+
+### Sensitivity (measured before deciding)
+
+| Change | Club rank correlation with the chosen spec |
+|---|---|
+| Horizon 2 instead of 3 | 0.95 |
+| Count undisclosed output | 0.98 |
+| Weight sub-900-minute seasons 0.25 instead of 0 | 0.99 |
+| Log offset 0.5 instead of 0.1 | 0.98 |
+| Without league effects | 0.55 |
+
+The first four were measured with the two-season, season-effects-only
+prototype. The last compares with and without league effects.
+
+### Results (load of 2026-09-14)
+
+`sql/31_check_recruitment_roi.sql` passes 32 of 32.
+
+- **Credit rule, cohorts and floor:** rebuilt in SQL. The same arrival is
+  credited for every one of 11,459 player-seasons, and output, spend, the floor
+  and the provisional flags all agree to 1e-9.
+- **Regression:** SQL solves it by alternating projections (demean by season,
+  then by league, repeated until converged to below 1e-12), a different method
+  from R's `lm()`. The slope, residuals, z-scores and league effects agree to
+  1e-9.
+
+Eye test, complete cohorts 2017/18–2021/22 (clubs with 3+ scored cohorts):
+
+- **Top:** Montpellier +1.33, Strasbourg +1.09, Real Sociedad +1.03, Eibar,
+  Nantes, Alavés, Eintracht Frankfurt, Crystal Palace, Liverpool +0.74.
+- **Bottom:** Barcelona −1.60 (the Coutinho, Dembélé and Griezmann fees), Köln,
+  Atlético, Burnley, Bournemouth, Juventus, Monaco, Real Madrid.
+- **Big clubs:** Liverpool +0.74, Arsenal +0.65, Bayern +0.53, Manchester City
+  +0.39, Chelsea −0.14, PSG −0.44, Juventus −0.81, Barcelona −1.60.
+- **Brighton by cohort:** −0.93 (2017/18), −0.36, +0.78, +0.68, −0.25, then
+  provisional +0.88 and +0.19. That is the "got smarter" arc that the
+  two-season, season-effects-only version hid.
+
+`roi_z` correlates with same-season `ppm_z` at only 0.05. Recruitment
+efficiency and league results are nearly independent at the club-season level,
+which is why the composite's weights are to be derived rather than assumed.
+
+*Revisit criterion:* RB Leipzig (−0.50) and Villarreal (−0.46) rank low here.
+If they rank near the top on trading profit and value growth (Pillars 2 and 3),
+that confirms the pillars are measuring different strategies, as intended. If
+they rank low everywhere, re-examine how loans out are credited.
