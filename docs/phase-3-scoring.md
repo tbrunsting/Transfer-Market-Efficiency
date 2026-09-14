@@ -7,12 +7,14 @@ SQL, and a run fails unless the two agree.
 | Script | Writes | Verified by |
 |---|---|---|
 | `R/10_player_quality.R` | `score.player_quality`, `score.player_quality_metric` | `sql/11_check_player_quality.sql` |
+| `R/20_sporting_return.R` | `score.club_season_sporting` (Pillar 4) | `sql/21_check_sporting_return.sql` |
 
 Run from the repository root, after any warehouse load (the score tables hold
 the warehouse's surrogate keys, which a reload renumbers):
 
 ```
 "C:\Program Files\R\R-4.4.1\bin\Rscript.exe" R\10_player_quality.R
+"C:\Program Files\R\R-4.4.1\bin\Rscript.exe" R\20_sporting_return.R
 ```
 
 **R setup.** R 4.4.1 with DBI, RPostgres, dplyr and tidyr in the user library.
@@ -171,3 +173,27 @@ best case, and most seasons fall in the 90s:
 | CM | Rodri | 52–100 |
 | CM | Kanté | 61–99 |
 | CM | Brozović | 71–99 |
+
+## 2. Pillar 4: sporting return (scoping doc 5)
+
+One row per club-season: league points per match, standardised within
+league-season.
+
+- **Per match, not total points.** Bundesliga seasons and Ligue 1's 18-club
+  2023/24 season have 34 matches, the rest 38, and Ligue 1 2019/20 was abandoned
+  after 27–28. Totals would not compare.
+- **Results points, not official points.** Deductions are administrative
+  (Juventus 2022/23: 72 results points, listed 7th; Everton 2023/24).
+  Sporting return measures what happened on the pitch. `has_known_deduction`
+  carries the flag through, so the dashboard can footnote it.
+- **`ppm_z` is within competition x season.** 0 is the league's average club
+  that season. It compares a club with its own league, not across leagues.
+  The raw `points_per_match` is kept beside it for the composite stage.
+
+Checked data: 35 league-seasons and 684 club-seasons. Every league-season has
+complete fixtures except Ligue 1 2019/20.
+
+`sql/21_check_sporting_return.sql` passes 9 of 9. Points per match and `ppm_z`
+match SQL to 1e-9, every league-season has mean 0 and sd 1, Ligue 1 2019/20 is
+scored on its own 27–28 matches, and Juventus 2022/23 keeps its 72 results
+points.
