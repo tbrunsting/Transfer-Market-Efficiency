@@ -17,12 +17,15 @@ WITH checks AS (
 -- ---------- row counts, against the Phase 1 figures -------------------------
 SELECT 'dim_club: in-scope clubs'                AS check_name, '145'   AS expected,
        count(*)::text AS actual FROM dim_club WHERE is_in_scope
-UNION ALL SELECT 'fact_player_season rows', '19563', count(*)::text FROM fact_player_season
+UNION ALL SELECT 'fact_player_season rows (19,563 less 1 unkeyable: Rutjens, 1 min, no FBref id)', '19562',
+       count(*)::text FROM fact_player_season
 UNION ALL SELECT 'fact_club_season rows', '684', count(*)::text FROM fact_club_season
 UNION ALL SELECT 'fact_club_trophy rows', '96', count(*)::text FROM fact_club_trophy
 UNION ALL SELECT 'fact_manager_tenure rows', '906', count(*)::text FROM fact_manager_tenure
 UNION ALL SELECT 'dim_season scored seasons', '7', count(*)::text FROM dim_season WHERE is_scored
-UNION ALL SELECT 'meta.decision rows (human calls)', '80', count(*)::text FROM meta.decision
+UNION ALL SELECT 'meta.decision rows (human calls)', '96', count(*)::text FROM meta.decision
+UNION ALL SELECT 'dim_player: the 14 identity fixes applied (Rønnow relinked)', '107775',
+       coalesce(max(transfermarkt_id)::text, 'not found') FROM dim_player WHERE fbref_player_id = 'a70b8345'
 UNION ALL SELECT 'meta.source_manifest rows', '1104', count(*)::text FROM meta.source_manifest
 
 -- ---------- the fee rule ----------------------------------------------------

@@ -113,6 +113,38 @@ def season_label(end_year: int) -> str:
     return f"{end_year - 1}/{end_year % 100:02d}"
 
 
+def player_ledger():
+    """reference/player_id_review.csv: the human decisions about FBref <-> Transfermarkt player identity.
+
+    merge:  a duplicate FBref page folds into its canonical page
+    split:  one FBref id holding two people is separated by club
+    relink: the Transfermarkt id the frozen dictionary got wrong is replaced
+    """
+    led = pd.read_csv(REF / "player_id_review.csv", dtype=str)
+    merge = dict(zip(led.loc[led.decision == "merge", "fbref_player_id"],
+                     led.loc[led.decision == "merge", "canonical_fbref_player_id"]))
+    split = {(r.fbref_player_id, r.club): r.canonical_fbref_player_id
+             for r in led[led.decision == "split"].itertuples()}
+    tm_for = {r.canonical_fbref_player_id: int(r.transfermarkt_id)
+              for r in led[led.decision.isin(["relink", "split"])].itertuples()}
+    return led, merge, split, tm_for
+
+
+def remap_player_ids(ids, clubs):
+    """Apply merges and club-based splits to FBref player ids. Unlisted ids pass through unchanged."""
+    _, merge, split, _ = player_ledger()
+    split_ids = {i for i, _ in split}
+    out = []
+    for i, c in zip(ids, clubs):
+        if i in split_ids:
+            if (i, c) not in split:
+                sys.exit(f"STOP: FBref id {i} is split by club, but {c!r} has no rule in player_id_review.csv")
+            out.append(split[(i, c)])
+        else:
+            out.append(merge.get(i, i))
+    return out
+
+
 # =============================================================================
 # 1. Dimensions
 # =============================================================================
@@ -125,7 +157,10 @@ def build_dimensions():
                         "fee_coverage_pct": None})
     tables["dim_season"] = pd.DataFrame(seasons)
 
-    dates = pd.date_range("2012-01-01", "2027-06-30", freq="D")
+    # Starts at the earliest market valuation, so every fact_player_valuation row has a date to point at.
+    earliest = pd.to_datetime(pd.read_csv(TM / "player_valuations.csv", usecols=["date"]).date).min()
+    start = min(pd.Timestamp("2012-01-01"), pd.Timestamp(year=earliest.year, month=1, day=1))
+    dates = pd.date_range(start, "2027-06-30", freq="D")
     tables["dim_date"] = pd.DataFrame({
         "date_key": dates.strftime("%Y%m%d").astype(int), "full_date": dates.date,
         "year": dates.year, "month": dates.month, "day": dates.day,
@@ -151,18 +186,9 @@ def build_dimensions():
                           "club_name": in_scope.club_name, "country": in_scope.country, "city": in_scope.city,
                           "crest_url": in_scope.crest_url, "wikidata_qid": in_scope.wikidata_qid,
                           "is_in_scope": True})
-    # Every other club a transfer points at, so the foreign keys resolve.
-    tm_clubs = pd.read_csv(TM / "clubs.csv").set_index("club_id")
-    pages = pd.read_csv(PROC / "tm_club_transfers.csv", low_memory=False)
-    frozen = pd.read_csv(TM / "transfers.csv", low_memory=False)
-    referenced = set(pages.other_club_id.dropna().astype(int)) | set(frozen.from_club_id.dropna().astype(int)) \
-        | set(frozen.to_club_id.dropna().astype(int))
-    extra = sorted(referenced - set(clubs.transfermarkt_id))
-    others = pd.DataFrame({"fbref_team_id": None, "transfermarkt_id": extra,
-                           "club_name": [tm_clubs.name.get(c, f"Transfermarkt club {c}") for c in extra],
-                           "country": None, "city": None, "crest_url": None, "wikidata_qid": None,
-                           "is_in_scope": False})
-    tables["dim_club"] = pd.concat([clubs, others], ignore_index=True)
+    # Out-of-scope clubs are added later by add_referenced_clubs(), once the facts exist,
+    # so dim_club holds only clubs a loaded fact actually points at.
+    tables["dim_club"] = clubs
 
     tables["dim_position_group"] = pd.DataFrame([
         {"position_group": "GK", "fbref_positions": "GK"},
@@ -233,9 +259,21 @@ def team_id_lookup() -> dict:
     return dict(zip(zip(ts.Season_End_Year, ts.Squad), ts.team_id))
 
 
-def build_player_season():
-    std = read_fb("big5_player_standard")
+def drop_unkeyable(std):
+    """Rows whose FBref URL carries no player id cannot be keyed to anyone. Dropped loudly, never silently.
+
+    In the window this is one row: Christian Rutjens, Benevento 2017/18, 1 minute, URL /players//.
+    """
     std["fbref_player_id"] = player_id(std.Url)
+    bad = std[std.fbref_player_id.isna()]
+    for r in bad.itertuples():
+        say(f"  EXCLUDED (no FBref player id): {season_label(r.Season_End_Year)} {r.Squad} {r.Player}, "
+            f"{r.Min_Playing:.0f} min, URL {r.Url}")
+    return std[std.fbref_player_id.notna()].copy()
+
+
+def build_player_season():
+    std = drop_unkeyable(read_fb("big5_player_standard"))
     keep = ["Season_End_Year", "Squad", "fbref_player_id", "Pos", "Age"] + list(STANDARD)
     f = std[keep].rename(columns=STANDARD).rename(columns={"Pos": "fbref_position_raw", "Age": "age"})
     for name, cols in OTHER_FILES.items():
@@ -274,7 +312,13 @@ def build_player_season():
     f["is_value_filled"] = [(y, p, s) in filled_keys
                             for y, p, s in zip(f.Season_End_Year, f.fbref_player_id, f.Squad)]
 
+    # Identity fixes from player_id_review.csv. Applied last, after SCA and the blank fill have been joined
+    # on the ids the snapshot actually uses, so no source loses its match.
+    f["fbref_player_id"] = remap_player_ids(f.fbref_player_id, f.Squad)
     f["position_group"] = f.fbref_position_raw.map(position_group)
+    f["is_old_vintage"] = f.Season_End_Year < 2023      # before 2022/23; see the column comment
+    # FBref writes age as whole years in early seasons and as "years-days" ("25-081") from 2022/23.
+    f["age"] = pd.to_numeric(f.age.astype(str).str.extract(r"^(\d+)")[0], errors="coerce")
     tid = team_id_lookup()
     f["fbref_team_id"] = [tid.get((y, c)) for y, c in zip(f.Season_End_Year, f.Squad)]
     if f.fbref_team_id.isna().any():
@@ -287,10 +331,35 @@ def build_player_season():
     tables["fact_player_season"] = f
 
 
+def add_referenced_clubs():
+    """Add the clubs fact_transfer points at that are not among the 145.
+
+    Only foreign keys that MUST resolve count as a reference. A player valuation's club is an optional
+    attribute: where that club is not already here, its club_key is left NULL rather than pulling in
+    thousands of clubs no transfer involves.
+    """
+    ev = tables["fact_transfer"]
+    clubs = tables["dim_club"]
+    referenced = set(ev.from_club.astype(int)) | set(ev.to_club.astype(int))
+    extra = sorted(referenced - set(clubs.transfermarkt_id))
+    names = pd.read_csv(TM / "clubs.csv").set_index("club_id").name.to_dict()
+    frozen = pd.read_csv(TM / "transfers.csv", low_memory=False)
+    for id_col, name_col in (("from_club_id", "from_club_name"), ("to_club_id", "to_club_name")):
+        for cid, cname in zip(frozen[id_col], frozen[name_col]):
+            if pd.notna(cid) and pd.notna(cname):
+                names.setdefault(int(cid), cname)
+    others = pd.DataFrame({"fbref_team_id": None, "transfermarkt_id": extra,
+                           "club_name": [names.get(c, f"Transfermarkt club {c}") for c in extra],
+                           "country": None, "city": None, "crest_url": None, "wikidata_qid": None,
+                           "is_in_scope": False})
+    tables["dim_club"] = pd.concat([clubs, others], ignore_index=True)
+
+
 def build_players():
     """Everyone the facts point at: FBref players from the snapshot, plus Transfermarkt-only players."""
     std = read_fb("big5_player_standard")
-    std["fbref_player_id"] = player_id(std.Url)
+    std = std[player_id(std.Url).notna()].copy()          # same exclusion as drop_unkeyable, quietly here
+    std["fbref_player_id"] = remap_player_ids(player_id(std.Url), std.Squad)
     fb = (std.sort_values("Season_End_Year").drop_duplicates("fbref_player_id", keep="last")
              [["fbref_player_id", "Player", "Nation", "Born", "Pos"]]
              .rename(columns={"Player": "player_name", "Nation": "nationality", "Born": "birth_year",
@@ -301,6 +370,19 @@ def build_players():
     fb = fb.merge(pmap[["fbref_player_id", "transfermarkt_id"]].dropna().drop_duplicates("fbref_player_id"),
                   on="fbref_player_id", how="left")
     fb["foot"] = None
+    led, _, _, tm_for = player_ledger()
+    tm_names = pd.read_csv(TM / "players.csv", low_memory=False).set_index("player_id").name
+    for fid, tmid in tm_for.items():
+        hit = fb.fbref_player_id == fid
+        if not hit.any():
+            sys.exit(f"STOP: player_id_review.csv names FBref id {fid}, which is not among the loaded players")
+        fb.loc[hit, "transfermarkt_id"] = tmid
+    # A split's surviving id now means one person, so take that person's name, not the blended one.
+    for fid in set(led.loc[led.decision == "split", "canonical_fbref_player_id"]):
+        tmid = tm_for.get(fid)
+        if tmid in tm_names.index:
+            fb.loc[fb.fbref_player_id == fid, "player_name"] = tm_names[tmid]
+    fb["transfermarkt_id"] = fb.transfermarkt_id.astype("Int64")
 
     tm_players = pd.read_csv(TM / "players.csv", low_memory=False)
     needed = set(tables["fact_transfer"].player_id.dropna().astype(int))
@@ -311,7 +393,16 @@ def build_players():
                           "player_name": extra.name, "nationality": extra.country_of_citizenship,
                           "birth_year": pd.to_datetime(extra.date_of_birth, errors="coerce").dt.year,
                           "primary_position": extra.position, "foot": extra.foot})
-    tables["dim_player"] = pd.concat([fb, extra], ignore_index=True)
+    # Some players appear on club transfer pages but not in the frozen players table; the page gives a name.
+    ev = tables["fact_transfer"]
+    unknown = sorted(needed - have - set(extra.transfermarkt_id.dropna().astype(int)))
+    page_names = ev.drop_duplicates("player_id").set_index("player_id").player_name
+    page_only = pd.DataFrame({"fbref_player_id": None, "transfermarkt_id": pd.array(unknown, dtype="Int64"),
+                              "player_name": [page_names.get(i, f"Transfermarkt player {i}") for i in unknown],
+                              "nationality": None, "birth_year": None, "primary_position": None, "foot": None})
+    if len(page_only):
+        say(f"  {len(page_only):,} transfer player(s) are absent from players.csv; named from the club pages")
+    tables["dim_player"] = pd.concat([fb, extra, page_only], ignore_index=True)
 
 
 # =============================================================================
@@ -410,23 +501,24 @@ def build_derived():
                                   for f, y in zip(ev.fee_eur, ev.season_end_year)]
 
     # Spells: an arrival at a club, ending at that player's next departure from it.
-    moves = ev.sort_values("transfer_date")
-    spells = []
-    for (pid, club), grp in moves.groupby(["player_id", "to_club"]):
-        for arrival in grp.itertuples():
-            later = moves[(moves.player_id == pid) & (moves.from_club == club)
-                          & (moves.transfer_date > arrival.transfer_date)]
-            dep = later.iloc[0] if len(later) else None
-            spells.append({"player_id": pid, "club_id": club,
-                           "arrival_ref": arrival.source_ref,
-                           "departure_ref": dep.source_ref if dep is not None else None,
-                           "start_date": arrival.transfer_date,
-                           "end_date": dep.transfer_date if dep is not None else None,
-                           "purchase_fee_eur": arrival.fee_eur, "sale_fee_eur": dep.fee_eur if dep is not None else None,
-                           "market_value_at_arrival": arrival.market_value_in_eur,
-                           "arrival_known": True,
-                           "departure_known": dep is not None})
-    tables["bridge_player_club_spell"] = pd.DataFrame(spells)
+    # merge_asof finds, for every arrival, the first departure of the same player from the same club
+    # strictly after it: one sort-and-merge instead of re-scanning every event for every arrival.
+    cols = ["player_id", "transfer_date", "source_ref", "fee_eur"]
+    arrivals = ev[cols + ["to_club", "market_value_in_eur"]].rename(
+        columns={"to_club": "club_id", "transfer_date": "start_date", "source_ref": "arrival_ref",
+                 "fee_eur": "purchase_fee_eur", "market_value_in_eur": "market_value_at_arrival"})
+    departures = ev[cols + ["from_club"]].rename(
+        columns={"from_club": "club_id", "transfer_date": "end_date", "source_ref": "departure_ref",
+                 "fee_eur": "sale_fee_eur"})
+    for frame in (arrivals, departures):
+        frame["player_id"] = frame.player_id.astype("int64")
+        frame["club_id"] = frame.club_id.astype("int64")
+    spells = pd.merge_asof(arrivals.sort_values("start_date"), departures.sort_values("end_date"),
+                           left_on="start_date", right_on="end_date", by=["player_id", "club_id"],
+                           direction="forward", allow_exact_matches=False)
+    spells["arrival_known"] = True
+    spells["departure_known"] = spells.departure_ref.notna()
+    tables["bridge_player_club_spell"] = spells
 
 
 # =============================================================================
@@ -436,19 +528,28 @@ def build_meta():
     man = pd.concat([pd.read_csv(REF / m).assign(manifest=m) for m in MANIFESTS], ignore_index=True)
     tables["meta.source_manifest"] = man
     ledgers = {"club_mapping_review.csv": "club_id_mapping", "club_metadata_review.csv": "club_metadata",
-               "manager_name_review.csv": "manager_tenures"}
+               "manager_name_review.csv": "manager_tenures", "player_id_review.csv": "dim_player"}
     rows = []
     for f, src in ledgers.items():
         d = pd.read_csv(REF / f)
         for r in d.itertuples():
             rows.append({"source_table": src,
-                         "entity_id": getattr(r, "fbref_team_id", None) or getattr(r, "manager_name", ""),
+                         "entity_id": getattr(r, "fbref_team_id", None) or getattr(r, "fbref_player_id", None)
+                                      or getattr(r, "manager_name", ""),
                          "field": getattr(r, "field", None) or getattr(r, "club", None),
                          "value": str(getattr(r, "value", "") or getattr(r, "resolved_name", "")),
                          "decision": r.decision, "decided_by": r.decided_by, "decided_on": r.decided_on,
                          "reason": r.reason})
     tables["meta.decision"] = pd.DataFrame(rows)
-    tables["meta.transfer_coverage"] = pd.read_csv(REF / "transfer_coverage_check.csv")
+    cov = pd.read_csv(REF / "transfer_coverage_check.csv")
+    # In scope = that club played a big-five season that year. The coverage file never recorded it.
+    mapping = pd.read_csv(REF / "club_id_mapping.csv")
+    fb_of_tm = dict(zip(mapping.transfermarkt_club_id.astype(int), mapping.fbref_team_id))
+    pts = pd.read_csv(REF / "club_season_points.csv")
+    played = set(zip(pts.fbref_team_id, pts.season))
+    cov["season_full"] = cov.season_label.map(lambda x: f"20{x[:2]}/{x[-2:]}")
+    cov["is_in_scope"] = [(fb_of_tm.get(int(c)), sl) in played for c, sl in zip(cov.club_id, cov.season_full)]
+    tables["meta.transfer_coverage"] = cov
 
 
 # =============================================================================
@@ -463,8 +564,9 @@ say("3. club facts")
 build_club_facts()
 say("4. fact_transfer and valuations")
 build_transfers()
-say("4b. dim_player")
+say("4b. dim_player, and the out-of-scope clubs transfers point at")
 build_players()
+add_referenced_clubs()
 say("5. deflator and spell bridge")
 build_derived()
 say("6. meta")
@@ -480,9 +582,50 @@ say(f"\nVINTAGE NOTE: {old_vintage:,} player-seasons before 2022/23 carry passin
     "(key_passes, passes_*) from the older data version. Progressive passes and xAG come from the "
     "standard file and are unaffected.")
 
+# ---- constraint preflight -------------------------------------------------
+# Every CHECK / UNIQUE that real data could plausibly violate, evaluated here first, so a violation is
+# reported as the exact rows responsible instead of a COPY failure that rolls back the whole load.
+say("\nconstraint preflight:")
+blocking = 0
+ps = tables["fact_player_season"]
+gap = (ps.nineties - ps.minutes / 90.0).abs()
+trip = ps[ps.nineties.notna() & ps.minutes.notna() & (gap >= 0.2)]
+say(f"  nineties within 0.2 of minutes/90 ........ {len(trip)} violation(s); largest gap "
+    f"{gap.max():.3f} across {int((ps.nineties.notna() & ps.minutes.notna()).sum()):,} rows")
+for r in trip.head(10).itertuples():
+    say(f"      {season_label(r.Season_End_Year)} {r.Squad} {r.fbref_player_id}: minutes {r.minutes}, "
+        f"nineties {r.nineties} (minutes/90 = {r.minutes / 90:.2f})")
+blocking += len(trip)
+dupe_ps = ps.duplicated(["fbref_player_id", "fbref_team_id", "Season_End_Year"], keep=False)
+say(f"  player-season natural key unique .......... {int(dupe_ps.sum())} row(s) in duplicate groups")
+blocking += int(dupe_ps.sum())
+bad_starts = ps[ps.starts.notna() & ps.matches_played.notna() & (ps.starts > ps.matches_played)]
+say(f"  starts <= matches_played .................. {len(bad_starts)} violation(s)")
+blocking += len(bad_starts)
+ev = tables["fact_transfer"]
+same = ev[ev.from_club == ev.to_club]
+say(f"  transfer from_club <> to_club ............. {len(same)} violation(s)")
+blocking += len(same)
+dupe_ev = ev.assign(dk=ev.transfer_date.dt.strftime("%Y%m%d")).duplicated(
+    ["player_id", "dk", "from_club", "to_club", "source_system"], keep=False)
+say(f"  fact_transfer natural key unique .......... {int(dupe_ev.sum())} row(s) in duplicate groups")
+blocking += int(dupe_ev.sum())
+dp = tables["dim_player"]
+dupe_tm = dp.transfermarkt_id.dropna().duplicated(keep=False)
+say(f"  dim_player transfermarkt_id unique ........ {int(dupe_tm.sum())} row(s) share an id")
+blocking += int(dupe_tm.sum())
+say(f"  dim_club: {len(tables['dim_club']):,} clubs "
+    f"({int(tables['dim_club'].is_in_scope.sum())} in scope, {int((~tables['dim_club'].is_in_scope).sum()):,} referenced by transfers)")
+if blocking:
+    say(f"PREFLIGHT: {blocking} row(s) would violate a constraint (listed above).")
+else:
+    say("PREFLIGHT: nothing would violate a constraint.")
+
 if dry_run:
     say("\n--dry-run: nothing was written to Postgres.")
     sys.exit(0)
+if blocking:
+    sys.exit("STOP: fix the preflight violations above before loading.")
 
 # ---- load ----------------------------------------------------------------
 try:
@@ -498,9 +641,36 @@ if not dsn and not os.environ.get("PGDATABASE"):
 
 
 def clean(df, columns):
-    """Frame -> rows of Python values, with NaN/NaT as None so Postgres sees NULL."""
-    out = df.reindex(columns=columns).astype(object)
+    """Frame -> rows of Python values, with NaN/NaT as None so Postgres sees NULL.
+
+    pandas widens an integer column to float the moment it holds one NaN, so a key of 1 would be sent
+    as "1.0", which Postgres rejects for integer columns. Any float column whose values are all whole
+    numbers is sent as integers instead; numeric columns accept that too.
+    """
+    out = df.reindex(columns=columns).copy()
+    for c in out.columns:
+        nn = out[c].dropna()
+        if not len(nn):
+            continue
+        # float columns, and object columns that mix floats with None after a concat
+        numeric = pd.api.types.is_float_dtype(out[c]) or (
+            out[c].dtype == object
+            and all(pd.api.types.is_number(v) and not pd.api.types.is_bool(v) for v in nn))
+        if numeric:
+            vals = pd.to_numeric(nn)
+            if (vals == vals.round()).all():
+                out[c] = pd.to_numeric(out[c]).astype("Int64")
+    out = out.astype(object)
     return out.where(pd.notna(out), None)
+
+
+def require_keys(df, table, columns, label_cols):
+    """Every NOT NULL foreign key must have resolved, or the load stops naming the rows that didn't."""
+    for c in columns:
+        missing = df[df[c].isna()]
+        if len(missing):
+            sample = missing[[x for x in label_cols if x in missing.columns]].head(5).to_dict("records")
+            sys.exit(f"STOP: {len(missing):,} row(s) of {table} have no {c}. First few: {sample}")
 
 
 def copy_in(cur, table, df, columns):
@@ -583,6 +753,8 @@ with psycopg.connect(dsn or "", autocommit=False) as conn:
         ps["club_key"] = ps.fbref_team_id.map(club_by_fbref)
         ps["season_key"] = ps.season_label.map(season_key)
         ps["position_group_key"] = ps.position_group.map(position_key)
+        require_keys(ps, "fact_player_season", ["player_key", "club_key", "season_key", "position_group_key"],
+                     ["fbref_player_id", "Squad", "season_label"])
         loaded["fact_player_season"] = copy_in(cur, "fact_player_season", ps,
             ["player_key", "club_key", "season_key", "position_group_key", "fbref_position_raw", "age",
              "matches_played", "starts", "minutes", "nineties", "team_matches_available", "goals", "assists",
@@ -591,7 +763,8 @@ with psycopg.connect(dsn or "", autocommit=False) as conn:
              "passes_completed", "passes_attempted", "tackles", "tackles_won", "interceptions", "blocks",
              "clearances", "errors", "aerials_won", "aerials_lost", "touches", "touches_att_pen_area",
              "take_ons_attempted", "take_ons_won", "carries", "carries_into_final_third", "sca", "gca",
-             "sca_source", "gk_saves", "gk_goals_against", "gk_psxg", "gk_clean_sheets", "is_value_filled"])
+             "sca_source", "gk_saves", "gk_goals_against", "gk_psxg", "gk_clean_sheets", "is_value_filled",
+             "is_old_vintage"])
 
         cs = tables["fact_club_season"].copy()
         cs["club_key"] = cs.fbref_team_id.map(club_by_fbref)
@@ -601,6 +774,8 @@ with psycopg.connect(dsn or "", autocommit=False) as conn:
                                 "known_deduction": "has_known_deduction", "notes": "deduction_note"})
         cs["has_known_deduction"] = cs.has_known_deduction.eq("yes")
         cs["deduction_note"] = cs.deduction_note.where(cs.has_known_deduction)
+        require_keys(cs, "fact_club_season", ["club_key", "season_key", "competition_key"],
+                     ["fbref_team_id", "club", "season"])
         loaded["fact_club_season"] = copy_in(cur, "fact_club_season", cs,
             ["club_key", "season_key", "competition_key", "matches", "wins", "draws", "losses", "goals_for",
              "goals_against", "goal_difference", "points_from_results", "position_computed", "position_source",
@@ -611,6 +786,8 @@ with psycopg.connect(dsn or "", autocommit=False) as conn:
         tr["season_key"] = tr.season.map(season_key)
         tr["competition_key"] = tr.competition_code.map(competition_key)
         tr = tr.rename(columns={"category": "trophy_category", "source": "source_system"})
+        require_keys(tr, "fact_club_trophy", ["club_key", "season_key", "competition_key"],
+                     ["fbref_team_id", "club", "season", "competition"])
         loaded["fact_club_trophy"] = copy_in(cur, "fact_club_trophy", tr,
             ["club_key", "season_key", "competition_key", "trophy_category", "source_system", "source_ref"])
 
@@ -623,6 +800,9 @@ with psycopg.connect(dsn or "", autocommit=False) as conn:
         mt["last_season_key"] = mt.last_season.map(season_key)
         mt["is_likely_caretaker"] = mt.likely_caretaker.eq("yes")
         mt["boundaries_are_match_based"] = True
+        require_keys(mt, "fact_manager_tenure", ["club_key", "manager_key", "first_match_date_key",
+                     "last_match_date_key", "first_season_key", "last_season_key"],
+                     ["club", "manager_name", "first_match_date", "first_season"])
         loaded["fact_manager_tenure"] = copy_in(cur, "fact_manager_tenure", mt,
             ["club_key", "manager_key", "stint_seq", "first_match_date_key", "last_match_date_key",
              "first_season_key", "last_season_key", "matches", "league_matches", "is_likely_caretaker",
@@ -637,6 +817,9 @@ with psycopg.connect(dsn or "", autocommit=False) as conn:
         ev["transfer_type_key"] = ev.transfer_type.map(type_key)
         ev["is_fee_disclosed"] = ev.fee_eur.notna()
         ev = ev.rename(columns={"market_value_in_eur": "market_value_eur"})
+        require_keys(ev, "fact_transfer", ["player_key", "from_club_key", "to_club_key", "transfer_date_key",
+                     "season_key", "transfer_type_key"],
+                     ["player_id", "player_name", "from_club", "to_club", "tm_season", "source_ref"])
         loaded["fact_transfer"] = copy_in(cur, "fact_transfer", ev,
             ["player_key", "from_club_key", "to_club_key", "transfer_date_key", "season_key",
              "transfer_type_key", "fee_eur", "is_fee_disclosed", "market_value_eur", "fee_share_of_season",

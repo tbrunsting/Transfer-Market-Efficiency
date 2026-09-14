@@ -281,6 +281,7 @@ CREATE TABLE fact_player_season (
     gk_clean_sheets         smallint,
 
     is_value_filled         boolean NOT NULL DEFAULT false,
+    is_old_vintage          boolean NOT NULL DEFAULT false,
 
     CONSTRAINT player_season_natural_key UNIQUE (player_key, club_key, season_key),
     CONSTRAINT minutes_non_negative CHECK (minutes IS NULL OR minutes >= 0),
@@ -294,6 +295,12 @@ COMMENT ON TABLE fact_player_season IS
 COMMENT ON COLUMN fact_player_season.fbref_position_raw IS
     'FBref''s raw Pos value. position_group_key is derived from the first listed position; this keeps the '
     'original visible for auditing.';
+COMMENT ON COLUMN fact_player_season.is_old_vintage IS
+    'True for seasons before 2022/23. Applies ONLY to the passing-file columns: key_passes, '
+    'passes_into_final_third, passes_into_pen_area, passes_completed, passes_attempted. For those seasons '
+    'the passing file holds an older version of the data (key passes measured about 1.4% low). '
+    'progressive_passes and xag come from the standard file and are unaffected. Compare these columns '
+    'across the 2022/23 boundary with care, or within a season only.';
 COMMENT ON COLUMN fact_player_season.is_value_filled IS
     'True where blank snapshot values were filled from Kaggle (reference/fbref_blank_fill.csv).';
 

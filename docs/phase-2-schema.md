@@ -160,6 +160,7 @@ CREATE TABLE fact_player_season (
     gk_saves                smallint,  gk_goals_against smallint, gk_psxg numeric(7,2),
     sca_source              text,      -- 'kaggle' where filled
     is_value_filled         boolean NOT NULL DEFAULT false,  -- from reference/fbref_blank_fill.csv
+    is_old_vintage          boolean NOT NULL DEFAULT false,  -- passing-file columns before 2022/23
     UNIQUE (player_key, club_key, season_key)
 );
 
