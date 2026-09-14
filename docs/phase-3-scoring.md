@@ -9,6 +9,7 @@ SQL, and a run fails unless the two agree.
 | `R/10_player_quality.R` | `score.player_quality`, `score.player_quality_metric` | `sql/11_check_player_quality.sql` |
 | `R/20_sporting_return.R` | `score.club_season_sporting` (Pillar 4) | `sql/21_check_sporting_return.sql` |
 | `R/30_recruitment_roi.R` | `score.club_season_recruitment`, `score.signing_credit`, `score.league_premium`, `score.run_parameter` (Pillar 1) | `sql/31_check_recruitment_roi.sql` |
+| `R/40_trading_profit.R` | `score.club_season_trading`, `score.sale_basis`, `score.run_parameter` (Pillar 2) | `sql/41_check_trading_profit.sql` |
 
 Run from the repository root, after any warehouse load (the score tables hold
 the warehouse's surrogate keys, which a reload renumbers):
@@ -17,6 +18,7 @@ the warehouse's surrogate keys, which a reload renumbers):
 "C:\Program Files\R\R-4.4.1\bin\Rscript.exe" R\10_player_quality.R
 "C:\Program Files\R\R-4.4.1\bin\Rscript.exe" R\20_sporting_return.R
 "C:\Program Files\R\R-4.4.1\bin\Rscript.exe" R\30_recruitment_roi.R
+"C:\Program Files\R\R-4.4.1\bin\Rscript.exe" R\40_trading_profit.R
 ```
 
 **R setup.** R 4.4.1 with DBI, RPostgres, dplyr and tidyr in the user library.
@@ -332,3 +334,166 @@ which is why the composite's weights are to be derived rather than assumed.
 If they rank near the top on trading profit and value growth (Pillars 2 and 3),
 that confirms the pillars are measuring different strategies, as intended. If
 they rank low everywhere, re-examine how loans out are credited.
+
+*Checked 2026-09-14, after Pillar 2 was built:* RB Leipzig ranks second on
+trading profit (+1.13), and the club-level correlation between Pillars 1 and 2
+is −0.13. The pillars capture different strategies, as intended. Villarreal is
++0.14 on Pillar 2, so the Pillar 3 check still applies to them.
+
+## 4. Pillar 2: trading profit (scoping doc 5)
+
+One row per club-season: realised profit on that season's sales, meaning sale
+price against the player's market value when the club acquired him. Every sale
+is in `score.sale_basis`, with the arrival it was linked to, the date and
+valuation used for its basis, and the route taken.
+
+### What grounding found before any code was written
+
+1. **"No arrival recorded" was not "academy graduate".** The biggest such
+   sales were players bought before 2017 whose purchases are missing from the
+   frozen transfers table: Hazard's €120.8m sale, Diego Costa, Nainggolan,
+   Drinkwater and Rodrigo. The earlier rule, academy sales as pure income,
+   would have booked all of Hazard's fee as profit.
+2. **The spell bridge had the loan-out gap Pillar 1 had.** Morata, Cunha, Tomori
+   and Romero were loaned out and later sold. The loan closed the spell, so each
+   sale looked like it had no purchase basis.
+3. **The valuations' club field is unreliable.** See Known limitations below.
+   Pillar 2 matches valuations by player and date only, so it is unaffected.
+
+### Decisions (Tyler, 2026-09-14)
+
+**D1. Realised profit only.** Sale price minus basis is mostly value growth
+while the player was held: about 88% growth and 12% price achieved above
+market value at exit, for sales where both valuations exist. Pillar 2 takes
+the *realised* part (players who were sold), and Pillar 3 will take the
+*unrealised* part (players still held). Nothing is counted twice.
+
+**D2. The purchase basis.**
+
+- **Signed in the window:** the latest arrival into the club before the sale,
+  excluding loan returns, owns the sale. Loans out do not end ownership, so
+  Morata's 2020/21 Chelsea sale links to the 2017 purchase through his loan to
+  Atlético. The basis is his market value at that arrival.
+- **Already at the club when the window opened:** priced *as if acquired at
+  market value on 1 July 2017*. This covers both pre-2017 purchases (Hazard is
+  priced at his €75m value then, so +€45.8m on the sale) and academy players,
+  and never touches the incomplete pre-2017 transfer data. `fact_transfer`
+  starts on 1 July 2017, so "no earlier arrival" means exactly "at the club
+  when the window opened".
+- **Valuation lookup:** the latest valuation up to 365 days before the basis
+  date. Failing that, the first up to 180 days after, because young signings
+  are often valued only after joining (145 sales). Failing both, 0 (97 sales,
+  mostly youth).
+
+**D3. Scale.** Profit can be negative and is heavy-tailed, so a log is not
+possible:
+
+- Raw profit let single club-seasons reach z = 7.7.
+- A signed log (asinh) over-compressed: Monaco fell from +1.33 to −0.14.
+- Adopted: **profit in that season's median fees, winsorised at the 1st and
+  99th percentiles of club-seasons** (−9.8 to +24.7 median fees; 14 capped,
+  including Monaco 2018/19 at +50). It keeps money linear, and club ranks
+  correlate with raw at rho 0.99.
+
+The result then gets the Pillar 1 normalisation: residual on log squad value,
+with season and league effects.
+
+**Defaults approved:**
+
+- **Undisclosed-fee sales** are excluded from income (1,100, scoping doc 7) and
+  counted per club-season.
+- **Loan fees received** count as income at zero basis (744 fees, €1.0bn).
+- **Only sales made in a club's big-five seasons count.**
+
+### League effects
+
+Capped profit in median fees per club-season, relative to the Bundesliga, at
+the same squad value and season. Recorded in `score.run_parameter`.
+
+| League | Effect |
+|---|---|
+| Ligue 1 | +1.89 |
+| Serie A | +0.95 |
+| Bundesliga | 0 |
+| La Liga | −0.26 |
+| Premier League | −0.55 |
+
+Ligue 1 is the selling league: its clubs realise the most profit for their
+size. This is a natural companion to Pillar 1's league premium (the Premier
+League buys expensively, and Ligue 1 sells well), and is worth a line in the
+write-up.
+
+### Results (load of 2026-09-14)
+
+`sql/41_check_trading_profit.sql` passes 26 of 26:
+
+- **Every sale:** owning arrival, basis source, basis date, valuation used,
+  lookup route, basis and profit are rebuilt in SQL using `LATERAL` lookups.
+- **Every club-season total:** matches.
+- **Winsor bounds and capping:** match.
+- **Normalisation:** alternating projections again.
+
+All agree to 1e-9. The checks were also tested against planted errors (a basis
+off by €1, a wrong owning arrival, a z-score off by 0.001), and each was caught.
+
+| Fee sales by basis source | Sales | Income | Basis |
+|---|---|---|---|
+| Signed in the window | 1,488 | €15.6bn | €9.8bn |
+| At club on 1 July 2017 | 1,232 | €12.1bn | €8.5bn |
+| Loan fees received | 744 | €1.0bn | 0 |
+
+- **Largest profits:** Mbappé (Monaco, +€145m on a €35m 2017 basis), Neymar
+  (Barcelona, +€122m), Declan Rice (West Ham, +€116m on his €0.5m academy
+  promotion), Bellingham (Dortmund), Dembélé (Dortmund), Grealish (Villa),
+  Caicedo (Brighton).
+- **Largest losses:** Griezmann (Barcelona, −€108m against his €130m value at
+  signing), Cristiano Ronaldo (Juventus, −€83m), Suárez, Coutinho.
+
+Eye test (clubs with 4+ big-five seasons):
+
+- **Top:** Lille +1.75, RB Leipzig +1.13, Atalanta +1.12, Brighton +1.07,
+  Dortmund +1.03, Leicester, Real Madrid, Monaco, Rennes.
+- **Bottom:** Bayern −1.43, PSG −1.11, Arsenal, Manchester United, Marseille,
+  Milan, Tottenham, Napoli, Barcelona.
+
+Profit z correlates with same-season points per match at −0.03. The club-level
+correlation with Pillar 1 is −0.13: buying well and selling well are different
+skills, which supports deriving the composite's weights.
+
+## Known limitations (scoring layer)
+
+### The valuations' club field is not the club at that date
+
+`fact_player_valuation.club_key` comes from transfermarkt-datasets'
+`current_club_id`. Grounding Pillar 2 showed it is often the player's later or
+latest club, not the club on the valuation date. Every Eden Hazard valuation,
+including 2008 (Lille) and 2013 (Chelsea), says Real Madrid, and Verratti's
+2009–11 valuations say PSG while he was at Pescara.
+
+Measured on 22,267 valuations dated September–April for players with one
+big-five club that season, the field matches the club actually played for
+**85.5% of the time (93.5% by value)**, rising from 75.5% in 2017/18 to 90.1% in
+2022/23.
+
+**What it affects.** `fact_club_season.squad_value_start_eur` assigns players to
+clubs with this field. Squad value is the scale control in Pillars 1 and 2.
+
+**Tested impact.** Pillar 1's normalisation was re-run with a squad value that
+ignores the field (the valuation of players who actually played for the club).
+
+- Club rank correlation is 0.94, and club-season correlation is 0.96–0.98 in
+  every season, so the time gradient does not leak into the scores.
+- Individual clubs move by up to ±0.47 (Sampdoria, Levante, PSG, Marseille).
+
+**Not affected.** Every market value used by Pillars 1 and 2 (the bridge values
+at arrival and exit, and the Pillar 2 basis) is matched by player and date only.
+
+**Decision (Tyler, 2026-09-14):** documented, not rebuilt.
+
+**Watch for Pillar 3.** Value growth needs to know which club held a player on
+a date. It must not use this field; establish the holder from transfers and
+appearances instead.
+
+*Revisit criterion:* if the composite or a club page depends on squad value
+more directly than as a log-scale control, rebuild squad value from
+club-at-date membership first.

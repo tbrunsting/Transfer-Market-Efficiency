@@ -530,6 +530,16 @@ This is measured at the start of the season on purpose. An end-of-season value
 would already include the window's signings and results, so it could not
 serve as a neutral scale control for spend.
 
+**Known limitation (found 2026-09-14).** A player is assigned to a club by the
+valuation's club field (Transfermarkt `current_club_id`). That field is often
+the player's later club rather than the club on that date: every Eden Hazard
+valuation says Real Madrid. It matches the club actually played for 85.5% of
+the time (93.5% by value), rising from 75.5% in 2017/18 to 90% in 2022/23.
+
+Tested as a scale control, the Pillar 1 club ranks hold up (rho 0.94 with a
+squad value that ignores the field), so it is documented, not rebuilt. See
+docs/phase-3-scoring.md, Known limitations.
+
 ### 8.6 Known limitation: undisclosed fees are excluded from spend
 
 **2,988 arrivals** into in-scope clubs in the scored seasons have an
