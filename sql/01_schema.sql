@@ -292,7 +292,7 @@ CREATE TABLE fact_player_season (
 
     CONSTRAINT player_season_natural_key UNIQUE (player_key, club_key, season_key),
     CONSTRAINT position_group_source_known
-        CHECK (position_group_source IN ('transfermarkt', 'fbref_override', 'fbref_fallback')),
+        CHECK (position_group_source IN ('transfermarkt', 'fbref_override', 'wing_back_rule', 'fbref_fallback')),
     CONSTRAINT minutes_non_negative CHECK (minutes IS NULL OR minutes >= 0),
     CONSTRAINT starts_within_matches CHECK (starts IS NULL OR matches_played IS NULL OR starts <= matches_played),
     CONSTRAINT nineties_match_minutes
@@ -306,7 +306,9 @@ COMMENT ON COLUMN fact_player_season.fbref_position_raw IS
 COMMENT ON COLUMN fact_player_season.position_group_source IS
     'transfermarkt: the group comes from tm_sub_position and FBref''s season position agrees at the broad level. '
     'fbref_override: they disagree that season (e.g. a Transfermarkt winger FBref lists as DF), so a fixed table '
-    'maps the pair to a group (DF + winger = FB, a wing-back). fbref_fallback: no Transfermarkt position, so '
+    'maps the pair to a group (DF + winger = FB, a wing-back). wing_back_rule: checked first, on the detailed '
+    'position -- Central Midfield listed DF, or Left-/Right-Back listed MF, is a wing-back or full-back and goes '
+    'to FB (the broad table would say CB and AM/W). fbref_fallback: no Transfermarkt position, so '
     'FBref''s broad position is used (DF = CB, MF = CM). FBref alone cannot give six groups: it never '
     'separates centre-backs from full-backs, or central midfielders from wingers.';
 COMMENT ON COLUMN fact_player_season.is_old_vintage IS
@@ -344,8 +346,10 @@ CREATE TABLE fact_club_season (
     deduction_note       text,
     squad_value_start_eur numeric(16,2),
     squad_players_valued smallint,
+    possession_pct       numeric(4,1) NOT NULL,
 
     CONSTRAINT club_season_natural_key UNIQUE (club_key, season_key),
+    CONSTRAINT possession_is_a_share   CHECK (possession_pct BETWEEN 0 AND 100),
     CONSTRAINT results_add_up          CHECK (matches = wins + draws + losses),
     CONSTRAINT goal_difference_correct CHECK (goal_difference = goals_for - goals_against),
     CONSTRAINT points_follow_results   CHECK (points_from_results = 3 * wins + draws),
@@ -360,6 +364,9 @@ COMMENT ON COLUMN fact_club_season.squad_value_start_eur IS
     'player''s latest Transfermarkt market value on or before 1 July of the season, within the previous 365 '
     'days, where that valuation lists this club. Start of season on purpose: good recruitment raises squad '
     'value, so an end-of-season figure would penalise exactly the clubs that recruit well.';
+COMMENT ON COLUMN fact_club_season.possession_pct IS
+    'Average share of possession across the league season, from FBref''s team possession table in the frozen '
+    'snapshot. Used by the scoring layer to take team context out of centre-back defensive volume stats.';
 COMMENT ON COLUMN fact_club_season.position_source IS
     'Transfermarkt''s own reported position. Differs from position_computed in 49 of 684 club-seasons: '
     'points deductions, Spanish/Italian head-to-head tie-breaks, or a rescheduled final match.';

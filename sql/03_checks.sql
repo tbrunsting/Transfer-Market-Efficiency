@@ -132,7 +132,20 @@ FROM fact_player_season
 UNION ALL
 SELECT 'position groups: every override has both positions recorded', '0',
        count(*)::text FROM fact_player_season
-       WHERE position_group_source = 'fbref_override' AND (tm_sub_position IS NULL OR fbref_position_raw IS NULL)
+       WHERE position_group_source IN ('fbref_override', 'wing_back_rule')
+         AND (tm_sub_position IS NULL OR fbref_position_raw IS NULL)
+UNION ALL
+SELECT 'position groups: wing-backs (Central Midfield listed DF, full-backs listed MF) are all FB', '0',
+       count(*)::text FROM fact_player_season f JOIN dim_position_group g USING (position_group_key)
+       WHERE ((split_part(f.fbref_position_raw, ',', 1) = 'DF' AND f.tm_sub_position = 'Central Midfield')
+           OR (split_part(f.fbref_position_raw, ',', 1) = 'MF' AND f.tm_sub_position IN ('Left-Back', 'Right-Back')))
+         AND (g.position_group <> 'FB' OR f.position_group_source <> 'wing_back_rule')
+UNION ALL
+SELECT 'position groups: the wing-back rule fired (player-seasons)', '150-400',
+       count(*)::text FROM fact_player_season WHERE position_group_source = 'wing_back_rule'
+UNION ALL
+SELECT 'team possession present and plausible (30-75%) for every club-season', '684',
+       count(*)::text FROM fact_club_season WHERE possession_pct BETWEEN 30 AND 75
 
 -- ---------- identity and scale ------------------------------------------------
 UNION ALL

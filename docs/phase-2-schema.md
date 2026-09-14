@@ -465,8 +465,25 @@ separate full-backs from centre-backs or wingers from central midfielders.
 | `position_group_source` | Player-seasons |
 |---|---|
 | `transfermarkt` | 18,320 |
-| `fbref_override` | 1,131 |
+| `fbref_override` | 944 |
+| `wing_back_rule` | 187 |
 | `fbref_fallback` | 111 |
+
+**Amended 2026-09-14: the wing-back rule.** The first player scores showed
+two override cells judging players on the wrong job:
+
+- Transfermarkt "Central Midfield" listed DF by FBref went to CB. These are
+  mostly wing-backs and full-backs: Sergi Roberto, Wass, Delph, Pereyra.
+  Scored as CBs, they averaged z −1.40.
+- Left-/Right-Back listed MF went to AM/W. These are wing-backs too:
+  Cucurella at Getafe, Dallas, Doherty. Scored as wingers, they averaged
+  −1.50 and −0.87.
+
+Both now go to FB, recorded as `wing_back_rule`, and average −0.15. The rule
+keys on Transfermarkt's *detailed* position, because "Defensive Midfield"
+listed DF does profile as a centre-back (3.2 clearances and 1.6 aerials won
+per 90: Kouyaté, Witsel, Fabinho 2020/21) and stays CB. See
+docs/phase-3-scoring.md.
 
 `tm_sub_position` and `fbref_position_raw` are both kept on every row, so any
 assignment can be audited. All six groups exist in every season, and 99.92% of

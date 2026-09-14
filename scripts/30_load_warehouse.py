@@ -268,6 +268,12 @@ FBREF_OVERRIDE = {
     ("GK", "CB"): "GK", ("GK", "FB"): "GK", ("GK", "CM"): "GK", ("GK", "AM/W"): "GK", ("GK", "FW"): "GK",
 }
 FBREF_FALLBACK = {"GK": "GK", "DF": "CB", "MF": "CM", "FW": "FW"}
+# Checked before the override table, on Transfermarkt's detailed position. Profiled on 900+ minute rows
+# (2026-09-14), these pairs are wing-backs and full-backs, and the broad override judged them as the wrong job:
+#   Central Midfield listed DF: Sergi Roberto, Wass, Delph, Pereyra (were CB; 1-3 clearances, 2-3.5 carries p90)
+#   Left-/Right-Back listed MF: Cucurella at Getafe, Dallas, Doherty (were AM/W; profile far closer to FB)
+# Defensive Midfield listed DF stays CB: Kouyaté, Witsel, Fabinho 2020/21 profile as centre-backs.
+WING_BACK_RULE = {("DF", "Central Midfield"): "FB", ("MF", "Left-Back"): "FB", ("MF", "Right-Back"): "FB"}
 
 
 def assign_position_groups():
@@ -286,6 +292,9 @@ def assign_position_groups():
         if base is None:
             groups.append(FBREF_FALLBACK.get(first, "CM"))
             sources.append("fbref_fallback")
+        elif (first, sp) in WING_BACK_RULE:
+            groups.append(WING_BACK_RULE[(first, sp)])
+            sources.append("wing_back_rule")
         elif first in FBREF_COMPATIBLE and base not in FBREF_COMPATIBLE[first]:
             groups.append(FBREF_OVERRIDE[(first, base)])
             sources.append("fbref_override")
@@ -376,7 +385,6 @@ def build_player_season():
     # Identity fixes from player_id_review.csv. Applied last, after SCA and the blank fill have been joined
     # on the ids the snapshot actually uses, so no source loses its match.
     f["fbref_player_id"] = remap_player_ids(f.fbref_player_id, f.Squad)
-    f["position_group"] = f.fbref_position_raw.map(position_group)   # provisional; assign_position_groups() decides
     f["is_old_vintage"] = f.Season_End_Year < 2023      # before 2022/23; see the column comment
     # FBref writes age as whole years in early seasons and as "years-days" ("25-081") from 2022/23.
     f["age"] = pd.to_numeric(f.age.astype(str).str.extract(r"^(\d+)")[0], errors="coerce")
@@ -472,6 +480,14 @@ def build_players():
 def build_club_facts():
     pts = pd.read_csv(REF / "club_season_points.csv")
     pts["competition_code"] = pts.league.map({v: k for k, v in LEAGUES.items()})
+    # Team possession share, the context control for defensive volume stats in the scoring layer.
+    poss = read_fb("big5_team_possession")
+    poss = poss[poss.Team_or_Opponent == "team"]
+    tid = team_id_lookup()
+    poss_of = {(tid[(y, s)], season_label(y)): p for y, s, p in zip(poss.Season_End_Year, poss.Squad, poss.Poss)}
+    pts["possession_pct"] = [poss_of.get((t, sl)) for t, sl in zip(pts.fbref_team_id, pts.season)]
+    if pts.possession_pct.isna().any():
+        sys.exit(f"STOP: {int(pts.possession_pct.isna().sum())} club-seasons have no team possession")
     tables["fact_club_season"] = pts
 
     tro = pd.read_csv(REF / "club_trophies_detail.csv")
@@ -928,7 +944,8 @@ with psycopg.connect(dsn or "", autocommit=False) as conn:
         loaded["fact_club_season"] = copy_in(cur, "fact_club_season", cs,
             ["club_key", "season_key", "competition_key", "matches", "wins", "draws", "losses", "goals_for",
              "goals_against", "goal_difference", "points_from_results", "position_computed", "position_source",
-             "has_known_deduction", "deduction_note", "squad_value_start_eur", "squad_players_valued"])
+             "has_known_deduction", "deduction_note", "squad_value_start_eur", "squad_players_valued",
+             "possession_pct"])
 
         tr = tables["fact_club_trophy"].copy()
         tr["club_key"] = tr.fbref_team_id.map(club_by_fbref)
