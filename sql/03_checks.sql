@@ -23,7 +23,7 @@ UNION ALL SELECT 'fact_club_season rows', '684', count(*)::text FROM fact_club_s
 UNION ALL SELECT 'fact_club_trophy rows', '96', count(*)::text FROM fact_club_trophy
 UNION ALL SELECT 'fact_manager_tenure rows', '906', count(*)::text FROM fact_manager_tenure
 UNION ALL SELECT 'dim_season scored seasons', '7', count(*)::text FROM dim_season WHERE is_scored
-UNION ALL SELECT 'meta.decision rows (human calls)', '101', count(*)::text FROM meta.decision
+UNION ALL SELECT 'meta.decision rows (human calls)', '108', count(*)::text FROM meta.decision
 UNION ALL SELECT 'Kaggle link applied: Martinelli 2022/23 has SCA', '1',
        count(*)::text FROM fact_player_season f JOIN dim_player p USING (player_key)
        JOIN dim_season s USING (season_key)
@@ -120,7 +120,38 @@ SELECT 'player-seasons: minutes never exceed the season',
        '0 over 4000',
        count(*)::text || ' over 4000' FROM fact_player_season WHERE minutes > 4000
 
+-- ---------- position groups (scoping doc 4.4) ---------------------------------
+UNION ALL
+SELECT 'position groups: all six present in every scored season', '7',
+       count(*)::text FROM (SELECT season_key FROM fact_player_season GROUP BY 1
+                            HAVING count(DISTINCT position_group_key) = 6) g
+UNION ALL
+SELECT 'position groups: Transfermarkt-based (not fallback) for at least 99% of minutes', '>=99',
+       round(100.0 * sum(minutes) FILTER (WHERE position_group_source <> 'fbref_fallback') / sum(minutes), 2)::text
+FROM fact_player_season
+UNION ALL
+SELECT 'position groups: every override has both positions recorded', '0',
+       count(*)::text FROM fact_player_season
+       WHERE position_group_source = 'fbref_override' AND (tm_sub_position IS NULL OR fbref_position_raw IS NULL)
+
+-- ---------- identity and scale ------------------------------------------------
+UNION ALL
+SELECT 'relinks: Ugarte (PSG) and Kudus (West Ham) 2023/24 signings now join to output', '2',
+       count(DISTINCT t.transfer_key)::text
+FROM fact_transfer t JOIN dim_transfer_type tt USING (transfer_type_key) JOIN dim_player p USING (player_key)
+JOIN dim_season s ON s.season_key = t.season_key
+WHERE tt.transfer_type = 'permanent_with_fee' AND s.season_label = '2023/24'
+  AND p.transfermarkt_id IN (476701, 543499)
+  AND EXISTS (SELECT 1 FROM fact_player_season f WHERE f.player_key = t.player_key AND f.club_key = t.to_club_key
+              AND f.season_key = t.season_key)
+UNION ALL
+SELECT 'squad value at season start present for every club-season', '684',
+       count(*)::text FROM fact_club_season WHERE squad_value_start_eur > 0
+
 -- ---------- the spell bridge -------------------------------------------------
+UNION ALL
+SELECT 'spells: academy and pre-window sales are represented (departure-only spells)', '>=1000',
+       count(*)::text FROM bridge_player_club_spell WHERE NOT arrival_known AND departure_known
 UNION ALL
 SELECT 'spells: no purchase fee without a known arrival', '0',
        count(*)::text FROM bridge_player_club_spell
@@ -130,6 +161,26 @@ SELECT 'spells: flags agree with the transfer keys', '0',
        count(*)::text FROM bridge_player_club_spell
        WHERE arrival_known <> (arrival_transfer_key IS NOT NULL)
           OR departure_known <> (departure_transfer_key IS NOT NULL)
+-- A key existing is not the same as a key being right: these caught 7,781 spells pointing at the wrong transfer.
+UNION ALL
+SELECT 'spells: arrival transfer is INTO this club, for this player', '0',
+       count(*)::text FROM bridge_player_club_spell b JOIN fact_transfer a ON a.transfer_key = b.arrival_transfer_key
+       WHERE a.to_club_key <> b.club_key OR a.player_key <> b.player_key
+UNION ALL
+SELECT 'spells: departure transfer is OUT OF this club, for this player', '0',
+       count(*)::text FROM bridge_player_club_spell b JOIN fact_transfer d ON d.transfer_key = b.departure_transfer_key
+       WHERE d.from_club_key <> b.club_key OR d.player_key <> b.player_key
+UNION ALL
+SELECT 'spells: no sale is counted in more than one spell', '0',
+       count(*)::text FROM (SELECT departure_transfer_key FROM bridge_player_club_spell
+                            WHERE departure_transfer_key IS NOT NULL GROUP BY 1 HAVING count(*) > 1) d
+UNION ALL
+SELECT 'spells: every fee sale from an in-scope club has a spell', '0',
+       count(*)::text
+FROM fact_transfer t JOIN dim_transfer_type tt USING (transfer_type_key)
+JOIN dim_club c ON c.club_key = t.from_club_key AND c.is_in_scope
+WHERE tt.transfer_type = 'permanent_with_fee'
+  AND NOT EXISTS (SELECT 1 FROM bridge_player_club_spell b WHERE b.departure_transfer_key = t.transfer_key)
 
 -- ---------- provenance --------------------------------------------------------
 UNION ALL

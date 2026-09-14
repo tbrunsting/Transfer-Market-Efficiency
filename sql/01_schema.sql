@@ -108,8 +108,8 @@ CREATE TABLE dim_position_group (
     fbref_positions     text   NOT NULL
 );
 COMMENT ON TABLE dim_position_group IS
-    'The six groups from scoping doc 4.4. Assigned from the FIRST listed FBref position; the raw Pos '
-    'string is kept on fact_player_season for auditing.';
+    'The six groups from scoping doc 4.4, assigned from Transfermarkt sub_position with a per-season FBref '
+    'override where the two disagree. See fact_player_season.position_group_source.';
 
 CREATE TABLE dim_manager (
     manager_key      serial  PRIMARY KEY,
@@ -170,7 +170,12 @@ CREATE TABLE fact_transfer (
         CHECK (source_system IN ('transfermarkt-pages', 'transfermarkt-datasets')),
 
     CONSTRAINT transfer_natural_key
-        UNIQUE (player_key, transfer_date_key, from_club_key, to_club_key, source_system)
+        UNIQUE (player_key, transfer_date_key, from_club_key, to_club_key, source_system),
+    -- source_ref is how the loader resolves the bridge's arrival and departure keys. It was once built from
+    -- page club + season + player, which a loan and its return in the same season share, and a lookup kept
+    -- only one of each pair: 7,781 spells pointed at the wrong transfer. Uniqueness makes that unloadable.
+    CONSTRAINT transfer_source_ref_unique
+        UNIQUE (source_system, source_ref)
 );
 
 COMMENT ON TABLE fact_transfer IS
@@ -229,7 +234,9 @@ CREATE TABLE fact_player_season (
     club_key                integer   NOT NULL REFERENCES dim_club,
     season_key              integer   NOT NULL REFERENCES dim_season,
     position_group_key      integer   NOT NULL REFERENCES dim_position_group,
-    fbref_position_raw      text,                    -- e.g. 'MF,FW': the messy truth beside the clean group
+    fbref_position_raw      text,                    -- e.g. 'MF,FW': FBref's season position, as recorded
+    tm_sub_position         text,                    -- e.g. 'Left-Back': Transfermarkt's single career position
+    position_group_source   text NOT NULL,           -- which rule set position_group_key
     age                     smallint,
 
     matches_played          smallint,
@@ -284,6 +291,8 @@ CREATE TABLE fact_player_season (
     is_old_vintage          boolean NOT NULL DEFAULT false,
 
     CONSTRAINT player_season_natural_key UNIQUE (player_key, club_key, season_key),
+    CONSTRAINT position_group_source_known
+        CHECK (position_group_source IN ('transfermarkt', 'fbref_override', 'fbref_fallback')),
     CONSTRAINT minutes_non_negative CHECK (minutes IS NULL OR minutes >= 0),
     CONSTRAINT starts_within_matches CHECK (starts IS NULL OR matches_played IS NULL OR starts <= matches_played),
     CONSTRAINT nineties_match_minutes
@@ -293,8 +302,13 @@ COMMENT ON TABLE fact_player_season IS
     'One row per player per club per season, from the frozen FBref snapshot. Wide on purpose: the metric '
     'set is fixed by scoping doc 4.4. A player who moved mid-season has one row per club.';
 COMMENT ON COLUMN fact_player_season.fbref_position_raw IS
-    'FBref''s raw Pos value. position_group_key is derived from the first listed position; this keeps the '
-    'original visible for auditing.';
+    'FBref''s raw Pos value for that season (only GK, DF, MF, FW, alone or combined), kept for auditing.';
+COMMENT ON COLUMN fact_player_season.position_group_source IS
+    'transfermarkt: the group comes from tm_sub_position and FBref''s season position agrees at the broad level. '
+    'fbref_override: they disagree that season (e.g. a Transfermarkt winger FBref lists as DF), so a fixed table '
+    'maps the pair to a group (DF + winger = FB, a wing-back). fbref_fallback: no Transfermarkt position, so '
+    'FBref''s broad position is used (DF = CB, MF = CM). FBref alone cannot give six groups: it never '
+    'separates centre-backs from full-backs, or central midfielders from wingers.';
 COMMENT ON COLUMN fact_player_season.is_old_vintage IS
     'True for seasons before 2022/23. Applies ONLY to the passing-file columns: key_passes, '
     'passes_into_final_third, passes_into_pen_area, passes_completed, passes_attempted. For those seasons '
@@ -328,6 +342,8 @@ CREATE TABLE fact_club_season (
     position_source      smallint,
     has_known_deduction  boolean   NOT NULL DEFAULT false,
     deduction_note       text,
+    squad_value_start_eur numeric(16,2),
+    squad_players_valued smallint,
 
     CONSTRAINT club_season_natural_key UNIQUE (club_key, season_key),
     CONSTRAINT results_add_up          CHECK (matches = wins + draws + losses),
@@ -339,6 +355,11 @@ COMMENT ON COLUMN fact_club_season.points_from_results IS
     'Points from match results only. Administrative deductions are NOT applied -- see has_known_deduction. '
     'The CHECK constraint points_follow_results guarantees this column can never quietly become '
     '"official points" without the constraint being dropped first.';
+COMMENT ON COLUMN fact_club_season.squad_value_start_eur IS
+    'Club financial scale, standing in for revenue (no revenue data exists in this project). Sum of each '
+    'player''s latest Transfermarkt market value on or before 1 July of the season, within the previous 365 '
+    'days, where that valuation lists this club. Start of season on purpose: good recruitment raises squad '
+    'value, so an end-of-season figure would penalise exactly the clubs that recruit well.';
 COMMENT ON COLUMN fact_club_season.position_source IS
     'Transfermarkt''s own reported position. Differs from position_computed in 49 of 684 club-seasons: '
     'points deductions, Spanish/Italian head-to-head tie-breaks, or a rescheduled final match.';
@@ -411,6 +432,7 @@ CREATE TABLE bridge_player_club_spell (
     minutes_at_club         integer,
     arrival_known           boolean   NOT NULL,
     departure_known         boolean   NOT NULL,
+    arrival_source          text      NOT NULL,
     arrival_is_academy      boolean,
     CONSTRAINT spell_natural_key UNIQUE (player_key, club_key, start_date_key),
     CONSTRAINT arrival_flag_matches_key
@@ -420,12 +442,30 @@ CREATE TABLE bridge_player_club_spell (
     CONSTRAINT purchase_fee_needs_arrival
         CHECK (purchase_fee_eur IS NULL OR arrival_known),
     CONSTRAINT spell_dates_ordered
-        CHECK (end_date_key IS NULL OR start_date_key IS NULL OR end_date_key >= start_date_key)
+        CHECK (end_date_key IS NULL OR start_date_key IS NULL OR end_date_key >= start_date_key),
+    CONSTRAINT arrival_source_known
+        CHECK (arrival_source IN ('window_transfer', 'pre_window_transfer', 'none_recorded')),
+    CONSTRAINT arrival_known_means_window_transfer
+        CHECK (arrival_known = (arrival_source = 'window_transfer')),
+    CONSTRAINT no_recorded_arrival_has_no_arrival_facts
+        CHECK (arrival_source <> 'none_recorded'
+               OR (start_date_key IS NULL AND market_value_at_arrival IS NULL AND purchase_fee_eur IS NULL)),
+    CONSTRAINT departure_only_spell_has_a_departure
+        CHECK (arrival_known OR departure_known)
 );
 COMMENT ON TABLE bridge_player_club_spell IS
     'Derived from fact_transfer: a player''s continuous time at one club, for recruitment ROI and trading '
     'profit. Only 27% of player-club-seasons sit inside a reconstructable spell, which is why this is a '
     'bridge and not the core grain.';
+COMMENT ON COLUMN bridge_player_club_spell.arrival_source IS
+    'window_transfer: the arrival is a row in fact_transfer (2017/18-2023/24). pre_window_transfer: the player '
+    'arrived before the window (date from the frozen Transfermarkt dataset); there is no purchase fee, but market '
+    'value at arrival is known. none_recorded: a departure with no arrival anywhere -- an academy graduate, or a '
+    'player whose history the source lacks. These spells exist so a club selling a homegrown player shows up as '
+    'income instead of being invisible.';
+COMMENT ON COLUMN bridge_player_club_spell.market_value_at_arrival IS
+    'Transfermarkt market value on or before the arrival date (within 365 days), from player valuations. Scoping '
+    'doc 5 measures trading profit as sale price against this, not against the purchase fee.';
 COMMENT ON COLUMN bridge_player_club_spell.arrival_known IS
     'False for an academy graduate, a pre-2012 arrival, or a player whose history the source lacks. '
     'Trading profit on such a spell has no purchase price: it must be reported as unknown, never as 0. '

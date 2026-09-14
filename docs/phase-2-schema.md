@@ -395,3 +395,132 @@ EUR 0.6m, up to EUR 20m) that would otherwise vanish.
 - **461 rows have no counterpart club id** (moves to retirement, unknown or
   non-Transfermarkt clubs). They load with a null counterpart rather than being
   dropped.
+
+## 8. Phase 3a: warehouse fixes before scoring (2026-09-13)
+
+Four fixes landed before any scoring was written, and each has a check in
+`sql/03_checks.sql`. The DDL sketches in section 3 were the design and are
+not updated column by column. `sql/01_schema.sql` is the authority. After the
+rebuild (`scripts/31_rebuild_warehouse.py`) and reload, all 44 checks pass.
+
+### 8.1 A bug found on the way: transfer `source_ref` was not unique
+
+The spell bridge links a spell to its arrival and departure transfers through
+`source_ref`. For page-sourced transfers that reference was built as
+`page <club>/<season>: player <id>`, which is the same for a player's move in
+and move out on one club page. **7,801 references were shared by 15,602
+transfers.** In the warehouse loaded at the Phase 2 commit, 7,781 spells
+pointed their arrival key at a move into a *different* club, and 4,340
+departure keys at a move out of one.
+
+The fee amounts on each spell were computed from the correct events, so
+purchase and sale fees were right. What was wrong were the keys, and anything
+that joined through them, such as the season of a sale. The old check only
+tested that a key was present, not that it pointed to the right move.
+
+Fix: the reference now includes the direction (`... from>to`), the loader
+stops if any reference repeats, `fact_transfer` has `UNIQUE (source_system,
+source_ref)`, and three checks test correctness:
+
+- the arrival goes into this club, for this player;
+- the departure goes out of this club, for this player;
+- no sale is counted in more than one spell.
+
+A figure reported earlier, 3,429 departures claimed by several arrivals, came
+from the same bug. The true count is **638**. In each case the latest arrival
+keeps the sale, and earlier arrivals lose their departure link.
+
+### 8.2 Transfermarkt ID relinks: 7 wrong, not 153
+
+153 FBref players had a Transfermarkt ID that never appeared for that club and
+season in Transfermarkt's appearances table.
+`scripts/22_find_tm_id_relinks.py` sorted every one of them
+(`reference/tm_id_check.csv`):
+
+| Outcome | Players | How |
+|---|---|---|
+| Dictionary ID confirmed | 140 | 41 by the ID's other club-seasons; 99 by the ID having the same name and birth year. These are gaps in the appearances table (worst in 2021/22), not wrong IDs |
+| Relinked | 7 | Kudus, Ugarte, Iliman Ndiaye, Giuliano Simeone, Antoine Valerio, Aliou Baldé, Jorge Moreno. Added to `reference/player_id_review.csv` |
+| Unresolved | 6 | 4 name variants that could not be confirmed (Màrmol, Etebo, Jesús Santiago, Peter González) and 2 with 37 and 1 minutes |
+
+Before the relinks, Ugarte's move to PSG and Kudus's move to West Ham did not
+join to anything those players then did. A check now confirms both join.
+
+### 8.3 Position groups: Transfermarkt detail, FBref season override
+
+This replaces the Phase 2 rule of taking the first FBref position listed.
+FBref only gives four broad positions (GK/DF/MF/FW), so that rule could not
+separate full-backs from centre-backs or wingers from central midfielders.
+
+1. **Base group** from Transfermarkt `sub_position`, mapped to the six groups
+   (Left-/Right-Back to FB, Defensive/Central Midfield to CM, wingers, wide
+   and attacking midfield to AM/W, Centre-Forward/Second Striker to FW).
+2. **FBref override**, per season. Transfermarkt gives one position per
+   player; FBref says where they played that season. If the two broad
+   positions disagree, the season wins, and Transfermarkt's detail picks the
+   nearest group. For example, a winger listed as DF becomes FB, and a
+   centre-back listed as MF becomes CM.
+3. **FBref fallback** where Transfermarkt has no position.
+
+| `position_group_source` | Player-seasons |
+|---|---|
+| `transfermarkt` | 18,320 |
+| `fbref_override` | 1,131 |
+| `fbref_fallback` | 111 |
+
+`tm_sub_position` and `fbref_position_raw` are both kept on every row, so any
+assignment can be audited. All six groups exist in every season, and 99.92% of
+minutes have a Transfermarkt-based group.
+
+**Limitation.** `sub_position` is Transfermarkt's *current* position for the
+player, not a position history. A player who moved from winger to full-back
+is only caught where FBref's broad position disagrees too.
+
+### 8.4 The spell bridge: departure-only spells and arrival sources
+
+A sale with no matching arrival in the window used to have no spell. That hid
+most academy graduates, and players bought before 2017/18, from any
+trading-profit figure. Every spell now records where its arrival came from:
+
+| `arrival_source` | Meaning | Spells |
+|---|---|---|
+| `window_transfer` | Arrival is a 2017/18+ transfer in `fact_transfer` | 34,664 |
+| `pre_window_transfer` | Departure matched to a pre-2017 arrival in the frozen dataset (dates and value only, no fee key) | 1,404 |
+| `none_recorded` | No arrival anywhere: academy graduates and missing history | 6,081 |
+
+`arrival_known` is true only for `window_transfer`, and the DDL enforces this.
+Departure-only spells carry no purchase fee, so the sale counts as pure
+income. Where several departures claimed one pre-window arrival, the latest
+kept it (137 cases). When two arrivals share an estimated start date, the copy
+that carries the sale is the one kept; before that fix, 7 sales vanished.
+Every fee sale from an in-scope club now has exactly one spell.
+
+`market_value_at_arrival` and `market_value_at_exit` come from
+`fact_player_valuation`: the nearest valuation on or before the date, within
+365 days. They feed Pillar 3 (appreciation).
+
+### 8.5 Squad value at season start (revenue proxy)
+
+There is no revenue source, so scale is measured by squad market value.
+`fact_club_season.squad_value_start_eur` is, for each club-season, the sum of
+each player's latest Transfermarkt valuation on or before 1 July of the
+season's start year, within the prior 365 days. A player counts for the club
+recorded on that valuation, which is the club they were at on that date.
+`squad_players_valued` gives the head count. The value is present for all 684
+club-seasons.
+
+This is measured at the start of the season on purpose. An end-of-season value
+would already include the window's signings and results, so it could not
+serve as a neutral scale control for spend.
+
+### 8.6 Known limitation: undisclosed fees are excluded from spend
+
+**2,988 arrivals** into in-scope clubs in the scored seasons have an
+undisclosed fee. `fee_eur` stays NULL, and they count as signings but not as
+spend. This is the rule from section 2, not an estimate, and it has a known
+direction: **it understates spend most for the clubs that disclose least.**
+Those clubs' ROI and cost-per-point figures therefore look better than they
+are. The dashboard should show undisclosed moves alongside spend (the
+`undisclosed_moves` count is already in the model) rather than hide them.
+Imputing a fee from market value was considered and rejected: it would put
+invented money into a table whose rule is that money is never inferred.

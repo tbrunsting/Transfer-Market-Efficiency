@@ -50,6 +50,7 @@ LEAGUES = {"GB1": "Premier League", "ES1": "La Liga", "IT1": "Serie A", "L1": "B
 MANIFESTS = ["fbref_snapshot_manifest.csv", "transfermarkt_snapshot_manifest.csv", "transfermarkt_pages_manifest.csv"]
 dry_run = "--dry-run" in sys.argv
 tables: dict[str, pd.DataFrame] = {}
+TRACE: dict[str, int] = {}
 
 
 def say(msg):
@@ -191,12 +192,8 @@ def build_dimensions():
     tables["dim_club"] = clubs
 
     tables["dim_position_group"] = pd.DataFrame([
-        {"position_group": "GK", "fbref_positions": "GK"},
-        {"position_group": "CB", "fbref_positions": "DF (centre-back by first position)"},
-        {"position_group": "FB", "fbref_positions": "DF,MF / DF,FW wide defenders"},
-        {"position_group": "CM", "fbref_positions": "MF"},
-        {"position_group": "AM/W", "fbref_positions": "MF,FW / FW,MF"},
-        {"position_group": "FW", "fbref_positions": "FW"}])
+        {"position_group": g, "fbref_positions": "Transfermarkt: " + ", ".join(k for k, v in SIX_GROUPS.items() if v == g)}
+        for g in ["GK", "CB", "FB", "CM", "AM/W", "FW"]])
 
     tenures = pd.read_csv(REF / "manager_tenures.csv")
     splits = pd.read_csv(REF / "manager_name_review.csv")
@@ -245,10 +242,58 @@ OTHER_FILES = {
 }
 
 
-def position_group(pos: str) -> str:
-    """First listed FBref position decides the group; the raw value is kept alongside."""
-    first = str(pos).split(",")[0].strip().upper()
-    return {"GK": "GK", "DF": "CB", "MF": "CM", "FW": "FW"}.get(first, "CM")
+# Scoping doc 4.4's six groups, from Transfermarkt's sub_position (FBref's Pos is only GK/DF/MF/FW).
+SIX_GROUPS = {"Goalkeeper": "GK", "Centre-Back": "CB", "Left-Back": "FB", "Right-Back": "FB",
+              "Defensive Midfield": "CM", "Central Midfield": "CM",
+              "Attacking Midfield": "AM/W", "Left Winger": "AM/W", "Right Winger": "AM/W",
+              "Left Midfield": "AM/W", "Right Midfield": "AM/W",
+              "Centre-Forward": "FW", "Second Striker": "FW"}
+# Which six-groups are consistent with each broad FBref season position.
+FBREF_COMPATIBLE = {"GK": {"GK"}, "DF": {"CB", "FB"}, "MF": {"CM", "AM/W"}, "FW": {"FW", "AM/W"}}
+# When a player's single Transfermarkt position disagrees with where FBref says he played that season,
+# the season wins at the broad level and Transfermarkt's detail picks the nearest group.
+FBREF_OVERRIDE = {
+    ("DF", "AM/W"): "FB",   # a winger used as a wing-back
+    ("DF", "CM"): "CB",     # a holding midfielder dropped into the back line
+    ("DF", "FW"): "FB",
+    ("DF", "GK"): "CB",
+    ("MF", "CB"): "CM",     # a centre-back stepping into midfield
+    ("MF", "FB"): "AM/W",   # a full-back pushed up to wide midfield
+    ("MF", "FW"): "AM/W",   # a forward dropping into midfield
+    ("MF", "GK"): "CM",
+    ("FW", "CM"): "AM/W",   # a midfielder pushed forward
+    ("FW", "FB"): "AM/W",
+    ("FW", "CB"): "FW",
+    ("FW", "GK"): "FW",
+    ("GK", "CB"): "GK", ("GK", "FB"): "GK", ("GK", "CM"): "GK", ("GK", "AM/W"): "GK", ("GK", "FW"): "GK",
+}
+FBREF_FALLBACK = {"GK": "GK", "DF": "CB", "MF": "CM", "FW": "FW"}
+
+
+def assign_position_groups():
+    """Base group from Transfermarkt sub_position; per-season FBref override where they disagree; FBref
+    fallback where Transfermarkt has no position. Every step is recorded in position_group_source."""
+    ps = tables["fact_player_season"]
+    tm_of = dict(zip(tables["dim_player"].fbref_player_id, tables["dim_player"].transfermarkt_id))
+    sub = pd.read_csv(TM / "players.csv", usecols=["player_id", "sub_position"]).set_index("player_id").sub_position
+    groups, sources, subs = [], [], []
+    for fid, raw in zip(ps.fbref_player_id, ps.fbref_position_raw):
+        tmid = tm_of.get(fid)
+        sp = sub.get(int(tmid)) if pd.notna(tmid) else None
+        sp = sp if isinstance(sp, str) else None
+        base = SIX_GROUPS.get(sp)
+        first = str(raw).split(",")[0].strip().upper() if isinstance(raw, str) else None
+        if base is None:
+            groups.append(FBREF_FALLBACK.get(first, "CM"))
+            sources.append("fbref_fallback")
+        elif first in FBREF_COMPATIBLE and base not in FBREF_COMPATIBLE[first]:
+            groups.append(FBREF_OVERRIDE[(first, base)])
+            sources.append("fbref_override")
+        else:
+            groups.append(base)
+            sources.append("transfermarkt")
+        subs.append(sp)
+    ps["position_group"], ps["position_group_source"], ps["tm_sub_position"] = groups, sources, subs
 
 
 def team_id_lookup() -> dict:
@@ -331,7 +376,7 @@ def build_player_season():
     # Identity fixes from player_id_review.csv. Applied last, after SCA and the blank fill have been joined
     # on the ids the snapshot actually uses, so no source loses its match.
     f["fbref_player_id"] = remap_player_ids(f.fbref_player_id, f.Squad)
-    f["position_group"] = f.fbref_position_raw.map(position_group)
+    f["position_group"] = f.fbref_position_raw.map(position_group)   # provisional; assign_position_groups() decides
     f["is_old_vintage"] = f.Season_End_Year < 2023      # before 2022/23; see the column comment
     # FBref writes age as whole years in early seasons and as "years-days" ("25-081") from 2022/23.
     f["age"] = pd.to_numeric(f.age.astype(str).str.extract(r"^(\d+)")[0], errors="coerce")
@@ -448,6 +493,25 @@ def build_club_facts():
 # =============================================================================
 # 4. fact_transfer -- pages primary, frozen dataset only where a page has nothing
 # =============================================================================
+def build_squad_value():
+    """Scale proxy for revenue: squad market value on 1 July of each season (see the column comment)."""
+    vals = pd.read_csv(TM / "player_valuations.csv", usecols=["player_id", "date", "market_value_in_eur", "current_club_id"])
+    vals["date"] = pd.to_datetime(vals.date)
+    cs = tables["fact_club_season"]
+    mapping = pd.read_csv(REF / "club_id_mapping.csv")
+    tm_of = dict(zip(mapping.fbref_team_id, mapping.transfermarkt_club_id.astype(int)))
+    out = {}
+    for label in sorted(cs.season.unique()):
+        start = pd.Timestamp(year=int(label[:4]), month=7, day=1)
+        window = vals[(vals.date <= start) & (vals.date > start - pd.Timedelta(days=365))]
+        latest = window.sort_values("date").groupby("player_id").tail(1)
+        agg = latest.groupby("current_club_id").agg(value=("market_value_in_eur", "sum"), players=("player_id", "size"))
+        for club, r in agg.iterrows():
+            out[(int(club), label)] = (r.value, r.players)
+    cs["squad_value_start_eur"] = [out.get((tm_of.get(t), sl), (None, None))[0] for t, sl in zip(cs.fbref_team_id, cs.season)]
+    cs["squad_players_valued"] = [out.get((tm_of.get(t), sl), (None, None))[1] for t, sl in zip(cs.fbref_team_id, cs.season)]
+
+
 def build_transfers():
     mapping = pd.read_csv(REF / "club_id_mapping.csv")
     ours = set(mapping.transfermarkt_club_id.astype(int))
@@ -482,7 +546,12 @@ def build_transfers():
     ev["transfer_date"] = ev.transfer_date.fillna(pd.to_datetime(ev.tm_season.astype(str) + "-07-01"))
     ev["season_end_year"] = ev.tm_season + 1
     ev["source_system"] = "transfermarkt-pages"
-    ev["source_ref"] = ev.club_id.astype(str) + ":" + ev.tm_season.astype(str) + ":" + ev.player_id.astype(str)
+    # Unique per event: the page it came from, then player, season and direction. The old form
+    # (page club:season:player) was shared by a loan and its return in the same season.
+    ev["source_ref"] = ("page " + ev.club_id.astype(str) + "/" + ev.tm_season.astype(str) + ": player "
+                        + ev.player_id.astype(str) + " " + ev.from_club.astype(str) + ">" + ev.to_club.astype(str))
+    if ev.source_ref.duplicated().any():
+        sys.exit(f"STOP: {int(ev.source_ref.duplicated().sum())} transfers still share a source_ref")
     ev["is_type_heuristic"] = False
     ev = ev[ev.from_club.isin(ours) | ev.to_club.isin(ours)]
     tables["fact_transfer"] = ev
@@ -520,9 +589,9 @@ def build_derived():
     # merge_asof finds, for every arrival, the first departure of the same player from the same club
     # strictly after it: one sort-and-merge instead of re-scanning every event for every arrival.
     cols = ["player_id", "transfer_date", "source_ref", "fee_eur"]
-    arrivals = ev[cols + ["to_club", "market_value_in_eur"]].rename(
+    arrivals = ev[cols + ["to_club"]].rename(
         columns={"to_club": "club_id", "transfer_date": "start_date", "source_ref": "arrival_ref",
-                 "fee_eur": "purchase_fee_eur", "market_value_in_eur": "market_value_at_arrival"})
+                 "fee_eur": "purchase_fee_eur"})
     departures = ev[cols + ["from_club"]].rename(
         columns={"from_club": "club_id", "transfer_date": "end_date", "source_ref": "departure_ref",
                  "fee_eur": "sale_fee_eur"})
@@ -532,7 +601,52 @@ def build_derived():
     spells = pd.merge_asof(arrivals.sort_values("start_date"), departures.sort_values("end_date"),
                            left_on="start_date", right_on="end_date", by=["player_id", "club_id"],
                            direction="forward", allow_exact_matches=False)
-    spells["arrival_known"] = True
+    # Two arrivals with no departure between them (a loan made permanent) both match the same departure.
+    # The sale belongs to the latest arrival only, or it would be counted twice in trading profit.
+    spells = spells.sort_values("start_date")
+    shared = spells.departure_ref.notna() & spells.duplicated("departure_ref", keep="last")
+    TRACE["departure links removed from earlier arrivals"] = int(shared.sum())
+    spells.loc[shared, ["departure_ref", "end_date", "sale_fee_eur"]] = None
+    spells["arrival_source"] = "window_transfer"
+
+    # Departure-only spells: sales from in-scope clubs with no arrival inside the window. Before 2017/18
+    # the frozen dataset may date the arrival; otherwise none is recorded (academy, or missing history).
+    ours = set(pd.read_csv(REF / "club_id_mapping.csv").transfermarkt_club_id.astype(int))
+    orphan = departures[~departures.departure_ref.isin(set(spells.departure_ref.dropna()))
+                        & departures.club_id.isin(ours)].copy()
+    frozen = pd.read_csv(TM / "transfers.csv", usecols=["player_id", "to_club_id", "transfer_date"], low_memory=False)
+    frozen["transfer_date"] = pd.to_datetime(frozen.transfer_date, errors="coerce")
+    pre = frozen[(frozen.transfer_date < "2017-07-01") & frozen.to_club_id.notna()].dropna(subset=["transfer_date"])
+    pre = pre.rename(columns={"to_club_id": "club_id", "transfer_date": "start_date"})
+    pre["player_id"], pre["club_id"] = pre.player_id.astype("int64"), pre.club_id.astype("int64")
+    orphan = pd.merge_asof(orphan.sort_values("end_date"), pre.sort_values("start_date"),
+                           left_on="end_date", right_on="start_date", by=["player_id", "club_id"], direction="backward")
+    orphan["arrival_source"] = orphan.start_date.notna().map({True: "pre_window_transfer", False: "none_recorded"})
+    # Two departures claiming one pre-window arrival (a loan out, then a sale, no recorded return): the arrival
+    # belongs to the latest departure, so the sale is never the one dropped as a duplicate spell.
+    earlier = orphan.arrival_source.eq("pre_window_transfer") & orphan.duplicated(
+        ["player_id", "club_id", "start_date"], keep="last")
+    orphan.loc[earlier, "start_date"] = pd.NaT
+    orphan.loc[earlier, "arrival_source"] = "none_recorded"
+    TRACE["pre-window arrivals kept for the latest of several departures"] = int(earlier.sum())
+    orphan["arrival_ref"], orphan["purchase_fee_eur"] = None, None
+    TRACE["departure-only spells: pre-window arrival"] = int((orphan.arrival_source == "pre_window_transfer").sum())
+    TRACE["departure-only spells: no arrival recorded"] = int((orphan.arrival_source == "none_recorded").sum())
+    spells = pd.concat([spells, orphan], ignore_index=True)
+
+    # Market value at arrival and at exit, from player valuations (scoping doc 5's basis for trading profit).
+    vals = pd.read_csv(TM / "player_valuations.csv", usecols=["player_id", "date", "market_value_in_eur"])
+    vals["date"] = pd.to_datetime(vals.date)
+    vals["player_id"] = vals.player_id.astype("int64")
+    vals = vals.sort_values("date")
+    for when, target in (("start_date", "market_value_at_arrival"), ("end_date", "market_value_at_exit")):
+        has = spells[spells[when].notna()].copy()
+        has["_row"] = has.index
+        got = pd.merge_asof(has.sort_values(when), vals.rename(columns={"date": "_vdate"}), left_on=when,
+                            right_on="_vdate", by="player_id", direction="backward", tolerance=pd.Timedelta(days=365))
+        spells[target] = got.set_index("_row").market_value_in_eur.reindex(spells.index)
+    spells.loc[spells.arrival_source == "none_recorded", "market_value_at_arrival"] = None
+    spells["arrival_known"] = spells.arrival_source.eq("window_transfer")
     spells["departure_known"] = spells.departure_ref.notna()
     tables["bridge_player_club_spell"] = spells
 
@@ -585,8 +699,12 @@ build_transfers()
 say("4b. dim_player, and the out-of-scope clubs transfers point at")
 build_players()
 add_referenced_clubs()
+say("4c. six position groups (Transfermarkt sub_position, FBref season override)")
+assign_position_groups()
 say("5. deflator and spell bridge")
 build_derived()
+say("5b. season-start squad value")
+build_squad_value()
 say("6. meta")
 build_meta()
 
@@ -617,6 +735,18 @@ blocking += len(trip)
 dupe_ps = ps.duplicated(["fbref_player_id", "fbref_team_id", "Season_End_Year"], keep=False)
 say(f"  player-season natural key unique .......... {int(dupe_ps.sum())} row(s) in duplicate groups")
 blocking += int(dupe_ps.sum())
+six = ps.groupby("Season_End_Year").position_group.nunique()
+say(f"  all six position groups in every season ... {int((six < 6).sum())} season(s) short; "
+    f"sources: {ps.position_group_source.value_counts().to_dict()}")
+blocking += int((six < 6).sum())
+for k, v in TRACE.items():
+    say(f"  bridge: {k} ... {v:,}")
+sp_ = tables["bridge_player_club_spell"]
+dep_twice = int(sp_.departure_ref.dropna().duplicated().sum())
+say(f"  bridge: a departure in more than one spell .. {dep_twice}")
+blocking += dep_twice
+cs_ = tables["fact_club_season"]
+say(f"  squad value at season start present ....... {int(cs_.squad_value_start_eur.notna().sum())} of {len(cs_)} club-seasons")
 bad_starts = ps[ps.starts.notna() & ps.matches_played.notna() & (ps.starts > ps.matches_played)]
 say(f"  starts <= matches_played .................. {len(bad_starts)} violation(s)")
 blocking += len(bad_starts)
@@ -774,7 +904,8 @@ with psycopg.connect(dsn or "", autocommit=False) as conn:
         require_keys(ps, "fact_player_season", ["player_key", "club_key", "season_key", "position_group_key"],
                      ["fbref_player_id", "Squad", "season_label"])
         loaded["fact_player_season"] = copy_in(cur, "fact_player_season", ps,
-            ["player_key", "club_key", "season_key", "position_group_key", "fbref_position_raw", "age",
+            ["player_key", "club_key", "season_key", "position_group_key", "fbref_position_raw",
+             "tm_sub_position", "position_group_source", "age",
              "matches_played", "starts", "minutes", "nineties", "team_matches_available", "goals", "assists",
              "xg", "npxg", "xag", "shots", "shots_on_target", "progressive_passes", "progressive_carries",
              "progressive_received", "key_passes", "passes_into_final_third", "passes_into_pen_area",
@@ -797,7 +928,7 @@ with psycopg.connect(dsn or "", autocommit=False) as conn:
         loaded["fact_club_season"] = copy_in(cur, "fact_club_season", cs,
             ["club_key", "season_key", "competition_key", "matches", "wins", "draws", "losses", "goals_for",
              "goals_against", "goal_difference", "points_from_results", "position_computed", "position_source",
-             "has_known_deduction", "deduction_note"])
+             "has_known_deduction", "deduction_note", "squad_value_start_eur", "squad_players_valued"])
 
         tr = tables["fact_club_trophy"].copy()
         tr["club_key"] = tr.fbref_team_id.map(club_by_fbref)
@@ -862,15 +993,24 @@ with psycopg.connect(dsn or "", autocommit=False) as conn:
         sp["departure_transfer_key"] = sp.departure_ref.map(transfer_by_ref)
         sp["start_date_key"] = sp.start_date.map(date_key)
         sp["end_date_key"] = sp.end_date.map(date_key)
-        sp["arrival_known"] = sp.arrival_transfer_key.notna()
+        # A window arrival whose transfer did not resolve cannot claim to be one.
+        unresolved = sp.arrival_source.eq("window_transfer") & sp.arrival_transfer_key.isna()
+        if unresolved.any():
+            sys.exit(f"STOP: {int(unresolved.sum())} window spells have an arrival that did not resolve to a transfer")
         sp["departure_known"] = sp.departure_transfer_key.notna()
         sp["purchase_fee_eur"] = sp.purchase_fee_eur.where(sp.arrival_known)
-        sp = sp[sp.player_key.notna() & sp.club_key.notna()].drop_duplicates(
-            ["player_key", "club_key", "start_date_key"])
+        sp = sp[sp.player_key.notna() & sp.club_key.notna()]
+        # Two arrivals on one (often estimated) date collapse to one spell; the copy that carries the
+        # sale must be the one kept, or the sale vanishes from the bridge.
+        dated = (sp[sp.start_date_key.notna()]
+                 .sort_values(["departure_known", "arrival_known"], ascending=False, kind="stable")
+                 .drop_duplicates(["player_key", "club_key", "start_date_key"]))
+        sp = pd.concat([dated, sp[sp.start_date_key.isna()]])      # NULL starts are distinct, never collapsed
+        sp = sp[sp.arrival_known | sp.departure_known]
         loaded["bridge_player_club_spell"] = copy_in(cur, "bridge_player_club_spell", sp,
             ["player_key", "club_key", "arrival_transfer_key", "departure_transfer_key", "start_date_key",
-             "end_date_key", "purchase_fee_eur", "sale_fee_eur", "market_value_at_arrival",
-             "arrival_known", "departure_known"])
+             "end_date_key", "purchase_fee_eur", "sale_fee_eur", "market_value_at_arrival", "market_value_at_exit",
+             "arrival_known", "departure_known", "arrival_source"])
 
         # ---------------- meta
         loaded["meta.source_manifest"] = copy_in(cur, "meta.source_manifest", tables["meta.source_manifest"],
