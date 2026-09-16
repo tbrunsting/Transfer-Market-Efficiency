@@ -186,3 +186,6 @@ data/*
 
 # seleniumbase scraper artifacts (created by soccerdata FBref driver)
 downloaded_files/
+
+# Word lock files
+~$*
