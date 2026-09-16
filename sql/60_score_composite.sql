@@ -16,8 +16,8 @@
 
 CREATE SCHEMA IF NOT EXISTS score;
 
-DROP TABLE IF EXISTS score.club_season_efficiency;
-DROP TABLE IF EXISTS score.composite_weight;
+DROP TABLE IF EXISTS score.club_season_efficiency CASCADE;   -- CASCADE: also removes presentation views; rebuild them with R/70
+DROP TABLE IF EXISTS score.composite_weight CASCADE;   -- CASCADE: also removes presentation views; rebuild them with R/70
 
 CREATE TABLE score.composite_weight (
     pillar        text PRIMARY KEY,

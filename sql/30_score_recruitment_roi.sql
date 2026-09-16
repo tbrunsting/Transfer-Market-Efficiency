@@ -11,9 +11,9 @@
 
 CREATE SCHEMA IF NOT EXISTS score;
 
-DROP TABLE IF EXISTS score.signing_credit;
-DROP TABLE IF EXISTS score.club_season_recruitment;
-DROP TABLE IF EXISTS score.league_premium;
+DROP TABLE IF EXISTS score.signing_credit CASCADE;   -- CASCADE: also removes presentation views; rebuild them with R/70
+DROP TABLE IF EXISTS score.club_season_recruitment CASCADE;   -- CASCADE: also removes presentation views; rebuild them with R/70
+DROP TABLE IF EXISTS score.league_premium CASCADE;   -- CASCADE: also removes presentation views; rebuild them with R/70
 
 CREATE TABLE IF NOT EXISTS score.run_parameter (
     pillar      text NOT NULL,

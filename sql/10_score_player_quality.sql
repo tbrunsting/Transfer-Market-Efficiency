@@ -13,8 +13,8 @@
 
 CREATE SCHEMA IF NOT EXISTS score;
 
-DROP TABLE IF EXISTS score.player_quality_metric;
-DROP TABLE IF EXISTS score.player_quality;
+DROP TABLE IF EXISTS score.player_quality_metric CASCADE;   -- CASCADE: also removes presentation views; rebuild them with R/70
+DROP TABLE IF EXISTS score.player_quality CASCADE;   -- CASCADE: also removes presentation views; rebuild them with R/70
 
 CREATE TABLE score.player_quality (
     player_season_key   bigint PRIMARY KEY,        -- fact_player_season

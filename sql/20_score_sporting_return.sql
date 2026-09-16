@@ -7,7 +7,7 @@
 
 CREATE SCHEMA IF NOT EXISTS score;
 
-DROP TABLE IF EXISTS score.club_season_sporting;
+DROP TABLE IF EXISTS score.club_season_sporting CASCADE;   -- CASCADE: also removes presentation views; rebuild them with R/70
 
 CREATE TABLE score.club_season_sporting (
     club_season_key      bigint PRIMARY KEY,        -- fact_club_season

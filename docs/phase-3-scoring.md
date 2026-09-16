@@ -23,6 +23,7 @@ the warehouse's surrogate keys, which a reload renumbers):
 "C:\Program Files\R\R-4.4.1\bin\Rscript.exe" R\40_trading_profit.R
 "C:\Program Files\R\R-4.4.1\bin\Rscript.exe" R\50_value_growth.R
 "C:\Program Files\R\R-4.4.1\bin\Rscript.exe" R\60_composite.R
+"C:\Program Files\R\R-4.4.1\bin\Rscript.exe" R\70_presentation_views.R   # Phase 4 views: always last
 ```
 
 **R setup.** R 4.4.1 with DBI, RPostgres, dplyr and tidyr in the user library.

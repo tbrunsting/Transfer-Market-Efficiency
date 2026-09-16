@@ -16,9 +16,9 @@
 
 CREATE SCHEMA IF NOT EXISTS score;
 
-DROP TABLE IF EXISTS score.holding_season_growth;
-DROP TABLE IF EXISTS score.player_holding;
-DROP TABLE IF EXISTS score.club_season_value_growth;
+DROP TABLE IF EXISTS score.holding_season_growth CASCADE;   -- CASCADE: also removes presentation views; rebuild them with R/70
+DROP TABLE IF EXISTS score.player_holding CASCADE;   -- CASCADE: also removes presentation views; rebuild them with R/70
+DROP TABLE IF EXISTS score.club_season_value_growth CASCADE;   -- CASCADE: also removes presentation views; rebuild them with R/70
 
 CREATE TABLE IF NOT EXISTS score.run_parameter (
     pillar      text NOT NULL,

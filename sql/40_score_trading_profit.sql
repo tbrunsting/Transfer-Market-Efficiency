@@ -10,8 +10,8 @@
 
 CREATE SCHEMA IF NOT EXISTS score;
 
-DROP TABLE IF EXISTS score.sale_basis;
-DROP TABLE IF EXISTS score.club_season_trading;
+DROP TABLE IF EXISTS score.sale_basis CASCADE;   -- CASCADE: also removes presentation views; rebuild them with R/70
+DROP TABLE IF EXISTS score.club_season_trading CASCADE;   -- CASCADE: also removes presentation views; rebuild them with R/70
 
 CREATE TABLE IF NOT EXISTS score.run_parameter (
     pillar      text NOT NULL,
