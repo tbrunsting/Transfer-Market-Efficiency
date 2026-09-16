@@ -11,6 +11,7 @@ SQL, and a run fails unless the two agree.
 | `R/30_recruitment_roi.R` | `score.club_season_recruitment`, `score.signing_credit`, `score.league_premium`, `score.run_parameter` (Pillar 1) | `sql/31_check_recruitment_roi.sql` |
 | `R/40_trading_profit.R` | `score.club_season_trading`, `score.sale_basis`, `score.run_parameter` (Pillar 2) | `sql/41_check_trading_profit.sql` |
 | `R/50_value_growth.R` | `score.club_season_value_growth`, `score.player_holding`, `score.holding_season_growth` (Pillar 3) | `sql/51_check_value_growth.sql` |
+| `R/60_composite.R` | `score.club_season_efficiency`, `score.composite_weight` (the index) | `sql/61_check_composite.sql` |
 
 Run from the repository root, after any warehouse load (the score tables hold
 the warehouse's surrogate keys, which a reload renumbers):
@@ -21,6 +22,7 @@ the warehouse's surrogate keys, which a reload renumbers):
 "C:\Program Files\R\R-4.4.1\bin\Rscript.exe" R\30_recruitment_roi.R
 "C:\Program Files\R\R-4.4.1\bin\Rscript.exe" R\40_trading_profit.R
 "C:\Program Files\R\R-4.4.1\bin\Rscript.exe" R\50_value_growth.R
+"C:\Program Files\R\R-4.4.1\bin\Rscript.exe" R\60_composite.R
 ```
 
 **R setup.** R 4.4.1 with DBI, RPostgres, dplyr and tidyr in the user library.
@@ -458,7 +460,8 @@ Eye test (clubs with 4+ big-five seasons):
 - **Bottom:** Bayern −1.43, PSG −1.11, Arsenal, Manchester United, Marseille,
   Milan, Tottenham, Napoli, Barcelona.
 
-Profit z correlates with same-season points per match at −0.03. The club-level
+Profit z correlates with same-season points per match at −0.03, and negatively with
+every success measure once aggregated — see section 6, "selling well costs points". The club-level
 correlation with Pillar 1 is −0.13: buying well and selling well are different
 skills, which supports deriving the composite's weights.
 
@@ -607,6 +610,155 @@ which is what the composite's derived weights need.
 *Villarreal check (Pillar 1's revisit criterion):* −0.46 recruitment, +0.14
 trading, +0.11 growth. Middling rather than low everywhere, so no change to how
 loans out are credited.
+
+## 6. The composite efficiency index
+
+One number per club-season, from the four pillars:
+
+| Pillar | Weight | Source |
+|---|---|---|
+| Recruitment ROI | 0.30 | `score.club_season_recruitment.roi_z` |
+| Trading profit | 0.30 | `score.club_season_trading.profit_z` |
+| Value growth | 0.30 | `score.club_season_value_growth.growth_z` |
+| Sporting return | 0.10 | `score.club_season_sporting.ppm_z` |
+
+The weights live in `score.composite_weight`, with their rationale, rather than
+buried in code; the SQL check reads them from there instead of repeating them.
+
+### The weights are chosen, not derived — and why that changed
+
+The scoping doc (section 5) said the weights would be **derived**: regress each
+pillar against sporting success and let the coefficients decide, so that "the
+model is answerable to the data rather than to the analyst's priors". Measured
+against this data, that method fails three ways.
+
+**1. Wrong signs.** Trading profit takes a *negative* coefficient against every
+success target tried. At club level, so does recruitment ROI:
+
+| Pillar | vs points | vs points above squad-value expectation | vs trophies |
+|---|---|---|---|
+| Recruitment ROI | −0.198 | −0.099 | −0.167 |
+| Trading profit | −0.103 | −0.005 | −0.202 |
+| Value growth | +0.039 | +0.201 | +0.081 |
+
+Derived weights would therefore *subtract* good recruitment and good trading
+from an efficiency index. 
+
+**2. Almost no signal.** Regressing the three money pillars on each target:
+
+| Target | R² | Coefficients (recruit / trade / growth) |
+|---|---|---|
+| Points per match (z in league-season) | 0.044 | +0.040 / −0.051 / +0.191 |
+| Points above squad-value expectation | 0.129 | +0.023 / −0.026 / +0.103 |
+| Won a trophy | 0.016 | −0.016 / −0.021 / +0.033 |
+| Next season's points | 0.006 | −0.072 / +0.017 / −0.005 |
+
+**3. Unstable.** Leaving one season out moves the coefficients as much as the
+coefficients themselves: value growth ranges +0.08 to +0.28 against points,
+trading −0.10 to 0.00.
+
+This is **structural, not a bad choice of target**. Every pillar is residualised
+against squad value by design, so it measures performance relative to club size.
+League points are 0.67 correlated with squad value. Efficiency and success are
+therefore partly opposed, and no regression of one on the other can produce
+sensible weights. Clipping the negative coefficients to zero "fixes" the signs
+but collapses the index onto value growth alone (0.81 of the weight), which
+defeats having four pillars, and it is a result forced by the analyst rather
+than found in the data.
+
+**Decision (Tyler, 2026-09-16): equal weights on the three money pillars, with
+sporting return as a small guard rail at 0.10.** Equal weights are defensible
+here: the money pillars are near independent (|r| ≤ 0.20), each is already
+standardised, and nothing in the evidence ranks one above another. The 0.10 on
+sporting return does the job the scoping doc gives Pillar 4 — stopping
+"efficient" from meaning cheap and bad — at the smallest weight that achieves it:
+
+| Weight on sporting return | Club rank correlation vs money-only | Average points z of the top 10 | Top 3 |
+|---|---|---|---|
+| 0.00 | 1.00 | +0.23 | Lille, Brighton, Real Sociedad |
+| **0.10** | **0.96** | **+0.72** | **Lille, Atalanta, Manchester City** |
+| 0.25 | 0.70 | +1.20 | Manchester City, Lille, Atalanta |
+| 0.50 | 0.24 | +1.58 | Manchester City, Liverpool, Real Madrid |
+
+At 0.25 and above the index turns into a quality ranking. At 0.10 it stays an
+efficiency index — and FC Empoli (points z −0.67), the one cheap-and-bad club
+that reached the money-only top ten, drops out.
+
+This is the scoping doc's own standard applied to itself: an honestly documented
+wrong answer beats a clean one that hides its assumptions. Section 5 of the
+scoping doc is amended accordingly.
+
+### A finding, not just an obstacle: selling well costs points
+
+Trading profit's negative coefficient against every success measure is worth
+stating in its own right. **Selling your best players at a profit is nearly the
+same act as weakening your squad in the short term.** The clubs that realise the
+most value — Lille, Leipzig, Atalanta, Brighton, Dortmund — are doing something
+that shows up as money this season and, often, as fewer points. That tension is
+the reason the index needs several pillars rather than one: a club can be
+excellent at trading and mediocre at results in the same season, and both facts
+are true.
+
+### Club-seasons without a recruitment score
+
+69 club-seasons fall below the recruitment spend floor and have no Pillar 1
+score. Rather than leaving them unscored, the remaining weights are
+renormalised: the index is the weighted mean of the pillars the club-season
+actually has (weight applied 0.70 instead of 1.00), and
+`is_recruitment_missing` flags it.
+
+`is_provisional` is inherited from Pillar 1: the 2022/23 and 2023/24 signing
+cohorts carry three seasons of credited output, which runs past the scored
+window. 194 club-seasons are flagged, and any trend must show them as
+provisional.
+
+### Verification
+
+`sql/61_check_composite.sql` passes 14 of 14. It rebuilds the index from the four
+pillar tables using the stored weights, and checks the properties the index is
+supposed to have: every club-season present, renormalisation exactly where
+recruitment is missing, provisional flags inherited, no pillar inert, and the
+index not collapsing into a league table or a size ranking. Agreement with R is
+to 1e-9, and planted errors (a nudged index, a flipped provisional flag, a
+changed weight) were each caught.
+
+An R operator-precedence bug was caught here by the schema, not by a test: in R
+`!` binds looser than `*`, so `z * weight * !missing + ...` negates the whole sum
+rather than the flag, and every index came out as 0. The NOT NULL constraint on
+`efficiency_z` rejected the load before a single row was written.
+
+### Results (load of 2026-09-14)
+
+The index correlates **0.32 with league points and 0.13 with squad value**: it is
+neither a disguised league table nor a disguised rich list.
+
+**Most efficient clubs** (4+ big-five seasons, mean z):
+
+| Club | Index | Recruitment | Trading | Growth | Points |
+|---|---|---|---|---|---|
+| Lille | +1.45 | +0.02 | +1.75 | +0.57 | +0.75 |
+| Atalanta | +1.13 | −0.14 | +1.12 | +0.75 | +0.84 |
+| Manchester City | +1.11 | +0.26 | +0.20 | +0.85 | +2.02 |
+| Real Sociedad | +0.97 | +0.76 | −0.24 | +1.16 | +0.40 |
+| Brighton | +0.95 | +0.14 | +1.07 | +0.60 | −0.37 |
+| Stuttgart | +0.81 | +0.60 | +0.28 | +0.63 | −0.23 |
+| Liverpool | +0.81 | +0.62 | +0.18 | +0.10 | +1.59 |
+
+**Least efficient:** Schalke −0.84, Manchester United −0.81, Juventus −0.78,
+PSG −0.73, Marseille −0.65, Köln −0.58, Burnley −0.56, Barcelona −0.46.
+
+Note how differently the top clubs get there: Lille and Brighton through
+trading, Real Sociedad through recruitment and growth, Manchester City through
+growth and results. PSG and Barcelona sit at the bottom despite being among the
+best teams in Europe by points (+2.17 and +1.92) — which is exactly what an
+efficiency index, rather than a quality ranking, should show.
+
+**Who got smarter** (complete cohorts only, first three seasons vs later ones):
+Udinese, Arsenal, Köln, Real Madrid, Brighton and Stuttgart improved most;
+Juventus, Barcelona, Lyon, Atlético, Leicester and Bayern declined most. Because
+the provisional cohorts are excluded, the "later" era here is thin — in places a
+single season — so the dashboard should show the trend season by season with the
+provisional flag rather than lean on a two-era summary.
 
 ## Known limitations (scoring layer)
 
