@@ -156,24 +156,36 @@ league_titles, domestic_cups, european_trophies, total_trophies.
 
 Zero-filled for clubs that won nothing; counts cover the scored window only.
 
-## Where the mockups and the data differ
+## Where the mockups and the data differ — decided (Tyler, 2026-09-16)
 
-The mockups were drawn before the build. Four points need a dashboard decision
-rather than a view change:
+The mockups were drawn before the build. Four points needed a dashboard
+decision rather than a view change.
 
-1. **Scatter vertical axis.** The mockup plots "points per €100M spent". That
-   is a division by spend, which the scoring deliberately avoids (it makes the
-   cheapest clubs look best by construction). The views support plotting
-   `points_per_match` against `gross_spend_eur`, with `efficiency_index` as
-   colour or size, or plotting the index directly.
-2. **Seasons after 2023/24.** The club page shows 2024/25 and 2025/26
-   transfers and a 2025/26 squad, the recency layer of scoping doc 4.8.
-   `fact_transfer` holds 2017/18 to 2023/24 only: the page pull covered the
-   scored window. Showing later windows needs those club pages fetched and
-   loaded first.
-3. **Spending breakdown.** The mockup gives free transfers a euro amount
-   (€26.0M). Free transfers cost nothing; the honest breakdown is permanent and
-   loan fees in euros, with free signings as a count.
-4. **Club page scores.** The mockup's "Transfer Activity Score 78/100" and its
-   four sub-scores map to `efficiency_score_0_100` and the four pillars, which
-   need their dashboard labels.
+1. **Scatter axes: points per match against gross spend, with the efficiency
+   index as colour or bubble size.** Not the mockup's "points per €100M spent":
+   dividing by spend makes the cheapest clubs look best by construction, which
+   is exactly the bias the scoring layer's log transform and spend floor were
+   built to remove. Columns: `points_per_match`, `gross_spend_eur`,
+   `efficiency_index` in `vw_league_overview`.
+
+2. **The 2024/25–2025/26 recency layer is deferred.** `fact_transfer` holds
+   2017/18–2023/24 only, because the club-page pull covered the scored window.
+   The club page shows the scored window and nothing after it for now.
+   *Note:* scoping doc section 4.8 still describes this layer as shown on the
+   club page, flagged unscored, so this is a departure from the plan rather than
+   part of it. *Revisit criterion:* if time allows, fetch the 2024/25–2026/27
+   club pages (plain HTTP, the same pull as before), load them, and add the layer
+   with its unscored flag; otherwise amend 4.8 to say the layer was deferred.
+
+3. **Spending breakdown: permanent fees and loan fees in real euros, free
+   transfers as a count.** The mockup's €26.0M for free transfers is not a
+   simplification but an error: a free transfer costs nothing. From
+   `vw_transfers_detail`: euros are `sum(fee_eur)` where `fee_status` is Fee or
+   Loan fee; free signings are the count where `fee_status = 'Free'`.
+
+4. **Club score labels: "Transfer Efficiency Score"**, with the four pillars
+   under their real names as sub-scores: **Recruitment ROI**, **Trading
+   Profit**, **Squad Value Growth**, **Sporting Return**. Not the mockup's
+   "Transfer Activity Score": name it what it measures. Columns:
+   `efficiency_score_0_100` (headline), `recruitment_z`, `trading_z`,
+   `value_growth_z`, `sporting_z`.
