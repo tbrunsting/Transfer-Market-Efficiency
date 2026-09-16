@@ -10,6 +10,7 @@ SQL, and a run fails unless the two agree.
 | `R/20_sporting_return.R` | `score.club_season_sporting` (Pillar 4) | `sql/21_check_sporting_return.sql` |
 | `R/30_recruitment_roi.R` | `score.club_season_recruitment`, `score.signing_credit`, `score.league_premium`, `score.run_parameter` (Pillar 1) | `sql/31_check_recruitment_roi.sql` |
 | `R/40_trading_profit.R` | `score.club_season_trading`, `score.sale_basis`, `score.run_parameter` (Pillar 2) | `sql/41_check_trading_profit.sql` |
+| `R/50_value_growth.R` | `score.club_season_value_growth`, `score.player_holding`, `score.holding_season_growth` (Pillar 3) | `sql/51_check_value_growth.sql` |
 
 Run from the repository root, after any warehouse load (the score tables hold
 the warehouse's surrogate keys, which a reload renumbers):
@@ -19,6 +20,7 @@ the warehouse's surrogate keys, which a reload renumbers):
 "C:\Program Files\R\R-4.4.1\bin\Rscript.exe" R\20_sporting_return.R
 "C:\Program Files\R\R-4.4.1\bin\Rscript.exe" R\30_recruitment_roi.R
 "C:\Program Files\R\R-4.4.1\bin\Rscript.exe" R\40_trading_profit.R
+"C:\Program Files\R\R-4.4.1\bin\Rscript.exe" R\50_value_growth.R
 ```
 
 **R setup.** R 4.4.1 with DBI, RPostgres, dplyr and tidyr in the user library.
@@ -460,6 +462,152 @@ Profit z correlates with same-season points per match at −0.03. The club-level
 correlation with Pillar 1 is −0.13: buying well and selling well are different
 skills, which supports deriving the composite's weights.
 
+## 5. Pillar 3: squad value growth (scoping doc 5)
+
+One row per club-season: the value the club's own players gained or lost while
+it still held them, marked to market each season. Realised profit on players
+who were sold is Pillar 2; nothing is counted twice.
+
+### Ownership is built from transfers, never from the valuation's club field
+
+Pillar 3 needs to know **which club held a player on a date**, which is exactly
+what the valuation club field cannot say (Known limitations, below). So
+ownership is rebuilt from transfer events:
+
+- a permanent move (fee, free, undisclosed) passes ownership to the buying club;
+- a loan does not: the asset stays with the owner, wherever the player plays;
+- a loan return proves who the owner was, and is taken as authoritative;
+- before a player's first event, the owner is that event's origin club (its
+  destination if that event is a loan return);
+- same-day events are ordered loan return, then permanent move, then loan out.
+  Most dates are estimated, so without that rule they sort arbitrarily: Zapata's
+  end-of-loan and his permanent move to Sampdoria share a date. Ordering them
+  cut ownership contradictions from 2,406 to 661.
+
+So the owner at any moment is the destination of the latest non-loan event on
+or before it. **This explains 99% of the minutes in the warehouse** (89.6%
+played by players the club owned, 9.4% by loanees), with 1.0% unexplained.
+
+Measured against it, the valuation club field is right for only **73.4% of
+valuations (87% by value)**, 67.5% in 2017/18, and per club it misassigns −12%
+to +22% of value. Pillar 3 sums value per club directly, so that error would
+have landed straight in the score. It is not used.
+
+### Which spells are scored
+
+14,235 ownership spells at in-scope clubs, of which 8,563 are scored:
+
+| Outcome | Spells | Treatment |
+|---|---|---|
+| Still held on 1 July 2024 | 3,757 | scored to the closing value |
+| Free departure | 3,986 | scored, written off to 0 |
+| Ended in a fee sale Pillar 2 counted | 2,404 | excluded: Pillar 2 has the whole spell |
+| Undisclosed departure | 1,666 | excluded: unknown proceeds |
+| No end valuation | 1,584 | excluded: nothing to measure |
+| Fee sale outside a big-five season | 791 | scored: Pillar 2 never counted it |
+
+**A spell is excluded when a Pillar 2 sale falls anywhere inside it**, not only
+exactly at its end. The first version keyed on the ending event and let five
+spells (Knockaert, Afobe, Rolán, Lammers, Ciervo) into both pillars: their
+same-day estimated dates put another club's loan return after the sale, so the
+spell appeared to end with a loan return. A check enforces the invariant
+directly.
+
+The 1,584 spells with no end valuation are fringe and youth players: 872 never
+played a big-five minute for the club and 597 were never valued at all
+(decided with Tyler: drop them, record the count).
+
+### How growth is measured
+
+Each scored spell is marked to market in every season its club spent in the big
+five (`score.holding_season_growth`):
+
+- the first season starts at the acquisition value, which for a player already
+  at the club is his value on 1 July 2017, the same convention as Pillar 2;
+- season boundaries use the last known valuation, so a stale valuation carries
+  forward instead of dropping a player to zero mid-spell;
+- **a free departure writes the remaining value off to zero.** Losing an asset
+  for nothing is a real outcome: Messi (€80m, Barcelona 2021), Donnarumma
+  (€60m), Alaba (€55m), Škriniar (€50m), Pogba (€48m). Across the window,
+  2,378 players left for nothing, taking €6.6bn of value with them. Including
+  write-offs or not correlates at rho 0.94 on club ranks, so this is not a
+  marginal call: excluding them would flatter exactly the clubs that lost stars
+  free (Milan +0.47, Arsenal +0.45, Schalke +0.33, Juventus +0.23).
+
+Growth is measured against **value at acquisition, not the fee paid** (decided
+2026-09-14). Overpaying is already penalised by Pillar 1, so using fees here
+would count the same mistake twice.
+
+Scale is the same as Pillar 2: growth in that season's median fees, winsorised
+at the 1st and 99th percentiles (−28.5 to +30.0 median fees, 14 capped), then
+the residual on log squad value with season and league effects.
+
+### Pillar 3 is thinner in early seasons, by design
+
+By 2018/19, **92% of that season's value growth belongs to players who have
+since been sold**, and their whole story is in Pillar 2. In 2023/24 it is 2%.
+
+| Season | Growth scored here | Growth excluded (sold later, Pillar 2) | Excluded share |
+|---|---|---|---|
+| 2017/18 | €1,931m | €3,730m | 66% |
+| 2018/19 | €333m | €3,907m | 92% |
+| 2020/21 | −€478m | €1,358m | 74% |
+| 2023/24 | €1,532m | €28m | 2% |
+
+This is the realised/unrealised split working, not a gap: a club's development
+work appears in Pillar 2 once the player is sold, and in Pillar 3 while it is
+still on the books. It does mean **Pillar 3 measures less in early seasons**,
+and a trend visualisation should not read the early figures as weak
+performance. The alternative (re-basing Pillar 2 to the value at the start of
+the sale season) was considered and rejected: it would reopen verified work to
+fix something this pillar can state honestly (decided with Tyler, 2026-09-16).
+
+### Results (load of 2026-09-14)
+
+`sql/51_check_value_growth.sql` passes 22 of 22. It rebuilds ownership, the
+values at both ends, the exclusion rules, every season mark, the club-season
+totals, the winsorising and the normalisation (alternating projections again),
+and agrees with R to 1e-9. The checks were also tested against planted errors —
+a scored spell that Pillar 2 already counted, a season value off by €1,000, a
+residual off by 0.01 — and each was caught by the right check.
+
+Season totals show the market itself: +€2.2bn in 2017/18, **−€3.0bn in
+2019/20** as COVID hit valuations, and +€1.6bn in 2023/24.
+
+Eye test (clubs with 4+ big-five seasons):
+
+- **Top:** Real Sociedad +1.16, Leverkusen +0.92, Manchester City +0.85,
+  Atalanta +0.75, Aston Villa +0.71, Bayern +0.69, Stuttgart, Brighton, Lille.
+- **Bottom:** Juventus −1.41, Manchester United −0.97, Sevilla −0.77,
+  Tottenham, Everton, Atlético, Schalke, Marseille, Chelsea.
+- **Biggest single-season write-offs:** Chelsea 2022/23 €89m (Rüdiger,
+  Christensen), Barcelona 2021/22 €82m (Messi), Arsenal 2021/22 €81m, Liverpool
+  2022/23 €73m, Manchester United 2022/23 €73m (Pogba).
+
+### The four pillars together
+
+Club means, for clubs with five or more seasons:
+
+| Club | Recruitment | Trading | Value growth | Points |
+|---|---|---|---|---|
+| Manchester City | +0.39 | +0.20 | +0.85 | +2.02 |
+| Bayern Munich | +0.53 | −1.43 | +0.69 | +1.98 |
+| Real Sociedad | +1.03 | −0.24 | +1.16 | +0.40 |
+| Lille | −0.15 | +1.75 | +0.57 | +0.75 |
+| Brighton | −0.01 | +1.07 | +0.60 | −0.37 |
+| Barcelona | −1.60 | −0.60 | −0.01 | +1.92 |
+| Juventus | −0.81 | +0.24 | −1.41 | +1.45 |
+| Manchester United | +0.20 | −0.88 | −0.97 | +0.85 |
+
+Pillar correlations are all weak (|r| ≤ 0.20): recruitment and trading −0.13,
+recruitment and growth +0.20, trading and growth +0.19, and none of them
+tracks league points closely. The pillars measure genuinely different things,
+which is what the composite's derived weights need.
+
+*Villarreal check (Pillar 1's revisit criterion):* −0.46 recruitment, +0.14
+trading, +0.11 growth. Middling rather than low everywhere, so no change to how
+loans out are credited.
+
 ## Known limitations (scoring layer)
 
 ### The valuations' club field is not the club at that date
@@ -490,9 +638,12 @@ at arrival and exit, and the Pillar 2 basis) is matched by player and date only.
 
 **Decision (Tyler, 2026-09-14):** documented, not rebuilt.
 
-**Watch for Pillar 3.** Value growth needs to know which club held a player on
-a date. It must not use this field; establish the holder from transfers and
-appearances instead.
+**Pillar 3 (checked 2026-09-16).** Value growth does need to know which club
+held a player on a date, so the field was measured against ownership rebuilt
+from transfer events: it agrees for only **73.4% of valuations (87% by value)**,
+67.5% in 2017/18, and per club it misassigns −12% to +22% of value. Pillar 3
+therefore builds ownership from transfers and never reads this field. See
+Pillar 3 above.
 
 *Revisit criterion:* if the composite or a club page depends on squad value
 more directly than as a log-scale control, rebuild squad value from
