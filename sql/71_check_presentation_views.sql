@@ -66,6 +66,36 @@ SELECT 'squad: market value present for at least 95% of minutes played', '>=95',
        round(100.0 * sum(minutes) FILTER (WHERE market_value_eur IS NOT NULL) / sum(minutes), 1)::text
 FROM presentation.vw_current_squad
 UNION ALL
+SELECT 'squad: no duplicate rows at the view''s grain, player per club per season', '0',
+       count(*)::text FROM (
+           SELECT player_key, club_key, season FROM presentation.vw_current_squad
+           GROUP BY 1, 2, 3 HAVING count(*) > 1) x
+UNION ALL
+SELECT 'squad: player-seasons split across two clubs (mid-season moves), one row each', '895',
+       (SELECT count(*)::text FROM (
+            SELECT player_key, season FROM presentation.vw_current_squad
+            GROUP BY 1, 2 HAVING count(*) > 1) x)
+UNION ALL
+SELECT 'squad: clubs_in_season matches the actual number of clubs (rows that differ)', '0',
+       count(*)::text FROM (
+           SELECT player_key, season, clubs_in_season, count(*) AS actual
+           FROM presentation.vw_current_squad GROUP BY 1, 2, 3 HAVING clubs_in_season <> count(*)) x
+UNION ALL
+SELECT 'squad: exactly one primary club per player-season, so league-wide totals can count each player once', '0',
+       count(*)::text FROM (
+           SELECT player_key, season FROM presentation.vw_current_squad
+           GROUP BY 1, 2 HAVING count(*) FILTER (WHERE is_primary_club_for_season) <> 1) x
+UNION ALL
+SELECT 'squad: the primary club is where he played the most minutes (rows that differ)', '0',
+       count(*)::text FROM (
+           SELECT player_key, season FROM presentation.vw_current_squad
+           GROUP BY 1, 2 HAVING max(minutes) FILTER (WHERE is_primary_club_for_season) <> max(minutes)) x
+UNION ALL
+SELECT 'squad: names shared by more than one player, so group by player_key not player_name', '49',
+       (SELECT count(*)::text FROM (
+            SELECT player_name FROM presentation.vw_current_squad
+            GROUP BY 1 HAVING count(DISTINCT player_key) > 1) x)
+UNION ALL
 SELECT 'squad: exactly one latest season flagged per club (clubs that differ)', '0',
        count(*)::text FROM (
            SELECT club_key FROM presentation.vw_current_squad GROUP BY club_key

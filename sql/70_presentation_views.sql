@@ -98,11 +98,17 @@ COMMENT ON VIEW presentation.vw_club_spend_by_league IS
 CREATE VIEW presentation.vw_current_squad AS
 SELECT
     f.player_season_key,
+    f.player_key,
     c.club_key,
     c.club_name,
     s.season                                        AS season,
     s.season_end_year,
     (s.season_end_year = max(s.season_end_year) OVER (PARTITION BY c.club_key)) AS is_latest_season_for_club,
+    -- a player who moves mid-season has one row per club, both real. These two columns keep league-wide
+    -- aggregates honest: count clubs to spot movers, and filter to the primary club to count each player once.
+    count(*) OVER (PARTITION BY f.player_key, f.season_key)::int AS clubs_in_season,
+    (row_number() OVER (PARTITION BY f.player_key, f.season_key
+                        ORDER BY f.minutes DESC, f.matches_played DESC, c.club_key) = 1) AS is_primary_club_for_season,
     p.player_name,
     p.nationality                                   AS nationality_code,
     g.position_group,
@@ -152,6 +158,12 @@ LEFT JOIN LATERAL (
     LIMIT 1) mv ON true;
 
 COMMENT ON VIEW presentation.vw_current_squad IS
+    'One row per player per CLUB per season (FBref appearances), so a player who moved mid-season appears '
+    'once for each club: both rows are real, and both carry his market value at the season end. For '
+    'league-wide totals that must count each player once, filter is_primary_club_for_season (the club where '
+    'he played the most minutes that season). Group players by player_key, not player_name: 57 names are '
+    'shared by two different players (Rodri, Marcelo, Danilo).'
+    ' '
     'One row per player who played for a club in a season (FBref appearances). market_value_eur = latest '
     'Transfermarkt valuation on or before that season''s end (30 June), within 365 days; NULL if none. The '
     '"current squad" for a multi-season selection is a Power BI filter (season_end_year = the latest selected); '

@@ -27,14 +27,16 @@ rebuilt with `DROP ... CASCADE`, which removes any view that depends on them;
 R/70 recreates the whole schema. This was tested end to end: rerunning the
 composite dropped the three views that read it, and R/70 restored all six.
 
-`sql/71_check_presentation_views.sql` passes 31 of 31. Every view is reconciled
+`sql/71_check_presentation_views.sql` passes 37 of 37. Every view is reconciled
 back to what it summarises, computed independently:
 
 - gross spend and gross sales reconcile to the euro with Pillars 1 and 2, both
   through the overview and separately through the individual transfer rows;
 - the efficiency index is the composite, unchanged;
-- one squad row per player-season, every market value dated within the year
-  before that season ended, and values present for 99.9% of minutes;
+- one squad row per player-season, no duplication at the player-club-season
+  grain, exactly one primary club per player-season, every market value dated
+  within the year before that season ended, and values present for 99.9% of
+  minutes;
 - one transfer row per in-scope club involved, a NULL fee exactly when
   undisclosed, free transfers a real €0;
 - every club-season has a snapped manager, and trophies reconcile to the 96 in
@@ -88,9 +90,11 @@ into its clubs, use `vw_league_overview` with a league > club hierarchy.
 
 | Column | Type | Meaning |
 |---|---|---|
-| player_season_key, club_key | int | keys |
+| player_season_key, player_key, club_key | int | keys — group players by `player_key`, never by name |
 | club_name, season, season_end_year | text, text, int | |
 | is_latest_season_for_club | bool | the club's most recent season in the window |
+| clubs_in_season | int | how many clubs this player played for that season (2 for a mid-season move) |
+| is_primary_club_for_season | bool | true for the club where he played the most minutes that season |
 | player_name | text | |
 | nationality_code | text | 3-letter code (all but 6 players who played) |
 | position_group | text | the six scoring groups |
@@ -98,6 +102,33 @@ into its clubs, use `vw_league_overview` with a league > club hierarchy.
 | age, matches_played, starts, minutes | int | |
 | quality_percentile | float | player quality within position group and season; NULL under 900 minutes |
 | market_value_eur, market_value_date | numeric, date | latest valuation on or before the season's end, within a year |
+
+**A player can appear twice in one season, and both rows are correct.** The
+grain is player per *club* per season, so a mid-season transfer gives one row
+per club: Mbappé 2017/18 is AS Monaco (74 minutes) and PSG (2,094). 895
+player-seasons are split this way. Both rows carry the same market value,
+because the value is looked up by player and date, not per club.
+
+Two consequences for Power BI:
+
+- **A league-wide total would count a mover twice.** Filter
+  `is_primary_club_for_season` to count each player once: that is about €2–3bn
+  per season on total squad value. The club-level squad table needs no filter,
+  since it is already one club.
+- **Never group by `player_name`.** 49 names belong to more than one player
+  (Rodri, Marcelo, Danilo, Nacho, Adama Traoré, Raúl García). Group by
+  `player_key`.
+
+A duplicate check must therefore include the club:
+
+```sql
+SELECT player_key, club_key, season, count(*)
+FROM presentation.vw_current_squad
+GROUP BY 1, 2, 3 HAVING count(*) > 1;   -- returns zero rows
+```
+
+Grouping only by `player_name, season` returns 946 groups, which are the 895
+mid-season moves plus shared names, not duplication.
 
 "Current squad" for a multi-season selection is a Power BI filter:
 `season_end_year = MAX(selected season_end_year)`. `is_latest_season_for_club`
