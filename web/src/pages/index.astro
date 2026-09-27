@@ -1,0 +1,255 @@
+---
+import Base from "../layouts/Base.astro";
+---
+<Base title="Transfer Market Efficiency — league overview">
+  <div class="top">
+    <div>
+      <h1>Transfer Market Efficiency</h1>
+      <p class="sub">Which clubs in Europe's top five leagues get the most on-field value per euro spent, 2017/18–2023/24</p>
+    </div>
+    <div class="filters">
+      <div class="card filter">
+        <header><strong>Seasons</strong><button class="all" data-all="season">Select all</button></header>
+        <div id="season-filter"></div>
+      </div>
+      <div class="card filter">
+        <header><strong>Leagues</strong><button class="all" data-all="league">Select all</button></header>
+        <div id="league-filter"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card strip">
+    <div class="lead">How to read this</div>
+    <div><dt>Vertical axis</dt><dd>League points per match. Higher is a better sporting return.</dd></div>
+    <div><dt>Horizontal axis</dt><dd>Gross transfer spend, disclosed fees only, on a log scale.</dd></div>
+    <div><dt>Efficient</dt><dd>Top-left: more return for less spend. Dashed lines are the medians of the clubs currently shown.</dd></div>
+    <div><dt>Seasons included</dt><dd id="strip-seasons">All selected seasons and leagues.</dd></div>
+  </div>
+
+  <div class="kpis">
+    <div class="card kpi"><div class="label">Clubs analysed</div><div class="value" id="kpi-clubs">—</div><div class="note" id="kpi-clubs-note"></div></div>
+    <div class="card kpi"><div class="label">Total spend</div><div class="value" id="kpi-spend">—</div><div class="note" id="kpi-spend-note"></div></div>
+    <div class="card kpi"><div class="label">Median efficiency score</div><div class="value" id="kpi-median">—</div><div class="note">0–100, rescaled from the composite index</div></div>
+    <div class="card kpi"><div class="label">Most efficient club</div><div class="value" id="kpi-best">—</div><div class="note" id="kpi-best-note"></div></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Transfer spend vs sporting return</h2>
+      <div id="scatter" class="chart"></div>
+      <p class="muted" id="scatter-note"></p>
+    </div>
+    <div class="card">
+      <h2>Spend by league <span class="muted">click a slice to filter</span></h2>
+      <div id="donut" class="chart"></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card"><h2>Best spend efficiency</h2><div class="bars" id="bars-best"></div></div>
+    <div class="card"><h2>Worst spend efficiency</h2><div class="bars" id="bars-worst"></div></div>
+  </div>
+
+  <footer>
+    <span id="generated"></span> · Efficiency is the composite of recruitment ROI, trading profit, squad value
+    growth (0.30 each) and sporting return (0.10). <span class="prov">Provisional</span> marks the 2022/23 and
+    2023/24 signing cohorts, whose three-season output horizon runs past the scored window.
+  </footer>
+</Base>
+
+<script>
+  import { unpack, type PackedTable } from "../lib/pack";
+  import type { ClubSeason, ClubAggregate } from "../lib/types";
+  import { aggregateByClub, filterRows, kpis, median, quadrantOf, spendByLeague, type Filters } from "../lib/aggregate";
+  import { COLOUR, LEAGUE_COLOUR, init } from "../lib/charts";
+  import { index, money, perMatch, score } from "../lib/format";
+
+  const payload = (await (await fetch(`${import.meta.env.BASE_URL}data/page1.json`)).json()) as {
+    generated_at: string;
+    overview: PackedTable;
+  };
+  const rows = unpack<ClubSeason>(payload.overview);
+
+  const seasons = [...new Set(rows.map((r) => r.season_end_year))].sort();
+  const seasonLabel = new Map(rows.map((r) => [r.season_end_year, r.season]));
+  const leagues = [...new Set(rows.map((r) => r.league))].sort();
+  const provisional = new Set(rows.filter((r) => r.is_provisional).map((r) => r.season_end_year));
+  const state: Filters = { seasons: new Set(seasons), leagues: new Set(leagues) };
+
+  const seasonText = (y: number) => `${seasonLabel.get(y)}${provisional.has(y) ? " *" : ""}`;
+
+  function renderCheckboxes(host: HTMLElement, items: (string | number)[], label: (v: never) => string, set: Set<never>) {
+    host.innerHTML = "";
+    for (const value of items) {
+      const row = document.createElement("label");
+      const box = document.createElement("input");
+      box.type = "checkbox";
+      box.checked = set.has(value as never);
+      box.addEventListener("change", () => {
+        if (box.checked) set.add(value as never);
+        else set.delete(value as never);
+        render();
+      });
+      const text = document.createElement("span");
+      text.textContent = label(value as never);
+      row.append(box, text);
+      host.appendChild(row);
+    }
+  }
+
+  const seasonHost = document.getElementById("season-filter") as HTMLElement;
+  const leagueHost = document.getElementById("league-filter") as HTMLElement;
+  const drawSeasons = () => renderCheckboxes(seasonHost, seasons, seasonText as never, state.seasons as never);
+  const drawLeagues = () => renderCheckboxes(leagueHost, leagues, ((l: string) => l) as never, state.leagues as never);
+  drawSeasons();
+  drawLeagues();
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>("button.all")) {
+    button.addEventListener("click", () => {
+      const isSeason = button.dataset.all === "season";
+      const set: Set<never> = (isSeason ? state.seasons : state.leagues) as never;
+      const all = (isSeason ? seasons : leagues) as never[];
+      const shouldFill = set.size !== all.length;
+      set.clear();
+      if (shouldFill) for (const v of all) set.add(v);
+      isSeason ? drawSeasons() : drawLeagues();
+      render();
+    });
+  }
+
+  const scatter = init(document.getElementById("scatter") as HTMLElement);
+  const donut = init(document.getElementById("donut") as HTMLElement);
+
+  // Cross-filter: clicking a slice isolates that league, clicking it again restores all of them.
+  donut.on("click", (params: { name?: string }) => {
+    if (!params.name) return;
+    const isolated = state.leagues.size === 1 && state.leagues.has(params.name);
+    state.leagues.clear();
+    if (isolated) for (const l of leagues) state.leagues.add(l);
+    else state.leagues.add(params.name);
+    drawLeagues();
+    render();
+  });
+
+  function renderBars(host: HTMLElement, clubs: ClubAggregate[], colour: string) {
+    const widest = Math.max(...clubs.map((c) => Math.abs(c.efficiency_index)), 0.001);
+    host.innerHTML = clubs
+      .map((c) => {
+        const flag = c.has_provisional ? ' <span class="prov" title="includes provisional cohorts">*</span>' : "";
+        const width = (Math.abs(c.efficiency_index) / widest) * 100;
+        return `<div class="bar"><span>${c.club_name}${flag}</span>` +
+               `<span class="track"><span class="fill" style="width:${width}%;background:${colour}"></span></span>` +
+               `<span class="num">${index(c.efficiency_index)}</span></div>`;
+      })
+      .join("");
+  }
+
+  function setText(id: string, text: string) {
+    (document.getElementById(id) as HTMLElement).textContent = text;
+  }
+
+  function render() {
+    const filtered = filterRows(rows, state);
+    const clubs = aggregateByClub(filtered);
+    const summary = kpis(clubs);
+
+    setText("kpi-clubs", String(summary.clubs));
+    setText("kpi-clubs-note", `${filtered.length} club-seasons` +
+      (summary.provisionalClubs ? `, ${summary.provisionalClubs} include provisional cohorts` : ""));
+    setText("kpi-spend", money(summary.totalSpend));
+    setText("kpi-spend-note", "disclosed fees only");
+    setText("kpi-median", summary.clubs ? score(summary.medianScore) : "—");
+    setText("kpi-best", summary.best ? summary.best.club_name : "—");
+    setText("kpi-best-note", summary.best ? `index ${index(summary.best.efficiency_index)}` : "");
+    setText("strip-seasons", `${state.seasons.size} of ${seasons.length} seasons, ${state.leagues.size} of ${leagues.length} leagues.`);
+    setText("generated", `Data generated ${payload.generated_at.slice(0, 10)}`);
+
+    const plotted = clubs.filter((c) => c.spend > 0);
+    const medianSpend = median(plotted.map((c) => c.spend));
+    const medianPpm = median(plotted.map((c) => c.points_per_match));
+    setText("scatter-note", summary.unplotted
+      ? `${summary.unplotted} club${summary.unplotted > 1 ? "s" : ""} with no disclosed spend cannot be plotted on a log axis.`
+      : "");
+
+    scatter.setOption({
+      grid: { left: 62, right: 24, top: 18, bottom: 54 },
+      tooltip: {
+        trigger: "item",
+        formatter: (p: { data: { club: ClubAggregate } }) => {
+          const c = p.data.club;
+          return `<strong>${c.club_name}</strong><br>${c.league} · ${c.seasons} season${c.seasons > 1 ? "s" : ""}` +
+            `${c.has_provisional ? " (includes provisional)" : ""}<br>Spend ${money(c.spend)}<br>` +
+            `Points per match ${perMatch(c.points_per_match)}<br>` +
+            `Efficiency ${index(c.efficiency_index)} (${score(c.efficiency_score)}/100)`;
+        },
+      },
+      xAxis: {
+        type: "log", name: "Gross transfer spend", nameLocation: "middle", nameGap: 34,
+        axisLabel: { formatter: (v: number) => money(v) },
+        splitLine: { lineStyle: { color: "#f0f1ef" } },
+      },
+      yAxis: {
+        type: "value", name: "Points per match", nameLocation: "middle", nameGap: 40,
+        splitLine: { lineStyle: { color: "#f0f1ef" } },
+      },
+      series: [{
+        type: "scatter",
+        symbolSize: (_v: unknown, p: { data: { club: ClubAggregate } }) => 8 + Math.sqrt(p.data.club.seasons) * 3,
+        itemStyle: { opacity: 0.85 },
+        data: plotted.map((c) => ({
+          value: [c.spend, c.points_per_match],
+          club: c,
+          itemStyle: { color: COLOUR[quadrantOf(c, medianSpend, medianPpm)] },
+        })),
+        markLine: {
+          silent: true, symbol: "none",
+          lineStyle: { type: "dashed", color: "#9aa7b1" },
+          label: { show: false },
+          data: [{ xAxis: medianSpend }, { yAxis: medianPpm }],
+        },
+        markArea: {
+          silent: true,
+          label: { show: true, color: "#98a5af", fontSize: 11, lineHeight: 14 },
+          data: [
+            [{ name: "Higher return\nLower spend", xAxis: "min", yAxis: medianPpm,
+               itemStyle: { color: "rgba(47,174,135,0.07)" }, label: { position: "insideTopLeft" } },
+             { xAxis: medianSpend, yAxis: "max" }],
+            [{ name: "Higher return\nHigher spend", xAxis: medianSpend, yAxis: medianPpm,
+               itemStyle: { color: "rgba(74,127,208,0.06)" }, label: { position: "insideTopRight" } },
+             { xAxis: "max", yAxis: "max" }],
+            [{ name: "Lower return\nLower spend", xAxis: "min", yAxis: "min",
+               itemStyle: { color: "rgba(154,167,177,0.07)" }, label: { position: "insideBottomLeft" } },
+             { xAxis: medianSpend, yAxis: medianPpm }],
+            [{ name: "Lower return\nHigher spend", xAxis: medianSpend, yAxis: "min",
+               itemStyle: { color: "rgba(232,103,79,0.07)" }, label: { position: "insideBottomRight" } },
+             { xAxis: "max", yAxis: medianPpm }],
+          ],
+        },
+      }],
+    }, true);
+
+    const byLeague = spendByLeague(filtered);
+    const total = byLeague.reduce((t, l) => t + l.spend, 0);
+    donut.setOption({
+      tooltip: { trigger: "item", formatter: (p: { name: string; value: number; percent: number }) =>
+        `${p.name}<br>${money(p.value)} (${p.percent}%)` },
+      legend: { bottom: 0, itemWidth: 10, itemHeight: 10 },
+      title: {
+        text: money(total), subtext: "total spend", left: "50%", top: "38%", textAlign: "center",
+        textStyle: { fontSize: 22, fontWeight: 700, color: "#16324f" },
+        subtextStyle: { fontSize: 11, color: "#5b7186" },
+      },
+      series: [{
+        type: "pie", radius: ["54%", "78%"], center: ["50%", "45%"],
+        label: { position: "inside", formatter: "{d}%", color: "#fff", fontSize: 11, fontWeight: 600 },
+        data: byLeague.map((l) => ({ name: l.league, value: l.spend, itemStyle: { color: LEAGUE_COLOUR[l.league] } })),
+      }],
+    }, true);
+
+    renderBars(document.getElementById("bars-best") as HTMLElement, clubs.slice(0, 5), COLOUR.smart);
+    renderBars(document.getElementById("bars-worst") as HTMLElement, clubs.slice(-5).reverse(), COLOUR.burned);
+  }
+
+  render();
+</script>

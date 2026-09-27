@@ -1,0 +1,16 @@
+{
+  "name": "transfer-market-efficiency-web",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "astro": "^5.0.0",
+    "echarts": "^5.5.0"
+  }
+}

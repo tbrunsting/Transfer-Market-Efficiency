@@ -1,0 +1,17 @@
+---
+import "../styles/global.css";
+interface Props { title: string }
+const { title } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content="Which clubs in Europe's top five leagues get the most on-field value per euro spent in the transfer market, 2017/18 to 2023/24." />
+  </head>
+  <body>
+    <div class="wrap"><slot /></div>
+  </body>
+</html>
