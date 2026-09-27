@@ -10,7 +10,7 @@
     "test": "node --test"
   },
   "dependencies": {
-    "astro": "^5.0.0",
+    "astro": "^7.3.5",
     "echarts": "^5.5.0"
   }
 }
