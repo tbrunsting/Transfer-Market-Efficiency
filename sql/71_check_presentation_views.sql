@@ -31,6 +31,27 @@ UNION ALL
 SELECT 'overview: 0-100 score spans 0 to 100', '0-100',
        min(efficiency_score_0_100)::int || '-' || max(efficiency_score_0_100)::int FROM presentation.vw_league_overview
 UNION ALL
+SELECT 'overview: the 0-100 score ranks club-seasons exactly like the index (pairs out of order)', '0',
+       count(*)::text FROM presentation.vw_league_overview a
+       JOIN presentation.vw_league_overview b ON a.efficiency_index < b.efficiency_index
+       WHERE a.efficiency_score_0_100 > b.efficiency_score_0_100
+UNION ALL
+SELECT 'overview: and still ranks the same once averaged per club, which a percentile did not (pairs out of order)', '0',
+       count(*)::text FROM (
+           SELECT club_key, avg(efficiency_index) AS i, avg(efficiency_score_0_100) AS p
+           FROM presentation.vw_league_overview GROUP BY club_key) a
+       JOIN (SELECT club_key, avg(efficiency_index) AS i, avg(efficiency_score_0_100) AS p
+             FROM presentation.vw_league_overview GROUP BY club_key) b ON a.i < b.i
+       WHERE a.p > b.p
+UNION ALL
+SELECT 'overview: the 0-100 score is an affine rescale of the index (largest deviation < 1e-6)', 'affine',
+       CASE WHEN max(abs(efficiency_score_0_100 - (a + b * efficiency_index::numeric))) < 1e-6 THEN 'affine'
+            ELSE max(abs(efficiency_score_0_100 - (a + b * efficiency_index::numeric)))::text END
+FROM presentation.vw_league_overview
+CROSS JOIN (SELECT 100.0 / (max(efficiency_index) - min(efficiency_index))::numeric AS b,
+                   -100.0 * min(efficiency_index)::numeric / (max(efficiency_index) - min(efficiency_index))::numeric AS a
+            FROM presentation.vw_league_overview) k
+UNION ALL
 SELECT 'overview: no NULLs outside recruitment_z below the spend floor', '0',
        count(*)::text FROM presentation.vw_league_overview
        WHERE club_name IS NULL OR league IS NULL OR gross_spend_eur IS NULL OR gross_sales_eur IS NULL

@@ -27,7 +27,7 @@ rebuilt with `DROP ... CASCADE`, which removes any view that depends on them;
 R/70 recreates the whole schema. This was tested end to end: rerunning the
 composite dropped the three views that read it, and R/70 restored all six.
 
-`sql/71_check_presentation_views.sql` passes 37 of 37. Every view is reconciled
+`sql/71_check_presentation_views.sql` passes 40 of 40. Every view is reconciled
 back to what it summarises, computed independently:
 
 - gross spend and gross sales reconcile to the euro with Pillars 1 and 2, both
@@ -44,6 +44,38 @@ back to what it summarises, computed independently:
 - football anchors: Bellingham's 2023/24 move appears as Bought for Real Madrid
   and Sold for Dortmund; Chelsea 2022/23 is Potter, Manchester United 2021/22 is
   Rangnick; Real Madrid won three European trophies in the window.
+
+### The headline metric: rank by `efficiency_index`
+
+`efficiency_index` is the composite z-score from the scoring layer (scoping doc
+section 5: four pillars, each z-scored, combined with weights). It is the field
+to rank by, everywhere.
+
+`efficiency_score_0_100` is that same number rescaled **linearly** onto 0-100:
+
+```
+100 x (efficiency_index - min) / (max - min)     -- min -3.38, max +4.95 across the 684 club-seasons
+```
+
+**This replaced a percentile rank (changed 2026-09-27).** The percentile was
+monotone at club-season level but not linear, so averaging it across seasons
+reordered clubs: Lille averaged 1.448 on the index but 81.6 on the percentile,
+while Atalanta averaged 1.127 and 85.0 — opposite winners from the same data.
+Rank compresses the top and stretches the bottom, so a volatile club (a −1.34
+season alongside a +2.70 one) is punished by the average of ranks. It affected
+307 of the 4,465 club pairs; Brighton moved 5th to 18th and Liverpool 7th to
+35th.
+
+An affine rescale cannot do this: averages of a linear transform preserve order
+at any level of aggregation. Three checks enforce it — identical ranking at
+club-season level, identical ranking once averaged per club, and that the score
+really is an affine function of the index. The value is deliberately not
+rounded, because rounding makes the scale a step function that can still flip
+near-ties; format it in Power BI instead.
+
+The practical effect: scores now cluster roughly 30-58 for most clubs rather
+than spreading across the full 0-100, because a z-distribution is bunched
+around its mean. Lille tops it at 58.0.
 
 ## Conventions
 
@@ -72,7 +104,7 @@ back to what it summarises, computed independently:
 | matches, points, points_per_match | int, int, float | results points; deductions not applied |
 | has_known_deduction | bool | Juventus 2022/23, Everton 2023/24 |
 | efficiency_index | float | the composite z-score |
-| efficiency_score_0_100 | numeric | its percentile across all 684 club-seasons (fixed, not filter-dependent) |
+| efficiency_score_0_100 | numeric | the same index rescaled linearly onto 0-100 for display; ranks identically to `efficiency_index` at every level |
 | recruitment_z, trading_z, value_growth_z, sporting_z | float | the four pillars; recruitment_z is NULL below the spend floor |
 | is_recruitment_scored | bool | false for the 69 club-seasons below the spend floor |
 | is_provisional, season_status | bool, text | provisional cohorts |

@@ -47,7 +47,13 @@ SELECT
     sp.points_per_match,
     cs.has_known_deduction,
     e.efficiency_z                                   AS efficiency_index,
-    round((100 * percent_rank() OVER (ORDER BY e.efficiency_z))::numeric, 1) AS efficiency_score_0_100,
+    -- An AFFINE rescale of the index, not a percentile: linear, so averages preserve order and the two
+    -- fields can never rank clubs differently. A percentile rank did disagree (Lille vs Atalanta), because
+    -- rank compresses the top and stretches the bottom, punishing volatile clubs when seasons are averaged.
+    -- deliberately not rounded: rounding makes the scale a step function, which can still flip near-ties
+    -- once seasons are averaged. Power BI formats it for display.
+    (100 * (e.efficiency_z - min(e.efficiency_z) OVER ())
+         / (max(e.efficiency_z) OVER () - min(e.efficiency_z) OVER ()))::numeric AS efficiency_score_0_100,
     e.recruitment_z,
     e.trading_z,
     e.value_growth_z,
@@ -67,7 +73,8 @@ JOIN score.club_season_sporting sp         ON sp.club_season_key = cs.club_seaso
 COMMENT ON VIEW presentation.vw_league_overview IS
     'One row per club-season in the big five, 2017/18-2023/24. gross_spend_eur = disclosed permanent and loan fees '
     'paid; gross_sales_eur = disclosed permanent fees and loan fees received; undisclosed moves are counted, never '
-    'valued. efficiency_index is the composite z-score; efficiency_score_0_100 is its percentile across all 684 '
+    'valued. efficiency_index is the composite z-score and is the field to rank by; efficiency_score_0_100 is '
+    'the same number rescaled linearly onto 0-100 for display, so the two always agree, at any level of '
     'club-seasons (fixed, not filter-dependent). recruitment_z is NULL below the spend floor '
     '(is_recruitment_scored = false). Provisional = the 2022/23 and 2023/24 signing cohorts.';
 
