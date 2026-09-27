@@ -189,3 +189,7 @@ downloaded_files/
 
 # Word lock files
 ~$*
+
+# Power BI working file: binary and changing on every save.
+# The finished dashboard gets committed deliberately (git add -f Dashboard.pbix).
+Dashboard.pbix
