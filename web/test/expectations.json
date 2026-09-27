@@ -188,5 +188,158 @@
       ],
       "clubs_without_spend": 0
     }
+  },
+  "clubs": {
+    "LOSC Lille": {
+      "club_key": 43,
+      "fees_paid_eur": 336950000,
+      "fees_received_eur": 610295000,
+      "net_spend_eur": -273345000,
+      "efficiency_score": 57.95799008998614,
+      "efficiency_index": 1.447810310498158,
+      "seasons": 7,
+      "pillars": {
+        "recruitment": 0.020140703619775022,
+        "trading": 1.749949659496728,
+        "value_growth": 0.574002010569858,
+        "sporting": 0.7458739497564023,
+        "seasons_below_spend_floor": 0
+      },
+      "breakdown": {
+        "permanent_eur": 336950000,
+        "loan_fees_eur": 0,
+        "free_count": 16,
+        "loan_no_fee_count": 5,
+        "undisclosed_count": 15
+      },
+      "latest_season_end_year": 2024,
+      "latest_squad_players": 28,
+      "latest_squad_value_eur": 312450000,
+      "honours": {
+        "league_titles": 1,
+        "domestic_cups": 0,
+        "european": 0
+      },
+      "manager_bands": [
+        "Christophe Galtier",
+        "Jocelyn Gourvennec",
+        "Paulo Fonseca"
+      ],
+      "top_sales": [
+        [
+          "Nicolas P\u00e9p\u00e9",
+          80000000
+        ],
+        [
+          "Victor Osimhen",
+          78900000
+        ],
+        [
+          "Rafael Le\u00e3o",
+          49500000
+        ]
+      ]
+    },
+    "Chelsea FC": {
+      "club_key": 7,
+      "fees_paid_eur": 1977850000,
+      "fees_received_eur": 1007716000,
+      "net_spend_eur": 970134000,
+      "efficiency_score": 38.8803057065045,
+      "efficiency_index": -0.1411310087162603,
+      "seasons": 7,
+      "pillars": {
+        "recruitment": -0.2059420080011416,
+        "trading": 0.10268080003491116,
+        "value_growth": -0.3859988600013043,
+        "sporting": 0.6503353034762162,
+        "seasons_below_spend_floor": 0
+      },
+      "breakdown": {
+        "permanent_eur": 1951050000,
+        "loan_fees_eur": 26800000,
+        "free_count": 6,
+        "loan_no_fee_count": 1,
+        "undisclosed_count": 19
+      },
+      "latest_season_end_year": 2024,
+      "latest_squad_players": 32,
+      "latest_squad_value_eur": 944300000,
+      "honours": {
+        "league_titles": 0,
+        "domestic_cups": 1,
+        "european": 2
+      },
+      "manager_bands": [
+        "Antonio Conte",
+        "Maurizio Sarri",
+        "Frank Lampard",
+        "Thomas Tuchel",
+        "Graham Potter",
+        "Mauricio Pochettino"
+      ],
+      "top_sales": [
+        [
+          "Eden Hazard",
+          120800000
+        ],
+        [
+          "Kai Havertz",
+          75000000
+        ],
+        [
+          "Mason Mount",
+          67700000
+        ]
+      ]
+    },
+    "1. Fu\u00dfballclub Heidenheim 1846": {
+      "club_key": 57,
+      "fees_paid_eur": 2300000,
+      "fees_received_eur": 0,
+      "net_spend_eur": 2300000,
+      "efficiency_score": 39.1897501121821,
+      "efficiency_index": -0.11535801696855144,
+      "seasons": 1,
+      "pillars": {
+        "recruitment": null,
+        "trading": 0.12099763274181455,
+        "value_growth": -0.19916224567311444,
+        "sporting": -0.24012181817539113,
+        "seasons_below_spend_floor": 1
+      },
+      "breakdown": {
+        "permanent_eur": 16100000,
+        "loan_fees_eur": 550000,
+        "free_count": 19,
+        "loan_no_fee_count": 2,
+        "undisclosed_count": 23
+      },
+      "latest_season_end_year": 2024,
+      "latest_squad_players": 22,
+      "latest_squad_value_eur": 64900000,
+      "honours": {
+        "league_titles": 0,
+        "domestic_cups": 0,
+        "european": 0
+      },
+      "manager_bands": [
+        "Frank Schmidt"
+      ],
+      "top_sales": [
+        [
+          "Robert Glatzel",
+          6000000
+        ],
+        [
+          "Niklas Dorsch",
+          3500000
+        ],
+        [
+          "Tim Kleindienst",
+          3500000
+        ]
+      ]
+    }
   }
 }

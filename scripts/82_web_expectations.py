@@ -89,6 +89,64 @@ def main() -> None:
                 "clubs_without_spend": sum(1 for c in clubs if c["spend"] <= 0),
             }
 
+        # ---- page 2: one club at a time -------------------------------------------------------
+        out["clubs"] = {}
+        for club_name in ["LOSC Lille", "Chelsea FC", "1. Fußballclub Heidenheim 1846"]:
+            key = conn.execute("SELECT club_key FROM dim_club WHERE club_name = %s", (club_name,)).fetchone()[0]
+            cash = conn.execute("""
+                SELECT sum(fees_paid_eur), sum(fees_received_eur), avg(efficiency_score_0_100),
+                       avg(efficiency_index), count(*)
+                FROM presentation.vw_cashflow_and_tenure WHERE club_key = %s""", (key,)).fetchone()
+            pillars = conn.execute("""
+                SELECT avg(recruitment_z) FILTER (WHERE is_recruitment_scored), avg(trading_z),
+                       avg(value_growth_z), avg(sporting_z),
+                       count(*) FILTER (WHERE NOT is_recruitment_scored)
+                FROM presentation.vw_league_overview WHERE club_key = %s""", (key,)).fetchone()
+            breakdown = conn.execute("""
+                SELECT coalesce(sum(fee_eur) FILTER (WHERE fee_status = 'Fee'), 0),
+                       coalesce(sum(fee_eur) FILTER (WHERE fee_status = 'Loan fee'), 0),
+                       count(*) FILTER (WHERE fee_status = 'Free'),
+                       count(*) FILTER (WHERE fee_status = 'Loan (no fee)'),
+                       count(*) FILTER (WHERE fee_status = 'Undisclosed')
+                FROM presentation.vw_transfers_detail
+                WHERE club_key = %s AND direction IN ('Bought', 'Loan in')""", (key,)).fetchone()
+            latest = conn.execute("""
+                SELECT max(season_end_year) FROM presentation.vw_current_squad WHERE club_key = %s""", (key,)).fetchone()[0]
+            squad = conn.execute("""
+                SELECT count(*), coalesce(sum(market_value_eur), 0) FROM presentation.vw_current_squad
+                WHERE club_key = %s AND season_end_year = %s""", (key, latest)).fetchone()
+            honours = conn.execute("""
+                SELECT league_titles, domestic_cups, european_trophies
+                FROM presentation.vw_club_trophies_honors WHERE club_key = %s""", (key,)).fetchone()
+            managers = conn.execute("""
+                SELECT manager_name FROM presentation.vw_cashflow_and_tenure
+                WHERE club_key = %s ORDER BY season_end_year""", (key,)).fetchall()
+            bands = []
+            for (m,) in managers:
+                if not bands or bands[-1] != m:
+                    bands.append(m)
+            top_sales = conn.execute("""
+                SELECT player_name, round(fee_eur)::bigint FROM presentation.vw_transfers_detail
+                WHERE club_key = %s AND direction = 'Sold' AND fee_eur IS NOT NULL
+                ORDER BY fee_eur DESC, player_name LIMIT 3""", (key,)).fetchall()
+            out["clubs"][club_name] = {
+                "club_key": key,
+                "fees_paid_eur": round(float(cash[0])), "fees_received_eur": round(float(cash[1])),
+                "net_spend_eur": round(float(cash[0]) - float(cash[1])),
+                "efficiency_score": float(cash[2]), "efficiency_index": float(cash[3]), "seasons": cash[4],
+                "pillars": {"recruitment": float(pillars[0]) if pillars[0] is not None else None,
+                            "trading": float(pillars[1]), "value_growth": float(pillars[2]),
+                            "sporting": float(pillars[3]), "seasons_below_spend_floor": pillars[4]},
+                "breakdown": {"permanent_eur": round(float(breakdown[0])), "loan_fees_eur": round(float(breakdown[1])),
+                              "free_count": breakdown[2], "loan_no_fee_count": breakdown[3],
+                              "undisclosed_count": breakdown[4]},
+                "latest_season_end_year": latest,
+                "latest_squad_players": squad[0], "latest_squad_value_eur": round(float(squad[1])),
+                "honours": {"league_titles": honours[0], "domestic_cups": honours[1], "european": honours[2]},
+                "manager_bands": bands,
+                "top_sales": [[n, int(v)] for n, v in top_sales],
+            }
+
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(out, indent=2), encoding="utf8")
     print(f"wrote {OUT.relative_to(REPO)} with {len(out['scenarios'])} scenarios")

@@ -1,0 +1,310 @@
+---
+import Base from "../layouts/Base.astro";
+---
+<Base title="Transfer Market Efficiency — club detail">
+  <div class="top">
+    <div class="club-head">
+      <img id="crest" alt="" width="52" height="52" />
+      <div>
+        <h1 id="club-name">Select a club</h1>
+        <p class="sub" id="club-meta"></p>
+      </div>
+    </div>
+    <div class="filters">
+      <div class="card filter">
+        <header><strong>Club</strong><a class="all" href={`${import.meta.env.BASE_URL}`}>← League overview</a></header>
+        <input id="club-search" type="search" placeholder="Search clubs…" autocomplete="off" />
+        <ul id="club-list" class="club-list"></ul>
+      </div>
+      <div class="card filter">
+        <header><strong>Seasons</strong><button class="all" id="seasons-all">Select all</button></header>
+        <div id="season-filter"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="card kpi"><div class="label">Total spend</div><div class="value" id="kpi-paid">—</div><div class="note" id="kpi-paid-note"></div></div>
+    <div class="card kpi"><div class="label">Total sales</div><div class="value" id="kpi-received">—</div><div class="note" id="kpi-received-note"></div></div>
+    <div class="card kpi"><div class="label">Net spend</div><div class="value" id="kpi-net">—</div><div class="note">paid − received</div></div>
+    <div class="card kpi"><div class="label">Transfer Efficiency Score</div><div class="value" id="kpi-score">—</div><div class="note" id="kpi-rank"></div></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2 id="squad-title">Squad</h2>
+      <div class="scroll"><table class="data" id="squad-table"></table></div>
+      <p class="muted" id="squad-total"></p>
+    </div>
+    <div class="card">
+      <h2>Transfer Efficiency Score <span class="muted">four pillars</span></h2>
+      <div id="pillars"></div>
+      <h2 style="margin-top:18px">Spending breakdown</h2>
+      <div id="breakdown" class="chart small"></div>
+      <p class="muted" id="breakdown-note"></p>
+      <h2 style="margin-top:14px">Honours <span class="muted" id="honours-window"></span></h2>
+      <div id="honours"></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2>Largest transfers
+      <span class="seg" id="direction-filter">
+        <button data-dir="All" class="on">All</button><button data-dir="Bought">Bought</button
+        ><button data-dir="Sold">Sold</button><button data-dir="Loan">Loan</button>
+      </span>
+    </h2>
+    <div class="scroll tall"><table class="data" id="transfer-table"></table></div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2>Transfer cash flow and efficiency by manager tenure</h2>
+    <div id="cashflow" class="chart"></div>
+    <div id="tenure" class="tenure"></div>
+  </div>
+
+  <footer>
+    <span id="generated"></span> · Fees are disclosed only; undisclosed moves are counted, never valued.
+    <span class="prov">Provisional</span> seasons carry signing cohorts whose three-season output horizon runs
+    past the scored window.
+  </footer>
+</Base>
+
+<script>
+  import { unpack, type PackedTable } from "../lib/pack";
+  import type { ClubSeason } from "../lib/types";
+  import { aggregateByClub } from "../lib/aggregate";
+  import { COLOUR, init } from "../lib/charts";
+  import { index as fmtIndex, money, score as fmtScore, signedMoney } from "../lib/format";
+  import { financials, managerBands, pillarAverages, spendingBreakdown, squadForSeason, squadValue,
+           type CashflowRow, type PillarRow, type SquadRow, type TransferRow } from "../lib/club";
+
+  const BASE = import.meta.env.BASE_URL;
+  const el = (id: string) => document.getElementById(id) as HTMLElement;
+
+  interface ClubIndexEntry { club_key: number; club_name: string; country: string; city: string; leagues: string; seasons: number }
+  const indexPayload = (await (await fetch(`${BASE}data/clubs/index.json`)).json()) as
+    { generated_at: string; clubs: ClubIndexEntry[] };
+  const overview = unpack<ClubSeason>(((await (await fetch(`${BASE}data/page1.json`)).json()) as { overview: PackedTable }).overview);
+
+  // Rank every club once, on the whole window, so the club page can say where this one stands.
+  const ranked = aggregateByClub(overview);
+  const rankOf = new Map(ranked.map((c, i) => [c.club_key, i + 1]));
+
+  let current: {
+    club: { club_key: number; club_name: string; country: string; city: string; leagues: string };
+    squad: SquadRow[]; transfers: TransferRow[]; cashflow: CashflowRow[]; pillars: PillarRow[];
+    honours: { league_titles: number; domestic_cups: number; european_trophies: number; total_trophies: number; window_label: string };
+  } | null = null;
+  let selectedSeasons = new Set<number>();
+  let direction = "All";
+
+  const cashflowChart = init(el("cashflow"));
+  const breakdownChart = init(el("breakdown"));
+
+  // ---- club selector -------------------------------------------------------------------------
+  function renderClubList(query: string) {
+    const q = query.trim().toLowerCase();
+    const matches = indexPayload.clubs.filter((c) => !q || c.club_name.toLowerCase().includes(q) ||
+      (c.country ?? "").toLowerCase().includes(q) || (c.leagues ?? "").toLowerCase().includes(q));
+    el("club-list").innerHTML = matches.map((c) =>
+      `<li><button data-club="${c.club_key}" class="${current?.club.club_key === c.club_key ? "on" : ""}">` +
+      `${c.club_name}<span>${c.leagues ?? "—"}</span></button></li>`).join("");
+    for (const b of el("club-list").querySelectorAll<HTMLButtonElement>("button")) {
+      b.addEventListener("click", () => selectClub(Number(b.dataset.club)));
+    }
+  }
+
+  async function selectClub(clubKey: number) {
+    const shard = await (await fetch(`${BASE}data/clubs/${clubKey}.json`)).json();
+    current = {
+      club: shard.club,
+      squad: unpack<SquadRow>(shard.squad),
+      transfers: unpack<TransferRow>(shard.transfers),
+      cashflow: unpack<CashflowRow>(shard.cashflow),
+      pillars: unpack<PillarRow>(shard.pillars),
+      honours: unpack(shard.honours)[0] as never,
+    };
+    selectedSeasons = new Set(current.cashflow.map((r) => r.season_end_year));
+    history.replaceState(null, "", `#club=${clubKey}`);
+    renderSeasonFilter();
+    renderClubList((el("club-search") as HTMLInputElement).value);
+    render();
+  }
+
+  function renderSeasonFilter() {
+    const host = el("season-filter");
+    host.innerHTML = "";
+    for (const row of current!.cashflow) {
+      const label = document.createElement("label");
+      const box = document.createElement("input");
+      box.type = "checkbox";
+      box.checked = selectedSeasons.has(row.season_end_year);
+      box.addEventListener("change", () => {
+        box.checked ? selectedSeasons.add(row.season_end_year) : selectedSeasons.delete(row.season_end_year);
+        render();
+      });
+      const text = document.createElement("span");
+      text.textContent = `${row.season}${row.is_provisional ? " *" : ""}`;
+      label.append(box, text);
+      host.appendChild(label);
+    }
+  }
+
+  el("club-search").addEventListener("input", (e) => renderClubList((e.target as HTMLInputElement).value));
+  el("seasons-all").addEventListener("click", () => {
+    const all = current!.cashflow.map((r) => r.season_end_year);
+    const fill = selectedSeasons.size !== all.length;
+    selectedSeasons = new Set(fill ? all : []);
+    renderSeasonFilter();
+    render();
+  });
+  for (const b of el("direction-filter").querySelectorAll<HTMLButtonElement>("button")) {
+    b.addEventListener("click", () => {
+      direction = b.dataset.dir as string;
+      for (const other of el("direction-filter").querySelectorAll("button")) other.classList.toggle("on", other === b);
+      renderTransfers();
+    });
+  }
+
+  // ---- rendering -----------------------------------------------------------------------------
+  const feeClass = (t: TransferRow) =>
+    t.fee_status === "Undisclosed" || t.fee_status === "Free" || t.fee_status === "Loan (no fee)" ? "fee-none"
+      : t.direction === "Bought" || t.direction === "Loan in" ? "fee-out" : "fee-in";
+
+  function renderTransfers() {
+    if (!current) return;
+    const rows = current.transfers
+      .filter((t) => selectedSeasons.has(t.season_end_year))
+      .filter((t) => direction === "All" || t.direction_filter === direction)
+      .slice(0, 60);
+    el("transfer-table").innerHTML =
+      "<thead><tr><th>Player</th><th>Direction</th><th class='right'>Fee</th><th>Other club</th><th>Season</th></tr></thead><tbody>" +
+      (rows.length ? rows.map((t) => `<tr>
+          <td>${t.player_name}</td>
+          <td class="${feeClass(t)}">${t.direction}</td>
+          <td class="right ${feeClass(t)}">${t.fee_status === "Undisclosed" ? "Undisclosed"
+            : t.fee_status === "Free" ? "Free" : t.fee_eur === 0 ? "Loan" : money(t.fee_eur)}</td>
+          <td>${t.other_club_name}</td><td>${t.season}</td></tr>`).join("")
+        : "<tr><td colspan='5' class='muted'>No transfers in the selected seasons.</td></tr>") +
+      "</tbody>";
+  }
+
+  function render() {
+    if (!current) return;
+    const club = current.club;
+    (el("crest") as HTMLImageElement).src = `${BASE}crests/${club.club_key}.png`;
+    (el("crest") as HTMLImageElement).alt = `${club.club_name} crest`;
+    el("club-name").textContent = club.club_name;
+    el("club-meta").textContent = [club.leagues, club.country, club.city].filter(Boolean).join(" · ");
+    el("generated").textContent = `Data generated ${indexPayload.generated_at.slice(0, 10)}`;
+
+    const cashflow = current.cashflow.filter((r) => selectedSeasons.has(r.season_end_year));
+    const pillars = current.pillars.filter((r) => selectedSeasons.has(r.season_end_year));
+    const money_ = financials(cashflow);
+
+    el("kpi-paid").textContent = money(money_.paid);
+    el("kpi-paid-note").textContent = `${cashflow.reduce((t, r) => t + r.undisclosed_signings, 0)} undisclosed signings`;
+    el("kpi-received").textContent = money(money_.received);
+    el("kpi-received-note").textContent = `${cashflow.reduce((t, r) => t + r.undisclosed_sales, 0)} undisclosed sales`;
+    el("kpi-net").textContent = signedMoney(money_.net);
+    el("kpi-score").textContent = cashflow.length ? fmtScore(money_.score) : "—";
+    el("kpi-rank").textContent = cashflow.length
+      ? `index ${fmtIndex(money_.index)} · rank ${rankOf.get(club.club_key)} of ${ranked.length} over the full window`
+      : "no seasons selected";
+
+    // squad: the latest selected season, as the dashboard does
+    const latest = Math.max(...[...selectedSeasons], -Infinity);
+    const squad = Number.isFinite(latest) ? squadForSeason(current.squad, latest) : [];
+    const seasonLabel = current.cashflow.find((r) => r.season_end_year === latest)?.season ?? "";
+    el("squad-title").textContent = `Squad ${seasonLabel ? `(${seasonLabel})` : ""}`;
+    el("squad-table").innerHTML =
+      "<thead><tr><th>Player</th><th>Nat</th><th>Pos</th><th class='right'>Mins</th><th class='right'>Market value</th></tr></thead><tbody>" +
+      (squad.length ? squad.map((p) => `<tr><td>${p.player_name}</td><td>${p.nationality_code ?? "—"}</td>
+          <td>${p.position_short}</td><td class="right">${p.minutes.toLocaleString("en-GB")}</td>
+          <td class="right">${money(p.market_value_eur)}</td></tr>`).join("")
+        : "<tr><td colspan='5' class='muted'>No squad for the selected season.</td></tr>") + "</tbody>";
+    el("squad-total").textContent = squad.length
+      ? `${squad.length} players who appeared · total market value ${money(squadValue(squad))}` : "";
+
+    // pillars
+    el("pillars").innerHTML = pillarAverages(pillars).map((p) => {
+      const v = p.value;
+      const width = v === null ? 0 : Math.min(Math.abs(v) / 2, 1) * 50;
+      const left = v === null ? 50 : v >= 0 ? 50 : 50 - width;
+      const colour = v === null ? "#c9cfd4" : v >= 0 ? COLOUR.smart : COLOUR.burned;
+      return `<div class="pillar"><span>${p.name}</span>
+        <span class="track"><span class="fill" style="left:${left}%;width:${width}%;background:${colour}"></span>
+        <span class="zero"></span></span>
+        <span class="num">${v === null ? "n/a" : fmtIndex(v)}</span></div>
+        ${p.note ? `<div class="muted pillar-note">${p.note}</div>` : ""}`;
+    }).join("");
+
+    // spending breakdown
+    const b = spendingBreakdown(current.transfers.filter((t) => selectedSeasons.has(t.season_end_year)));
+    breakdownChart.setOption({
+      tooltip: { trigger: "item", formatter: (p: { name: string; value: number; percent: number }) =>
+        `${p.name}<br>${money(p.value)} (${p.percent}%)` },
+      legend: { bottom: 0, itemWidth: 10, itemHeight: 10 },
+      title: { text: money(b.permanent + b.loanFees), subtext: "fees paid", left: "50%", top: "34%",
+               textAlign: "center", textStyle: { fontSize: 18, fontWeight: 700, color: "#16324f" },
+               subtextStyle: { fontSize: 11, color: "#5b7186" } },
+      series: [{
+        type: "pie", radius: ["52%", "76%"], center: ["50%", "42%"],
+        label: { position: "inside", formatter: "{d}%", color: "#fff", fontSize: 11, fontWeight: 600 },
+        data: [
+          { name: "Permanent fees", value: b.permanent, itemStyle: { color: "#2fae87" } },
+          { name: "Loan fees", value: b.loanFees, itemStyle: { color: "#e0a83c" } },
+        ].filter((d) => d.value > 0),
+      }],
+    }, true);
+    el("breakdown-note").textContent =
+      `${b.freeCount} free signing${b.freeCount === 1 ? "" : "s"} (no fee), ` +
+      `${b.loanNoFeeCount} fee-free loan${b.loanNoFeeCount === 1 ? "" : "s"}, ` +
+      `${b.undisclosedCount} undisclosed`;
+
+    // honours
+    const h = current.honours;
+    el("honours-window").textContent = h.window_label ?? "";
+    el("honours").innerHTML = [["League titles", h.league_titles], ["Domestic cups", h.domestic_cups],
+                               ["Continental titles", h.european_trophies]]
+      .map(([label, n]) => `<div class="honour"><span>${label}</span><span class="num">${n}</span></div>`).join("");
+
+    renderTransfers();
+
+    // cash flow: bars for money in and out, the efficiency score as a line, tenure bands beneath
+    const seasons = current.cashflow;
+    cashflowChart.setOption({
+      grid: { left: 66, right: 60, top: 26, bottom: 34 },
+      tooltip: { trigger: "axis" },
+      legend: { top: 0, right: 0, itemWidth: 10, itemHeight: 10 },
+      xAxis: { type: "category", data: seasons.map((r) => r.season), axisTick: { alignWithLabel: true } },
+      yAxis: [
+        { type: "value", name: "€", axisLabel: { formatter: (v: number) => money(v) },
+          splitLine: { lineStyle: { color: "#f0f1ef" } } },
+        { type: "value", name: "Score", min: 0, max: 100, splitLine: { show: false } },
+      ],
+      series: [
+        { name: "Fees received", type: "bar", data: seasons.map((r) => r.fees_received_eur),
+          itemStyle: { color: "#2fae87", opacity: 0.9 } },
+        { name: "Fees paid", type: "bar", data: seasons.map((r) => r.fees_paid_eur),
+          itemStyle: { color: "#e8674f", opacity: 0.9 } },
+        { name: "Efficiency score", type: "line", yAxisIndex: 1, symbolSize: 7,
+          data: seasons.map((r) => r.efficiency_score_0_100), lineStyle: { color: "#16324f", width: 2 },
+          itemStyle: { color: "#16324f" } },
+      ],
+    }, true);
+
+    const bands = managerBands(seasons);
+    el("tenure").innerHTML = bands.map((band) => {
+      const span = band.to - band.from + 1;
+      return `<div class="band" style="flex:${span}" title="${band.from}–${band.to}">` +
+             `${band.manager}${band.caretaker ? " (caretaker)" : ""}</div>`;
+    }).join("");
+  }
+
+  // ---- start ---------------------------------------------------------------------------------
+  renderClubList("");
+  const fromHash = Number(new URLSearchParams(location.hash.slice(1)).get("club"));
+  await selectClub(fromHash || indexPayload.clubs[0].club_key);
+</script>

@@ -38,3 +38,38 @@ h2 { font-size: 17px; margin: 0 0 12px; }
 .prov { color: #b07d2b; }
 footer { margin-top: 26px; color: var(--ink-soft); font-size: 12px; }
 @media (max-width: 1100px) { .grid, .grid-2, .kpis, .strip { grid-template-columns: 1fr; } }
+
+/* ---- page 2 ---- */
+.club-head { display: flex; gap: 14px; align-items: center; }
+.club-head img { object-fit: contain; }
+.club-list { list-style: none; margin: 8px 0 0; padding: 0; max-height: 132px; overflow: auto; }
+.club-list button { display: flex; justify-content: space-between; gap: 10px; width: 100%; text-align: left;
+  background: none; border: 0; padding: 4px 6px; border-radius: 5px; cursor: pointer; font: inherit; }
+.club-list button:hover { background: #f1f4f2; }
+.club-list button.on { background: #eaf4f0; font-weight: 600; }
+.club-list span { color: var(--ink-soft); font-size: 12px; }
+#club-search { width: 100%; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; font: inherit; }
+.scroll { max-height: 360px; overflow: auto; }
+.scroll.tall { max-height: 420px; }
+table.data { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.data th { text-align: left; font-size: 12px; color: var(--ink-soft); font-weight: 600;
+  border-bottom: 1px solid var(--line); padding: 6px 8px; position: sticky; top: 0; background: var(--card); }
+table.data td { padding: 5px 8px; border-bottom: 1px solid #f3f5f2; }
+table.data .right, table.data th.right { text-align: right; font-variant-numeric: tabular-nums; }
+.fee-out { color: var(--bad); font-weight: 600; }
+.fee-in { color: var(--good); font-weight: 600; }
+.fee-none { color: var(--ink-soft); }
+.seg { float: right; display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button { background: #fff; border: 0; padding: 4px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+.seg button.on { background: var(--accent); color: #fff; }
+.pillar { display: grid; grid-template-columns: 150px 1fr 54px; gap: 10px; align-items: center; margin: 7px 0; font-size: 14px; }
+.pillar .track { position: relative; display: block; height: 14px; background: #f1f3f1; border-radius: 4px; }
+.pillar .fill { position: absolute; top: 0; height: 100%; border-radius: 4px; }
+.pillar .zero { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: #c9cfd4; }
+.pillar .num { text-align: right; font-variant-numeric: tabular-nums; }
+.pillar-note { margin: -4px 0 6px 160px; }
+.honour { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #f3f5f2; font-size: 14px; }
+.honour .num { font-weight: 700; }
+.tenure { display: flex; gap: 4px; margin-top: 6px; }
+.tenure .band { background: #eef2f7; border-radius: 5px; padding: 4px 8px; font-size: 12px; color: var(--ink-soft);
+  text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
