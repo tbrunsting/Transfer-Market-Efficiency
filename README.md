@@ -14,6 +14,25 @@ as a static site that needs no database to open. Everything behind them —
 ingest, warehouse, scoring, presentation views — is in this repository, along
 with the reasoning for every judgement call.
 
+## The live site is a rebuild, not a Power BI export
+
+My Power BI licence is a school account with no publish access, so the live
+dashboard is a static rebuild of the same two pages: Astro and ECharts, no
+backend, the warehouse exported to JSON and committed. The Power BI original is
+in this repository as `Dashboard.pbix`, and the screenshots below are from it.
+
+Same two pages, same filters, same charts, with two deliberate differences,
+both worked out in
+[`web/README.md`](web/README.md#why-this-pages-median-differs-from-the-power-bi-card):
+
+- **The median KPI.** The site shows the 0–100 efficiency score, taken across
+  clubs (39.2). Power BI shows the raw composite index, taken across
+  club-seasons (−0.03). Same underlying number, two scales and two grains: the
+  median across club means is −0.1167 on the index scale, which is exactly
+  39.17 once rescaled.
+- **The scatter.** The site plots one point per club, aggregated over the
+  seasons selected. Power BI plots one point per club-season.
+
 ## Dashboard preview
 
 Page 1 of the Power BI dashboard: transfer spend against sporting return on a
