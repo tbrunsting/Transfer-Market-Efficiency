@@ -5,7 +5,7 @@ import Base from "../layouts/Base.astro";
   <a class="skip" href="#main">Skip to the club detail</a>
   <div class="top">
     <div class="club-head">
-      <img id="crest" alt="" width="52" height="52" />
+      <span id="crest-slot" class="crest"><img id="crest" alt="" width="52" height="52" /></span>
       <div>
         <h1 id="club-name">Select a club</h1>
         <p class="sub" id="club-meta"></p>
@@ -128,7 +128,7 @@ import Base from "../layouts/Base.astro";
   let current: {
     club: { club_key: number; club_name: string; country: string; city: string; leagues: string };
     squad: SquadRow[]; transfers: TransferRow[]; cashflow: CashflowRow[]; pillars: PillarRow[];
-    honours: { league_titles: number; domestic_cups: number; european_trophies: number; total_trophies: number; window_label: string };
+    honours: { league_titles: number; domestic_cups: number; european_trophies: number; window_label: string };
   } | null = null;
   let selectedSeasons = new Set<number>();
   let direction = "All";
@@ -240,8 +240,15 @@ import Base from "../layouts/Base.astro";
   function render() {
     if (!current) return;
     const club = current.club;
-    (el("crest") as HTMLImageElement).src = `${BASE}crests/${club.club_key}.png`;
-    (el("crest") as HTMLImageElement).alt = `${club.club_name} crest`;
+    // A crest is decoration, not data: if the file is missing the browser would draw its own broken
+    // image icon, so the <img> hides itself and the slot falls back to the club's initials.
+    const crest = el("crest") as HTMLImageElement;
+    el("crest-slot").dataset.initials = club.club_name.replace(/^\d+\.\s*/, "")
+      .split(/[\s.]+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+    crest.hidden = false;
+    crest.alt = `${club.club_name} crest`;
+    crest.onerror = () => { crest.hidden = true; };
+    crest.src = `${BASE}crests/${club.club_key}.png`;
     el("club-name").textContent = club.club_name;
     el("club-meta").textContent = [club.leagues, club.country, club.city].filter(Boolean).join(" · ");
     el("generated").textContent = `Data generated ${indexPayload.generated_at.slice(0, 10)}`;

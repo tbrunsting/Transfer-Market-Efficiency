@@ -64,6 +64,14 @@ fieldset.filter { margin: 0; }                     /* a fieldset carries the gro
 /* ---- page 2 ---- */
 .club-head { display: flex; gap: 14px; align-items: center; }
 .club-head img { object-fit: contain; }
+/* The initials sit behind the crest and show through only when the image is hidden or missing. */
+.crest { position: relative; display: inline-flex; align-items: center; justify-content: center;
+  width: 52px; height: 52px;
+  flex: 0 0 52px; border-radius: 8px; background: #eef2f7; color: #4a5f73; font-weight: 700;
+  font-size: 17px; letter-spacing: 0.02em; }
+.crest::before { content: attr(data-initials); position: absolute; }
+.crest img { position: relative; background: var(--paper); }
+.crest img[hidden] { display: none; }
 .club-list { list-style: none; margin: 8px 0 0; padding: 0; max-height: 132px; overflow: auto; }
 .club-list button { display: flex; justify-content: space-between; gap: 10px; width: 100%; text-align: left;
   background: none; border: 0; padding: 4px 6px; border-radius: 5px; cursor: pointer; font: inherit; }

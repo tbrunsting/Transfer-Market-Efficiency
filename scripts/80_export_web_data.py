@@ -2,11 +2,15 @@ r"""Export the presentation views to static JSON for the Astro site (web/).
 
 GitHub Pages has no database, so the site ships a snapshot. This writes it:
 
-    web/public/data/page1.json          league overview + spend by league + meta (29 KB gzipped)
+    web/public/data/page1.json          the league overview, one row per club-season
     web/public/data/clubs/index.json    the club selector
     web/public/data/clubs/<key>.json    one shard per club: squad, transfers, cash flow, honours
     web/public/crests/<key>.png         club crests, vendored rather than hotlinked
     web/public/data/manifest.json       generated-at, row counts, SHA-256 and byte size per file
+
+Scope. The export carries only the fields the site actually reads (audited 2026-09-27); the views keep
+everything else. A column the pages never open is data published for no reason and a silent maintenance
+cost, so 81_check_web_export.py pins the exact column list of every table.
 
 Encoding. An array of objects would be 23.9 MB (1.56 MB gzipped), because every row repeats every key
 name. Each table is therefore stored column-wise, and any text column whose values repeat is stored as a
@@ -104,21 +108,13 @@ def main() -> None:
         # ---- page 1 -------------------------------------------------------------------------------
         page1 = {
             "generated_at": generated_at,
+            # points_per_match is deliberately absent: the site divides summed points by summed matches
+            # over the current filter, which is not a mean of the per-season rates.
             "overview": fetch(conn, """
-                SELECT club_key, club_name, club_country, league, league_code, season, season_end_year,
-                       gross_spend_eur, gross_sales_eur, net_spend_eur, undisclosed_signings, undisclosed_sales,
-                       squad_value_start_eur, matches, points, points_per_match, has_known_deduction,
-                       efficiency_index, efficiency_score_0_100, recruitment_z, trading_z, value_growth_z,
-                       sporting_z, is_recruitment_scored, is_provisional
+                SELECT club_key, club_name, league, season, season_end_year,
+                       gross_spend_eur, gross_sales_eur, net_spend_eur, matches, points,
+                       efficiency_index, efficiency_score_0_100, is_provisional
                 FROM presentation.vw_league_overview ORDER BY season_end_year, club_name, club_key"""),
-            "spend_by_league": fetch(conn, """
-                SELECT league, league_code, season, season_end_year, clubs, gross_spend_eur, gross_sales_eur,
-                       net_spend_eur, undisclosed_signings
-                FROM presentation.vw_club_spend_by_league ORDER BY season_end_year, league, league_code"""),
-            "weights": fetch(conn, "SELECT pillar, source_column, weight, rationale FROM score.composite_weight ORDER BY weight DESC, pillar"),
-            "league_premium": fetch(conn, """
-                SELECT competition_name, reference_league, output_per_euro_vs_reference, median_output_per_spend
-                FROM score.league_premium ORDER BY output_per_euro_vs_reference"""),
         }
         files["data/page1.json"] = write_json(DATA / "page1.json", page1)
 
@@ -142,30 +138,27 @@ def main() -> None:
                 "club": {"club_key": club_key, "club_name": club_name, "country": country, "city": city,
                          "leagues": leagues, "seasons": seasons},
                 "squad": fetch(conn, """
-                    SELECT player_key, season, season_end_year, is_latest_season_for_club, clubs_in_season,
-                           is_primary_club_for_season, player_name, nationality_code, position_group,
-                           position_detail, position_short, age, matches_played, starts, minutes,
-                           quality_percentile, market_value_eur
+                    SELECT season_end_year, player_name, nationality_code, position_short, minutes,
+                           market_value_eur
                     FROM presentation.vw_current_squad WHERE club_key = %s
                     ORDER BY season_end_year, market_value_eur DESC NULLS LAST, player_name, player_key""", (club_key,)),
+                # transfer_key still orders the rows, for determinism, without being published
                 "transfers": fetch(conn, """
-                    SELECT transfer_key, season, season_end_year, transfer_date, date_is_estimated, player_name, direction,
-                           direction_filter, transfer_category, fee_status, fee_eur, is_fee_disclosed,
-                           other_club_name, other_club_in_scope, is_big_five_season
+                    SELECT season, season_end_year, player_name, direction, direction_filter,
+                           fee_status, fee_eur, other_club_name
                     FROM presentation.vw_transfers_detail WHERE club_key = %s
                     ORDER BY fee_eur DESC NULLS LAST, season_end_year, player_name, direction, other_club_name, transfer_key""", (club_key,)),
                 "cashflow": fetch(conn, """
-                    SELECT season, season_end_year, fees_paid_eur, fees_received_eur, net_spend_eur,
-                           net_transfer_balance_eur, undisclosed_signings, undisclosed_sales, efficiency_index,
-                           efficiency_score_0_100, is_provisional, season_status, manager_name,
-                           manager_is_caretaker, managers_in_season, managers_count, manager_band_seq
+                    SELECT season, season_end_year, fees_paid_eur, fees_received_eur,
+                           undisclosed_signings, undisclosed_sales, efficiency_index,
+                           efficiency_score_0_100, is_provisional, manager_name, manager_is_caretaker
                     FROM presentation.vw_cashflow_and_tenure WHERE club_key = %s ORDER BY season_end_year""", (club_key,)),
                 "honours": fetch(conn, """
-                    SELECT league_titles, domestic_cups, european_trophies, total_trophies, window_label
+                    SELECT league_titles, domestic_cups, european_trophies, window_label
                     FROM presentation.vw_club_trophies_honors WHERE club_key = %s""", (club_key,)),
                 "pillars": fetch(conn, """
-                    SELECT season, season_end_year, efficiency_index, efficiency_score_0_100, recruitment_z,
-                           trading_z, value_growth_z, sporting_z, is_recruitment_scored, is_provisional
+                    SELECT season_end_year, recruitment_z, trading_z, value_growth_z, sporting_z,
+                           is_recruitment_scored
                     FROM presentation.vw_league_overview WHERE club_key = %s ORDER BY season_end_year""", (club_key,)),
             }
             files[f"data/clubs/{club_key}.json"] = write_json(CLUBS / f"{club_key}.json", shard)

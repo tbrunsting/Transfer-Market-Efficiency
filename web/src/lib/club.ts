@@ -4,32 +4,25 @@
  * Tested against SQL in web/test/club.test.mjs, with expectations from scripts/82_web_expectations.py.
  */
 export interface SquadRow {
-  player_key: number; season: string; season_end_year: number; is_latest_season_for_club: boolean;
-  clubs_in_season: number; is_primary_club_for_season: boolean; player_name: string;
-  nationality_code: string | null; position_group: string; position_detail: string; position_short: string;
-  age: number | null; matches_played: number; starts: number; minutes: number;
-  quality_percentile: number | null; market_value_eur: number | null;
+  season_end_year: number; player_name: string; nationality_code: string | null;
+  position_short: string; minutes: number; market_value_eur: number | null;
 }
 
 export interface TransferRow {
-  transfer_key: number; season: string; season_end_year: number; transfer_date: string;
-  date_is_estimated: boolean; player_name: string; direction: string; direction_filter: string;
-  transfer_category: string; fee_status: string; fee_eur: number | null; is_fee_disclosed: boolean;
-  other_club_name: string; other_club_in_scope: boolean; is_big_five_season: boolean;
+  season: string; season_end_year: number; player_name: string; direction: string;
+  direction_filter: string; fee_status: string; fee_eur: number | null; other_club_name: string;
 }
 
 export interface CashflowRow {
   season: string; season_end_year: number; fees_paid_eur: number; fees_received_eur: number;
-  net_spend_eur: number; net_transfer_balance_eur: number; undisclosed_signings: number;
-  undisclosed_sales: number; efficiency_index: number; efficiency_score_0_100: number;
-  is_provisional: boolean; season_status: string; manager_name: string; manager_is_caretaker: boolean;
-  managers_in_season: string; managers_count: number; manager_band_seq: number;
+  undisclosed_signings: number; undisclosed_sales: number; efficiency_index: number;
+  efficiency_score_0_100: number; is_provisional: boolean; manager_name: string;
+  manager_is_caretaker: boolean;
 }
 
 export interface PillarRow {
-  season: string; season_end_year: number; efficiency_index: number; efficiency_score_0_100: number;
-  recruitment_z: number | null; trading_z: number; value_growth_z: number; sporting_z: number;
-  is_recruitment_scored: boolean; is_provisional: boolean;
+  season_end_year: number; recruitment_z: number | null; trading_z: number; value_growth_z: number;
+  sporting_z: number; is_recruitment_scored: boolean;
 }
 
 /** Money in and out over the selected seasons, plus the score to show beside it. */

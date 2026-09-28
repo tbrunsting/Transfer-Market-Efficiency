@@ -27,14 +27,19 @@ re-run the checker, commit the diff. CI never touches Postgres.
 
 | File | Grain | Size |
 |---|---|---|
-| `page1.json` | 684 club-seasons, the league overview | ~34 KB |
+| `page1.json` | 684 club-seasons, the league overview | 51 KB |
 | `clubs/index.json` | 145 clubs, for the search list | ~11 KB |
-| `clubs/<club_key>.json` | one club: squad, transfers, cash flow, pillars, honours | ~10 KB each |
+| `clubs/<club_key>.json` | one club: squad, transfers, cash flow, pillars, honours | 17 KB median |
 | `manifest.json` | SHA-256 of every file written, plus row counts | — |
 | `crests/<club_key>.png` | 145 crests, vendored, never hotlinked | — |
 
 Sharding by club is what makes the club page cheap: opening a club costs one
-~10 KB request, not a 1.5 MB download of all 145.
+~17 KB request, not a 2.5 MB download of all 145.
+
+The export also carries only the fields the pages read: a field-level audit on
+2026-09-27 found 34 unread fields and three unread tables, which were dropped,
+and the checker now pins the surviving column list in both directions. See
+[`phase-5-published-data.md`](phase-5-published-data.md) §5.
 
 **Packed encoding.** Each table is stored column-by-column, and text columns
 whose values repeat at least `DICTIONARY_RATIO = 3` times are dictionary-coded

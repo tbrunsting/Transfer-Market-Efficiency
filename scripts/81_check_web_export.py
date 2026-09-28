@@ -25,6 +25,26 @@ MONEY_TOLERANCE = 0.5        # money is rounded to whole euros
 FLOAT_TOLERANCE = 5e-7       # everything else to 6 decimal places
 IMAGE_MAGIC = (b"\x89PNG", b"\xff\xd8\xff", b"GIF8", b"<svg", b"<?xm", b"RIFF")
 
+# Exactly what each table is allowed to publish. The site was audited field by field on 2026-09-27 and
+# everything it never reads was dropped from the export; this pins that, so a column cannot drift back
+# into the public files by being added to a view.
+PUBLISHED = {
+    "page1.overview": ["club_key", "club_name", "league", "season", "season_end_year", "gross_spend_eur",
+                       "gross_sales_eur", "net_spend_eur", "matches", "points", "efficiency_index",
+                       "efficiency_score_0_100", "is_provisional"],
+    "shard.squad": ["season_end_year", "player_name", "nationality_code", "position_short", "minutes",
+                    "market_value_eur"],
+    "shard.transfers": ["season", "season_end_year", "player_name", "direction", "direction_filter",
+                        "fee_status", "fee_eur", "other_club_name"],
+    "shard.cashflow": ["season", "season_end_year", "fees_paid_eur", "fees_received_eur",
+                       "undisclosed_signings", "undisclosed_sales", "efficiency_index",
+                       "efficiency_score_0_100", "is_provisional", "manager_name", "manager_is_caretaker"],
+    "shard.honours": ["league_titles", "domestic_cups", "european_trophies", "window_label"],
+    "shard.pillars": ["season_end_year", "recruitment_z", "trading_z", "value_growth_z", "sporting_z",
+                      "is_recruitment_scored"],
+    "clubs/index": ["club_key", "club_name", "country", "city", "leagues", "seasons"],
+}
+
 results: list[tuple[str, str, str]] = []
 
 
@@ -92,23 +112,16 @@ def main() -> None:
             return [d.name for d in cur.description], cur.fetchall()
 
         cols, rows = view("""
-            SELECT club_key, club_name, club_country, league, league_code, season, season_end_year,
-                   gross_spend_eur, gross_sales_eur, net_spend_eur, undisclosed_signings, undisclosed_sales,
-                   squad_value_start_eur, matches, points, points_per_match, has_known_deduction,
-                   efficiency_index, efficiency_score_0_100, recruitment_z, trading_z, value_growth_z,
-                   sporting_z, is_recruitment_scored, is_provisional
+            SELECT club_key, club_name, league, season, season_end_year,
+                   gross_spend_eur, gross_sales_eur, net_spend_eur, matches, points,
+                   efficiency_index, efficiency_score_0_100, is_provisional
             FROM presentation.vw_league_overview ORDER BY season_end_year, club_name, club_key""")
         overview = unpack(page1["overview"])
         compare("page 1 overview", overview, rows, cols)
 
-        cols, rows = view("""
-            SELECT league, league_code, season, season_end_year, clubs, gross_spend_eur, gross_sales_eur,
-                   net_spend_eur, undisclosed_signings
-            FROM presentation.vw_club_spend_by_league ORDER BY season_end_year, league, league_code""")
-        compare("page 1 spend by league", unpack(page1["spend_by_league"]), rows, cols)
-
-        check("page 1: the composite weights travel with the data", 4, page1["weights"]["rows"])
-        check("page 1: the league premium finding travels with the data", 5, page1["league_premium"]["rows"])
+        # page 1 carries the overview and nothing else: the donut's league totals and the medians are
+        # summed in the browser from these same rows, so a second copy of them would only be drift bait.
+        check("page 1: no table beyond the overview", ["generated_at", "overview"], sorted(page1.keys()))
 
         # ---- the ranking invariant must survive rounding ---------------------------------------------
         by_club: dict[int, list[dict]] = {}
@@ -132,9 +145,8 @@ def main() -> None:
             for part in totals:
                 totals[part] += shard[part]["rows"]
             cols, rows = view("""
-                SELECT transfer_key, season, season_end_year, transfer_date, date_is_estimated, player_name, direction,
-                       direction_filter, transfer_category, fee_status, fee_eur, is_fee_disclosed,
-                       other_club_name, other_club_in_scope, is_big_five_season
+                SELECT season, season_end_year, player_name, direction, direction_filter,
+                       fee_status, fee_eur, other_club_name
                 FROM presentation.vw_transfers_detail WHERE club_key = %s
                 ORDER BY fee_eur DESC NULLS LAST, season_end_year, player_name, direction, other_club_name, transfer_key""", (club_key,))
             got = unpack(shard["transfers"])
@@ -161,6 +173,19 @@ def main() -> None:
                           ("pillars", "SELECT count(*) FROM presentation.vw_league_overview")]:
             check(f"clubs: {part} rows across all shards equal the view",
                   conn.execute(sql).fetchone()[0], totals[part])
+
+        # ---- nothing is published that the site does not read ---------------------------------------
+        sample = json.loads((CLUBS / f"{in_scope[0]}.json").read_text(encoding="utf8"))
+        published = {"page1.overview": sorted(page1["overview"]["columns"]),
+                     "clubs/index": sorted(index["clubs"][0].keys())}
+        for part in ["squad", "transfers", "cashflow", "honours", "pillars"]:
+            published[f"shard.{part}"] = sorted(sample[part]["columns"])
+        extra = {t: sorted(set(published[t]) - set(cols_)) for t, cols_ in PUBLISHED.items()}
+        missing = {t: sorted(set(cols_) - set(published[t])) for t, cols_ in PUBLISHED.items()}
+        check("export: no field published that the site does not read",
+              {}, {t: v for t, v in extra.items() if v})
+        check("export: every field the site reads is published",
+              {}, {t: v for t, v in missing.items() if v})
 
         check("money: exported spend equals the warehouse to the euro",
               round(conn.execute("SELECT sum(gross_spend_eur) FROM presentation.vw_league_overview").fetchone()[0]),
