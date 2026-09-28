@@ -4,6 +4,8 @@ The Phase 4 Power BI dashboard, rebuilt as a static site so it can be opened
 from a link. Two pages, no database at run time, no UI framework.
 
 Full write-up: [`../docs/phase-5-web-dashboard.md`](../docs/phase-5-web-dashboard.md).
+What the published snapshot contains, field by field, and where each field came
+from: [`../docs/phase-5-published-data.md`](../docs/phase-5-published-data.md).
 
 ## Running it
 

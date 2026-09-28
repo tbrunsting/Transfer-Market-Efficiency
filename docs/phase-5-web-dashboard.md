@@ -147,6 +147,24 @@ charts rather than only resizing them.
 Verified in the browser at 375×812 and at desktop width, not only in a passing
 build: no horizontal page scroll at 375px on either page.
 
+## 5a. Attribution and what is republished
+
+Both pages end in a **Data & sources** footer, rendered once in
+`web/src/layouts/Base.astro` so the two pages cannot drift apart and the credit
+survives the fetch-failure state (the footer sits outside `<main>`, which is
+what the error card replaces). It credits Transfermarkt and
+transfermarkt-datasets, FBref via the archived worldfootballR_data snapshot,
+the Kaggle FBref 2017–2024 dataset and Wikidata; says plainly that the scores
+are derived by this project and endorsed by none of those sources; says the
+data is a frozen snapshot rather than a live feed; and links to the repository
+README.
+
+A field-by-field inventory of everything the published JSON exposes, with the
+source of each field and the volumes involved, is in
+[`phase-5-published-data.md`](phase-5-published-data.md). It was written before
+the first public deploy so that the decision to publish could be made against
+the actual contents.
+
 ## 6. Deployment
 
 `.github/workflows/deploy-web.yml` builds `/web` and publishes it to GitHub

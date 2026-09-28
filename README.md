@@ -206,6 +206,8 @@ data/      frozen sources (gitignored; rebuilt from the manifests)
 - `docs/phase-4-presentation-layer.md` — the six views Power BI reads
 - `docs/phase-5-web-dashboard.md` — the static web rebuild: export, encoding,
   checks, accessibility and deployment
+- `docs/phase-5-published-data.md` — every field the public site republishes
+  and which source it came from
 
 An interesting wrong answer that is honestly documented is worth more than a
 clean answer that quietly hides its assumptions. Where this project's own plan

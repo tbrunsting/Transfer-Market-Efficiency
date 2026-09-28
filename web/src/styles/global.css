@@ -40,7 +40,12 @@ h2 { font-size: 17px; margin: 0 0 12px; }
 .bar .num { text-align: right; font-variant-numeric: tabular-nums; }
 .muted { color: var(--ink-soft); font-size: 12px; }
 .prov { color: var(--prov-text); }
-footer { margin-top: 26px; color: var(--ink-soft); font-size: 12px; }
+footer { margin-top: 26px; color: var(--ink-soft); font-size: 12px; border-top: 1px solid var(--line);
+  padding-top: 14px; }
+footer .page-note { margin: 0 0 14px; }
+footer .credits-head { font-size: 13px; color: var(--ink); margin: 0 0 6px; }
+footer .credits { margin: 0 0 8px; max-width: 105ch; line-height: 1.6; }
+footer a { color: #2f6fd0; }
 a.bar { color: inherit; text-decoration: none; border-radius: 6px; padding: 2px 4px; margin: -2px -4px; }
 a.bar:hover { background: #f1f4f2; }
 a.bar:hover span:first-child { text-decoration: underline; }

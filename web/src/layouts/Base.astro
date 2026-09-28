@@ -2,6 +2,7 @@
 import "../styles/global.css";
 interface Props { title: string }
 const { title } = Astro.props;
+const REPO = "https://github.com/tbrunsting/Transfer-Market-Efficiency";
 ---
 <!doctype html>
 <html lang="en">
@@ -12,6 +13,39 @@ const { title } = Astro.props;
     <meta name="description" content="Which clubs in Europe's top five leagues get the most on-field value per euro spent in the transfer market, 2017/18 to 2023/24." />
   </head>
   <body>
-    <div class="wrap"><slot /></div>
+    <div class="wrap">
+      <slot />
+      <!-- One footer for both pages: the page adds its own note, the credits are always the same,
+           and because this sits outside <main> it survives the pages' fetch-failure state. -->
+      <footer>
+        <p class="page-note"><slot name="notes" /></p>
+        <h2 class="credits-head">Data &amp; sources</h2>
+        <p class="credits">
+          Transfer fees, market values, squads and club crests come from
+          <a href="https://www.transfermarkt.com/">Transfermarkt</a>, via its public club transfer
+          pages and the <a href="https://github.com/dcaribou/transfermarkt-datasets">transfermarkt-datasets</a>
+          project. Player minutes and performance come from <a href="https://fbref.com/">FBref</a>
+          (Opta era), through the archived
+          <a href="https://github.com/JaseZiv/worldfootballR_data">worldfootballR_data</a> snapshot.
+          Shot-creating actions come from the Kaggle dataset
+          <a href="https://www.kaggle.com/datasets/akshankrithick/fbref-2017-2024-for-europes-top-5-leagues">FBref
+          2017–2024 for Europe's top 5 leagues</a>. Club cities and seventeen cup editions come from
+          <a href="https://www.wikidata.org/">Wikidata</a>. None of these sources endorses or has
+          reviewed this project.
+        </p>
+        <p class="credits">
+          <strong>The scores are derived, not reported.</strong> The Transfer Efficiency Score, its four
+          pillars, the player quality percentiles and every z-score on these pages are calculated by this
+          project from the sources above. No source publishes them, and they are one defensible way of
+          measuring efficiency rather than the way.
+        </p>
+        <p class="credits">
+          <strong>This is a frozen snapshot, not a live feed.</strong> Seven seasons, 2017/18 to 2023/24,
+          exported once from a local warehouse; the generation date is shown above. Fees and valuations at
+          each source may since have changed, and undisclosed fees are counted but never estimated.
+          <a href={`${REPO}#readme`}>Method, limitations and full source code</a>.
+        </p>
+      </footer>
+    </div>
   </body>
 </html>
