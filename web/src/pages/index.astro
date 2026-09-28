@@ -2,20 +2,23 @@
 import Base from "../layouts/Base.astro";
 ---
 <Base title="Transfer Market Efficiency — league overview">
+  <a class="skip" href="#main">Skip to the dashboard</a>
   <div class="top">
     <div>
       <h1>Transfer Market Efficiency</h1>
       <p class="sub">Which clubs in Europe's top five leagues get the most on-field value per euro spent, 2017/18–2023/24</p>
     </div>
     <div class="filters">
-      <div class="card filter">
-        <header><strong>Seasons</strong><button class="all" data-all="season">Select all</button></header>
+      <fieldset class="card filter">
+        <legend class="sr-only">Seasons</legend>
+        <header><strong aria-hidden="true">Seasons</strong><button class="all" data-all="season">Select all</button></header>
         <div id="season-filter"></div>
-      </div>
-      <div class="card filter">
-        <header><strong>Leagues</strong><button class="all" data-all="league">Select all</button></header>
+      </fieldset>
+      <fieldset class="card filter">
+        <legend class="sr-only">Leagues</legend>
+        <header><strong aria-hidden="true">Leagues</strong><button class="all" data-all="league">Select all</button></header>
         <div id="league-filter"></div>
-      </div>
+      </fieldset>
     </div>
   </div>
 
@@ -27,7 +30,8 @@ import Base from "../layouts/Base.astro";
     <div><dt>Seasons included</dt><dd id="strip-seasons">All selected seasons and leagues.</dd></div>
   </div>
 
-  <div class="kpis">
+  <main id="main">
+  <div class="kpis" role="status" aria-live="polite">
     <div class="card kpi"><div class="label">Clubs analysed</div><div class="value" id="kpi-clubs">—</div><div class="note" id="kpi-clubs-note"></div></div>
     <div class="card kpi"><div class="label">Total spend</div><div class="value" id="kpi-spend">—</div><div class="note" id="kpi-spend-note"></div></div>
     <div class="card kpi"><div class="label">Median efficiency score</div><div class="value" id="kpi-median">—</div><div class="note">0–100, rescaled from the composite index</div></div>
@@ -36,13 +40,14 @@ import Base from "../layouts/Base.astro";
 
   <div class="grid">
     <div class="card">
-      <h2>Transfer spend vs sporting return</h2>
-      <div id="scatter" class="chart"></div>
+      <h2>Transfer spend vs sporting return <span class="muted">click a club to open its page</span></h2>
+      <div id="scatter" class="chart" role="img" aria-label="Scatter plot of transfer spend against points per match"></div>
+      <p class="empty" id="scatter-empty" hidden>No clubs match the current filters. Tick at least one season and one league.</p>
       <p class="muted" id="scatter-note"></p>
     </div>
     <div class="card">
       <h2>Spend by league <span class="muted">click a slice to filter</span></h2>
-      <div id="donut" class="chart"></div>
+      <div id="donut" class="chart" role="img" aria-label="Share of transfer spend by league"></div>
     </div>
   </div>
 
@@ -50,6 +55,8 @@ import Base from "../layouts/Base.astro";
     <div class="card"><h2>Best spend efficiency</h2><div class="bars" id="bars-best"></div></div>
     <div class="card"><h2>Worst spend efficiency</h2><div class="bars" id="bars-worst"></div></div>
   </div>
+
+  </main>
 
   <footer>
     <span id="generated"></span> · Efficiency is the composite of recruitment ROI, trading profit, squad value
@@ -65,10 +72,22 @@ import Base from "../layouts/Base.astro";
   import { COLOUR, LEAGUE_COLOUR, init } from "../lib/charts";
   import { index, money, perMatch, score } from "../lib/format";
 
-  const payload = (await (await fetch(`${import.meta.env.BASE_URL}data/page1.json`)).json()) as {
-    generated_at: string;
-    overview: PackedTable;
-  };
+  const BASE = import.meta.env.BASE_URL;
+
+  type Page1 = { generated_at: string; overview: PackedTable };
+  let payload: Page1;
+  try {
+    const response = await fetch(`${BASE}data/page1.json`);
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    payload = (await response.json()) as Page1;
+  } catch (error) {
+    document.querySelector("main")!.innerHTML =
+      `<div class="card error"><h2>The dashboard data could not be loaded</h2>` +
+      `<p>Fetching ${BASE}data/page1.json failed: ${(error as Error).message}.</p>` +
+      `<p class="muted">The site is static, so this usually means the export is missing from the build. ` +
+      `Run <code>scripts/80_export_web_data.py</code>, then rebuild.</p></div>`;
+    throw error;
+  }
   const rows = unpack<ClubSeason>(payload.overview);
 
   const seasons = [...new Set(rows.map((r) => r.season_end_year))].sort();
@@ -119,6 +138,14 @@ import Base from "../layouts/Base.astro";
   }
 
   const scatter = init(document.getElementById("scatter") as HTMLElement);
+  // a point is a club: open its page
+  scatter.on("click", (params: { data?: { club?: { club_key: number } } }) => {
+    const club = params.data?.club;
+    if (club) location.href = `${BASE}club/#club=${club.club_key}`;
+  });
+  scatter.getZr().on("mousemove", (e: { target?: unknown }) => {
+    (document.getElementById("scatter") as HTMLElement).style.cursor = e.target ? "pointer" : "default";
+  });
   const donut = init(document.getElementById("donut") as HTMLElement);
 
   // Cross-filter: clicking a slice isolates that league, clicking it again restores all of them.
@@ -138,9 +165,10 @@ import Base from "../layouts/Base.astro";
       .map((c) => {
         const flag = c.has_provisional ? ' <span class="prov" title="includes provisional cohorts">*</span>' : "";
         const width = (Math.abs(c.efficiency_index) / widest) * 100;
-        return `<div class="bar"><span>${c.club_name}${flag}</span>` +
+        // an anchor, not a div: the club page has to be reachable by keyboard too
+        return `<a class="bar" href="${BASE}club/#club=${c.club_key}"><span>${c.club_name}${flag}</span>` +
                `<span class="track"><span class="fill" style="width:${width}%;background:${colour}"></span></span>` +
-               `<span class="num">${index(c.efficiency_index)}</span></div>`;
+               `<span class="num">${index(c.efficiency_index)}</span></a>`;
       })
       .join("");
   }
@@ -148,6 +176,9 @@ import Base from "../layouts/Base.astro";
   function setText(id: string, text: string) {
     (document.getElementById(id) as HTMLElement).textContent = text;
   }
+
+  // the quadrant corner labels need room; below this width they sit on top of the points
+  const narrow = () => matchMedia("(max-width: 760px)").matches;
 
   function render() {
     const filtered = filterRows(rows, state);
@@ -165,6 +196,20 @@ import Base from "../layouts/Base.astro";
     setText("strip-seasons", `${state.seasons.size} of ${seasons.length} seasons, ${state.leagues.size} of ${leagues.length} leagues.`);
     setText("generated", `Data generated ${payload.generated_at.slice(0, 10)}`);
 
+    const empty = clubs.length === 0;
+    (document.getElementById("scatter-empty") as HTMLElement).hidden = !empty;
+    (document.getElementById("scatter") as HTMLElement).style.display = empty ? "none" : "";
+    (document.getElementById("donut") as HTMLElement).style.display = empty ? "none" : "";
+    if (empty) {
+      scatter.clear();
+      donut.clear();
+      for (const id of ["bars-best", "bars-worst"]) {
+        (document.getElementById(id) as HTMLElement).innerHTML =
+          '<p class="empty">Nothing to rank with these filters.</p>';
+      }
+      return;
+    }
+
     const plotted = clubs.filter((c) => c.spend > 0);
     const medianSpend = median(plotted.map((c) => c.spend));
     const medianPpm = median(plotted.map((c) => c.points_per_match));
@@ -172,8 +217,11 @@ import Base from "../layouts/Base.astro";
       ? `${summary.unplotted} club${summary.unplotted > 1 ? "s" : ""} with no disclosed spend cannot be plotted on a log axis.`
       : "");
 
+    const byLeague = spendByLeague(filtered);
+    const total = byLeague.reduce((t, l) => t + l.spend, 0);
+
     scatter.setOption({
-      grid: { left: 62, right: 24, top: 18, bottom: 54 },
+      grid: { left: narrow() ? 52 : 62, right: narrow() ? 14 : 24, top: 18, bottom: 54 },
       tooltip: {
         trigger: "item",
         formatter: (p: { data: { club: ClubAggregate } }) => {
@@ -210,7 +258,7 @@ import Base from "../layouts/Base.astro";
         },
         markArea: {
           silent: true,
-          label: { show: true, color: "#98a5af", fontSize: 11, lineHeight: 14 },
+          label: { show: !narrow(), color: "#98a5af", fontSize: 11, lineHeight: 14 },
           data: [
             [{ name: "Higher return\nLower spend", xAxis: "min", yAxis: medianPpm,
                itemStyle: { color: "rgba(47,174,135,0.07)" }, label: { position: "insideTopLeft" } },
@@ -229,27 +277,38 @@ import Base from "../layouts/Base.astro";
       }],
     }, true);
 
-    const byLeague = spendByLeague(filtered);
-    const total = byLeague.reduce((t, l) => t + l.spend, 0);
     donut.setOption({
       tooltip: { trigger: "item", formatter: (p: { name: string; value: number; percent: number }) =>
         `${p.name}<br>${money(p.value)} (${p.percent}%)` },
       legend: { bottom: 0, itemWidth: 10, itemHeight: 10 },
       title: {
-        text: money(total), subtext: "total spend", left: "50%", top: "38%", textAlign: "center",
+        text: money(total), subtext: "total spend", left: "50%", top: narrow() ? "34%" : "38%", textAlign: "center",
         textStyle: { fontSize: 22, fontWeight: 700, color: "#16324f" },
         subtextStyle: { fontSize: 11, color: "#5b7186" },
       },
       series: [{
-        type: "pie", radius: ["54%", "78%"], center: ["50%", "45%"],
+        type: "pie", radius: ["54%", "78%"], center: ["50%", narrow() ? "41%" : "45%"],
         label: { position: "inside", formatter: "{d}%", color: "#fff", fontSize: 11, fontWeight: 600 },
         data: byLeague.map((l) => ({ name: l.league, value: l.spend, itemStyle: { color: LEAGUE_COLOUR[l.league] } })),
       }],
     }, true);
+
+    (document.getElementById("scatter") as HTMLElement).setAttribute("aria-label",
+      `Scatter plot of ${plotted.length} clubs: transfer spend on a log axis against points per match. ` +
+      `Median spend ${money(medianSpend)}, median points per match ${perMatch(medianPpm)}.`);
+    (document.getElementById("donut") as HTMLElement).setAttribute("aria-label",
+      `Share of ${money(total)} transfer spend by league: ` +
+      byLeague.map((l) => `${l.league} ${money(l.spend)}`).join(", ") + ".");
 
     renderBars(document.getElementById("bars-best") as HTMLElement, clubs.slice(0, 5), COLOUR.smart);
     renderBars(document.getElementById("bars-worst") as HTMLElement, clubs.slice(-5).reverse(), COLOUR.burned);
   }
 
   render();
+
+  // a window resize can cross the narrow breakpoint, which changes what the charts draw
+  let wasNarrow = narrow();
+  addEventListener("resize", () => {
+    if (narrow() !== wasNarrow) { wasNarrow = narrow(); render(); }
+  });
 </script>

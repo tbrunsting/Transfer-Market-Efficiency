@@ -194,3 +194,7 @@ downloaded_files/
 web/node_modules/
 web/dist/
 web/.astro/
+
+# The Python template above ignores lib/ anywhere in the tree, which silently swallowed the web
+# app's own source: web/src/lib holds the client TypeScript that the pages and the tests import.
+!web/src/lib/

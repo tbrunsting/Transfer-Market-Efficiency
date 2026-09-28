@@ -1,0 +1,64 @@
+# Builds /web and publishes it to GitHub Pages.
+#
+# The site is static by design: the warehouse is not reachable from CI, so the build consumes the
+# JSON snapshot committed under web/public/data (written by scripts/80_export_web_data.py and
+# verified by scripts/81_check_web_export.py before it is committed). Refreshing the dashboard means
+# re-running the export locally and committing the result — this workflow never touches the database.
+#
+# PAGES_BASE is the path the site is served from. A project site lives at
+# https://tbrunsting.github.io/Transfer-Market-Efficiency/, so the default is that sub-path. If the
+# site is later mounted somewhere else (for example inside the portfolio site), change PAGES_BASE
+# here and nothing else: every URL in the pages is built from import.meta.env.BASE_URL.
+name: Deploy web dashboard
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "web/**"
+      - ".github/workflows/deploy-web.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; queued runs wait rather than cancel, so main always ends up published.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      PAGES_BASE: /Transfer-Market-Efficiency/
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Install dependencies
+        working-directory: web
+        run: npm ci
+      - name: Run the cross-check tests
+        working-directory: web
+        run: npm test
+      - name: Build
+        working-directory: web
+        run: npm run build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

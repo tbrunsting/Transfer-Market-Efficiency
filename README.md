@@ -7,9 +7,10 @@ A two-page Power BI dashboard over a Postgres warehouse, built from free,
 frozen, checksummed data. Seven seasons, 2017/18 to 2023/24, five leagues,
 145 clubs.
 
-`Dashboard.pbix` is the deliverable. Everything behind it — ingest, warehouse,
-scoring, presentation views — is in this repository, along with the reasoning
-for every judgement call.
+`Dashboard.pbix` is the deliverable, and `web/` is the same two pages rebuilt
+as a static site that needs no database to open. Everything behind them —
+ingest, warehouse, scoring, presentation views — is in this repository, along
+with the reasoning for every judgement call.
 
 ## The answer
 
@@ -157,6 +158,15 @@ psql -d transfer_market -f sql\03_checks.sql             # 47 checks, all must p
 "C:\Program Files\R\R-4.4.1\bin\Rscript.exe" R\70_presentation_views.R   # always last
 ```
 
+The static dashboard is rebuilt from the same views:
+
+```
+.venv\Scripts\python scripts\80_export_web_data.py     # snapshot the views to web/public/data
+.venv\Scripts\python scripts\81_check_web_export.py    # 20 checks, decoded and row-compared
+.venv\Scripts\python scripts\82_web_expectations.py    # SQL expectations for the client tests
+cd web && npm ci && npm test && npm run build
+```
+
 Each R script writes its results and then **recomputes every value
 independently in SQL**, failing if the two disagree by more than 1e-9. Where R
 fits a regression with dummy variables, the SQL check solves the same model a
@@ -169,14 +179,17 @@ errors.
 | Warehouse (`03_checks.sql`) | 47 |
 | Player quality, Pillars 4, 1, 2, 3, composite | 20, 9, 32, 26, 22, 14 |
 | Presentation views (`71_check_presentation_views.sql`) | 40 |
+| Web export (`81_check_web_export.py`) | 20 |
+| Web client arithmetic (`web/test`, against SQL) | 22 |
 
 ## Repository
 
 ```
-scripts/   Python: ingest, freezing, reference tables, warehouse loader
+scripts/   Python: ingest, freezing, reference tables, warehouse loader, web export
 sql/       DDL, warehouse checks, score tables, presentation views, check files
 R/         the scoring layer, one script per pillar plus the composite and views
 reference/ hand-built mapping tables and the review ledgers behind them
+web/       the static Astro dashboard and the committed JSON snapshot it reads
 docs/      the scoping document, phase write-ups, mockups
 data/      frozen sources (gitignored; rebuilt from the manifests)
 ```
@@ -191,6 +204,8 @@ data/      frozen sources (gitignored; rebuilt from the manifests)
 - `docs/phase-3-scoring.md` — every pillar, the evidence behind each decision,
   and the limitations
 - `docs/phase-4-presentation-layer.md` — the six views Power BI reads
+- `docs/phase-5-web-dashboard.md` — the static web rebuild: export, encoding,
+  checks, accessibility and deployment
 
 An interesting wrong answer that is honestly documented is worth more than a
 clean answer that quietly hides its assumptions. Where this project's own plan
