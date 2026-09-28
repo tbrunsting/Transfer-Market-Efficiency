@@ -34,6 +34,32 @@ Then commit the diff under `web/public/data/` and `web/test/expectations.json`.
 Two exports of unchanged data are byte-identical, so a diff means the warehouse
 changed.
 
+## Why this page's median differs from the Power BI card
+
+The Power BI card is labelled **Median Efficiency Index** and reads **−0.03**.
+This site's card is labelled **Median efficiency score (0–100)** and reads
+**39.2**. Both are right; they differ in two ways, and the labels now say so.
+
+1. **Scale.** The index is a z-score, roughly −3.4 to +4.9 across the window.
+   The 0–100 score is that same index put on a fixed scale
+   (`sql/70_presentation_views.sql`), so it is comparable between clubs but is
+   not a percentile and not a percentage.
+2. **Grain.** Power BI takes the median over **club-seasons**; this page takes
+   the median over **clubs**, after averaging each club's selected seasons,
+   because everything else on the page is per club.
+
+Checked in SQL against the warehouse:
+
+| Median of | Index | 0–100 score |
+|---|---|---|
+| 684 club-seasons | −0.0313 | 40.20 |
+| 145 club means | −0.1167 | 39.17 |
+
+So the site's 39.2 is exactly −0.1167 rescaled, and Power BI's −0.03 is the
+club-season figure on the index scale. The same grain difference applies to the
+scatter: Power BI plots one point per club-season, this page plots one per club
+over the seasons selected.
+
 ## Layout
 
 ```

@@ -7,10 +7,30 @@ A two-page Power BI dashboard over a Postgres warehouse, built from free,
 frozen, checksummed data. Seven seasons, 2017/18 to 2023/24, five leagues,
 145 clubs.
 
+**[Open the live dashboard →](https://tbrunsting.github.io/Transfer-Market-Efficiency/)**
+
 `Dashboard.pbix` is the deliverable, and `web/` is the same two pages rebuilt
 as a static site that needs no database to open. Everything behind them —
 ingest, warehouse, scoring, presentation views — is in this repository, along
 with the reasoning for every judgement call.
+
+## Dashboard preview
+
+Page 1 of the Power BI dashboard: transfer spend against sporting return on a
+log axis, quadrant-coloured, with spend by league and the best and worst clubs
+by spend efficiency.
+
+![Power BI league overview: a scatter of club-seasons plotting total transfer
+spend against points per match, a donut of 38.48bn spend by league, and bar
+charts of the best and worst clubs by spend efficiency](docs/transfer-market-overview.png)
+
+Page 2, one club at a time — here Real Madrid: squad, largest transfers, the
+four pillars, spending breakdown, honours, and the cash-flow chart banded by
+manager tenure.
+
+![Power BI club detail for Real Madrid: current squad with market values,
+largest transfers, club efficiency score and pillars, spending breakdown
+donut, honours, and a cash-flow chart with manager tenure bands](docs/transfer-market-club-breakdown.png)
 
 ## The answer
 
